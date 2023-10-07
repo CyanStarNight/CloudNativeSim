@@ -67,13 +67,13 @@
             <version>3.1.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.cloudsimp</groupId>
-            <artifactId>cloudsim</artifactId>
-            <version>5.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/cloudsim-5.0.jar</systemPath>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.cloudsim</groupId>-->
+<!--            <artifactId>cloudsim</artifactId>-->
+<!--            <version>5.0</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/cloudsim-5.0.jar</systemPath>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.yaml</groupId>
