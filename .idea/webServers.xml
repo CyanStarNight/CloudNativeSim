@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="fc19cacc-d5d1-4364-856f-a28e3dd92ca6" name="master">
+        <fileTransfer rootFolder="/root" accessType="SFTP" host="192.168.109.100" port="22" sshConfigId="efa67348-38a9-4e8d-9c22-c34aac9c55d4" sshConfig="root@192.168.109.100:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+    <groups>
+      <group>
+        <name>local k8s</name>
+        <servers>
+          <name value="master" />
+        </servers>
+      </group>
+    </groups>
+  </component>
+</project>

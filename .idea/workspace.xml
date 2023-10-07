@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2edc029e-21e2-469a-b89f-60ed24fded09" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/fileTemplates/internal/Class.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/kubernetes-settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/cloudsim.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/webServers.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/NativeSim.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cloudsim-3.0.3.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/MicroService Design.puml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/nginx service chain.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/nginx serviceChain orthonormalList.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/草图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/examples.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/src/main/java/org/cloudbus/nativesim/SockShopExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/modules.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Cloudlet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Container.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/DataCenter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Pod.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Resources.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Service.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/ServiceChain.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/SimEntity.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/NativeSim.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/Register.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/Scheduler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/SimEvent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/Update.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/Policy.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/servicePlacementAlgorithm/RoundRobinAllocation.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/servicePlacementAlgorithm/ServicePlacementPolicy.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/serviceScalingAlgorithm/ServiceScalingPolicy.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/util/Edge.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/util/Graph.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/util/Status.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/util/Tools.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/util/Type.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/util/Vertex.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/test/java/org/cloudbus/nativesim/ServiceChainTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/test/java/org/cloudbus/nativesim/demoTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/test/resource/carts-dep.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/test/resource/communication.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/test/resource/sockshop-complete-demo.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Enum" />
+        <option value="Kubernetes Deployment" />
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+    <option name="SCHEME" value="Project" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$PROJECT_DIR$/../../Deployment/jdk17/lib/src.zip!/java.desktop/java/awt/Container.java" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="KubernetesApiPersistence">
+    <option name="context" value="kubernetes-admin@kubernetes" />
+    <option name="namespace" value="sock-shop" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="useMavenConfig" value="true" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectId" id="2RzYDVqZcPYgsKSDKHXPqWcUv5A" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
+    &quot;Notification.DisplayName-DoNotAsk-Kubernetes Notifications&quot;: &quot;Kubernetes&quot;,
+    &quot;Notification.DoNotAsk-Kubernetes Notifications&quot;: &quot;true&quot;,
+    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.mappings&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.symlinks&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.date&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.permissions&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.size&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;jdk.selected.JAVA_MODULE&quot;: &quot;17&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/Projects/NativeSim/cloudsim-3.0.3.jar&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.scopes&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="org.cloudbus.naivesim.util" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\Projects\NaiveSim\modules\test\java" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\Projects\NaiveSim\doc" />
+      <recent name="E:\Projects\NaiveSim\modules\test\resource" />
+      <recent name="E:\Projects\NaiveSim\examples\src\main" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="org.cloudbus.nativesim" />
+      <recent name="org.cloudbus.naivesim" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.SockShopExample">
+    <configuration name="Example1" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.cloudbus.nativesim.Example1" />
+      <module name="NativeSim" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.cloudbus.nativesim.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RoundRobinAllocation" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.cloudbus.nativesim.policy.servicePlacementAlgorithm.RoundRobinAllocation" />
+      <module name="NativeSim" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.cloudbus.nativesim.policy.servicePlacementAlgorithm.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SockShopExample" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.cloudbus.nativesim.SockShopExample" />
+      <module name="NativeSim" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.cloudbus.nativesim.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ServiceChainTest.testRegister" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="NativeSim" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.cloudbus.nativesim.event.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.cloudbus.nativesim" />
+      <option name="MAIN_CLASS_NAME" value="org.cloudbus.nativesim.ServiceChainTest" />
+      <option name="METHOD_NAME" value="testRegister" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.SockShopExample" />
+        <item itemvalue="Application.RoundRobinAllocation" />
+        <item itemvalue="Application.Example1" />
+        <item itemvalue="JUnit.ServiceChainTest.testRegister" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2edc029e-21e2-469a-b89f-60ed24fded09" name="Changes" comment="" />
+      <created>1688254259456</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1688254259456</updated>
+      <workItem from="1688254260578" duration="2024000" />
+      <workItem from="1688256302826" duration="39240000" />
+      <workItem from="1688607257572" duration="9867000" />
+      <workItem from="1689064366292" duration="6575000" />
+      <workItem from="1689836548780" duration="2770000" />
+      <workItem from="1689851425131" duration="24167000" />
+      <workItem from="1689991998569" duration="76458000" />
+      <workItem from="1690546407447" duration="15092000" />
+      <workItem from="1690855395061" duration="2374000" />
+      <workItem from="1690857953064" duration="15536000" />
+      <workItem from="1690895318022" duration="8314000" />
+      <workItem from="1691115549307" duration="600000" />
+      <workItem from="1691116779735" duration="4299000" />
+      <workItem from="1691382181166" duration="22941000" />
+      <workItem from="1691975733757" duration="353000" />
+      <workItem from="1691976109632" duration="113000" />
+      <workItem from="1691976247151" duration="687000" />
+      <workItem from="1691976949251" duration="21704000" />
+      <workItem from="1692162304115" duration="12404000" />
+      <workItem from="1693956880489" duration="1196000" />
+      <workItem from="1694648681273" duration="7537000" />
+      <workItem from="1694993740584" duration="28713000" />
+      <workItem from="1695711764380" duration="16505000" />
+      <workItem from="1696301709149" duration="1881000" />
+      <workItem from="1696641423388" duration="3533000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.util.NoSuchElementException" package="java.util" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
