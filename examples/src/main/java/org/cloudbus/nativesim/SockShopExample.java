@@ -72,7 +72,6 @@ public class SockShopExample{
 
             // 3: Start the simulation.
             NativeSim.startSimulation();
-            System.out.println(datacenter.getVmAllocationPolicy().getHost(0,userId).getId()+"**********");
             List<Cloudlet> newList = broker.getCloudletReceivedList();
             Print.printCloudletList(newList);
             // 4: Pause
