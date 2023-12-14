@@ -43,19 +43,5 @@ public class ServiceGraphTest {
 //        graph.printAllEdges();
     }
 
-    @Test
-    public void test_ServiceChain(){
-        List<Service> services = new ArrayList<>();
-        for (int i = 0 ;i < len ; i++){
-            Service service = new Service();
-            service.getRealtime_resources().setMips(1000);
-            service.getRealtime_resources().setBw(100);
-            service.getRealtime_resources().setRam(1024);
-            service.setName(names[i]);
-            service.setId(i);
-            service.setNumReplicas(i);
-            services.add(service);
-        }
-    }
 }
 
