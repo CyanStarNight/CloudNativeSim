@@ -1,33 +1,77 @@
 package org.cloudbus.nativesim.entity;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
+import java.util.UUID;
 
-import lombok.NonNull;
+import lombok.Data;
+import org.cloudbus.nativesim.NativeController;
+import org.cloudbus.nativesim.util.Status;
+
+import javax.validation.constraints.AssertTrue;
 
 /**
  * @author JingFeng Wu
  */
+/** Attention: pods对模拟的意义似乎更体现在空间资源和架构解释上
+ * 1.All the containers share the same namespace、storage、lifetime and process action.
+ * 2.Pod will connect the services and containers with double linkages.
+ * 3.Pods are the basic units of scheduling for users.
+ * 4.Use replicaSet to implements horizontal scaling.
+ * */
+@Data
 public class Pod {
 
-    private ArrayList<Container> ContainerList;
-    private int numContainers;
+    private String uid; // the global id
+    private int id; // the id in service
+    private int userId; // the user
 
-    public Pod() {}
+    public String name; // really need ?
 
-    @NonNull
-    public static Pod PodRegistry(Map<String,Object> map){
-        Pod pod = new Pod();
+    private ArrayList<String> labels; // one service n pods
+    private List<Service> serviceList;
+    private List<NativeContainer> containerList;
 
-//        pod.setPodName(Tools.getValue(map,"metadata.name"));
-//        pod.setPorts(Tools.getValue(map,"spec.ports"));
-//        pod.setType(Tools.getValue(map,"spec.type"));
+    private String prefix; // the prefix identifying the replicas
+    private List<Pod> replicas;
 
-        pod.CombinePod2Service();
+    private int num_containers;
+    private int num_replicas;
 
-        return pod;
+    private int pod_cpu,pod_ram,pod_bw;
+    private int storage;
+    private long lifeTime; // controlled by simulation
+
+    public Status status = Status.Ready;
+
+    public Pod(){
+        uid = UUID.randomUUID().toString();
     }
-    void CombinePod2Service(){
+
+    /**Unit: Combine*/
+    @AssertTrue
+    public boolean matchServices(NativeController controller){
+        List<Service> serviceList = new ArrayList<>();
+        for (String label : labels){
+            serviceList.addAll(controller.selectServicesByLabel(label));
+        }
+        if (!serviceList.isEmpty()) {
+            setServiceList(serviceList);
+            return true;
+        }
+        return false;
+    }
+    @AssertTrue
+    public boolean matchReplicas(NativeController controller){
+        List<Pod> replicas = controller.selectPodsByPrefix(prefix);
+        if (!replicas.isEmpty()) {
+            setReplicas(replicas);
+            return true;
+        }
+        return false;
+    }
+
+    public void init(){ // link the entities and initialize the parameters.
 
     }
 }

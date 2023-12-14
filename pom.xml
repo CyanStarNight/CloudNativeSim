@@ -39,26 +39,12 @@
             <scope>test</scope>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-web</artifactId>-->
-<!--            <version>3.1.0</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.24</version>
             <scope>provided</scope>
         </dependency>
-
-
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-test</artifactId>-->
-<!--            <version>3.1.0</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
 
 
         <dependency>
@@ -70,10 +56,18 @@
 <!--        <dependency>-->
 <!--            <groupId>org.cloudsim</groupId>-->
 <!--            <artifactId>cloudsim</artifactId>-->
-<!--            <version>5.0</version>-->
+<!--            <version>3.0.3</version>-->
 <!--            <scope>system</scope>-->
-<!--            <systemPath>${project.basedir}/cloudsim-5.0.jar</systemPath>-->
+<!--            <systemPath>${project.basedir}/cloudsim-3.0.3.jar</systemPath>-->
 <!--        </dependency>-->
+
+        <dependency>
+            <groupId>org.cloudsim</groupId>
+            <artifactId>cloudsim</artifactId>
+            <version>5.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/cloudsim-5.0.jar</systemPath>
+        </dependency>
 
         <dependency>
             <groupId>org.yaml</groupId>
@@ -82,31 +76,40 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.9.4</version>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.1.0.Final</version>
         </dependency>
 
 <!--        <dependency>-->
-<!--            <groupId>com.esotericsoftware.yamlbeans</groupId>-->
-<!--            <artifactId>yamlbeans</artifactId>-->
-<!--            <version>1.15</version>-->
+<!--            <groupId>org.glassfish</groupId>-->
+<!--            <artifactId>javax.el</artifactId>-->
+<!--            <version>3.0.1-b11</version>-->
 <!--        </dependency>-->
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator-cdi</artifactId>
+            <version>6.1.0.Final</version>
+        </dependency>
+
 <!--        <dependency>-->
-<!--            <groupId>com.google.kubernetes</groupId>-->
-<!--            <artifactId>kubernetes-client</artifactId>-->
+<!--            <groupId>commons-beanutils</groupId>-->
+<!--            <artifactId>commons-beanutils</artifactId>-->
+<!--            <version>1.9.4</version>-->
+<!--        </dependency>-->
+
+
+<!--        cloudsimplus会与automation产生依赖冲突-->
+
+<!--        <dependency>-->
+<!--            <groupId>org.cloudsimplus</groupId>-->
+<!--            <artifactId>cloudsimplus-automation</artifactId>-->
+<!--            &lt;!&ndash; Set a specific version or use the latest one &ndash;&gt;-->
 <!--            <version>LATEST</version>-->
 <!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>io.kubernetes</groupId>-->
-<!--            <artifactId>client-java-api</artifactId>-->
-<!--            <version>LATEST</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>io.fabric8</groupId>-->
-<!--            <artifactId>kubernetes-client</artifactId>-->
-<!--            <version>LATEST</version>-->
-<!--        </dependency>-->
+
+
 
     </dependencies>
 

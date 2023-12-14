@@ -1,12 +1,62 @@
 package org.cloudbus.nativesim.util;
 
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author JingFeng Wu
  */
 public class Tools {
+//    public static String UUID(){
+//        return UUID.randomUUID().toString();
+//    }
+    public static void callFunction(Object obj, String methodName) throws Exception {
+        Method method = obj.getClass().getMethod(methodName);
+        method.invoke(obj);
+    }
+    public static List< Map<String,Object> > ReadMultilineYaml(String filePath) {
+        InputStream inputStream = null;
+        try{
+            inputStream = new FileInputStream(filePath);
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+        Yaml yaml = new Yaml();
+        List< Map<String,Object> > config = new ArrayList<>();
+        for (Object obj : yaml.loadAll(inputStream)){
+            Map<String, Object> map = (Map<String, Object>) obj;
+            config.add(map);
+        }
+        return config;
+    }
+    public static Map<String, Object> ReadYaml(String filePath){
+        InputStream inputStream = null;
+        try{
+            inputStream = new FileInputStream(filePath);
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+        Yaml yaml = new Yaml();
+        return yaml.load(inputStream);
+    }
+
+    public static Integer GetNumFromString(String s){
+        if (s == null) return 0;
+        String regEx = "[^0-9]";
+        Pattern p = Pattern.compile(regEx);
+        Matcher m = p.matcher(s);
+        s = m.replaceAll("").trim();
+        return Integer.valueOf(s).intValue();
+    }
 
     public static String GetSubString(String s, String from, String end){//return the substring without "from" and "end"
         if (!s.contains(from) || !s.contains(end)) return null;

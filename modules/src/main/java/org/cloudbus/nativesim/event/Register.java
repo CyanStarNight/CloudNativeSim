@@ -1,106 +1,166 @@
 package org.cloudbus.nativesim.event;
 
-import lombok.Data;
-import lombok.NonNull;
-import org.cloudbus.nativesim.entity.DataCenter;
-import org.cloudbus.nativesim.entity.Pod;
-import org.cloudbus.nativesim.entity.Service;
-import org.cloudbus.nativesim.entity.ServiceChain;
-import org.cloudbus.nativesim.util.Edge;
-import org.cloudbus.nativesim.util.Vertex;
-import org.yaml.snakeyaml.Yaml;
+import lombok.*;
+import org.cloudbus.cloudsim.*;
+import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
+import org.cloudbus.cloudsim.container.containerProvisioners.CotainerPeProvisionerSimple;
 
-import java.io.*;
+import org.cloudbus.cloudsim.container.containerVmProvisioners.ContainerVmBwProvisionerSimple;
+import org.cloudbus.cloudsim.container.containerVmProvisioners.ContainerVmRamProvisionerSimple;
+import org.cloudbus.cloudsim.container.core.ContainerDatacenter;
+import org.cloudbus.cloudsim.container.core.ContainerDatacenterBroker;
+import org.cloudbus.cloudsim.container.core.ContainerDatacenterCharacteristics;
+import org.cloudbus.cloudsim.container.core.ContainerHost;
+import org.cloudbus.cloudsim.container.schedulers.ContainerCloudletScheduler;
+import org.cloudbus.cloudsim.container.schedulers.ContainerCloudletSchedulerTimeShared;
+import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
+import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
+import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
+import org.cloudbus.nativesim.NativeController;
+import org.cloudbus.nativesim.entity.*;
+
 import java.util.*;
+
+import static org.cloudbus.nativesim.util.Tools.ReadMultilineYaml;
+import static org.cloudbus.nativesim.util.Tools.getValue;
 
 /**
  * @author JingFeng Wu
- *  Register会继承SimEvent的规则和属性
- *  与Init不同，它负责注册各种实体、策略和设备，是面向用户的事件
+ * Register作为Entities公用注册模块
  */
-// TODO: 2023/9/26 是否要注册设备？目前默认硬件资源充足
-@Data
-public class Register extends SimEvent{
-    private String config_file_path,commu_file_path;
-    private List< Map<String,Object> > config; // the configuration of software application
-    private List<String> deployment; //the deployment of the hardware equipment
-    private int[] costs;
+@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
+public class Register extends NativeEvent{
+    public static final String signal = "Register";
 
-    public Register(String config_file, String commu_file,List<String> deployment_parameters) {
-        config_file_path= config_file;
-        config = ReadYaml(config_file);
-        commu_file_path = commu_file;
-        deployment = deployment_parameters;
+    private String registerFile;
+    private List< Map<String,Object> > registry; // attention: the registry will contain some records, split by "-------"
+
+    List<Service> services = new ArrayList<>();
+    List<Pod> pods = new ArrayList<>();
+    List<Communication> commus = new ArrayList<>();
+
+
+    public Register(int userId,String registerFile,NativeController controller) {
+        super(userId); // userId will identify the controller and the simulation
+        this.registerFile = registerFile;
+        registry = ReadMultilineYaml(registerFile);
+        this.controller = controller;
     }
 
-    public Register(String config_file, String commu_file,List<String> deployment_parameters,int[] costs) {
-        config_file_path= config_file;
-        config = ReadYaml(config_file);
-        commu_file_path = commu_file;
-        deployment = deployment_parameters;
-        this.costs = costs;
-    }
+    /**Unit: Register and Create*/
+    // 针对结构性强的文件注册
+    public void registerEntities(String serviceGraphName){
 
-    public static List< Map<String,Object> > ReadYaml(String filePath) {
-        InputStream inputStream = null;
-        try{
-            inputStream = new FileInputStream(filePath);
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
+        assert checkRegistry();
+        for (Map<String, Object> record : registry){
+
+            for(Map<String , Object> map:(List<Map<String , Object>>)record.get("services"))
+                services.add(registerService(map));
+
+            for(Map<String , Object> map:(List<Map<String , Object>>)record.get("pods"))
+                pods.add(registerPod(map));
         }
-        Yaml yaml = new Yaml();
-        List< Map<String,Object> > config = new ArrayList<>();
-        for (Object obj : yaml.loadAll(inputStream)){
-            Map<String, Object> map = (Map<String, Object>) obj;
-            config.add(map);
+
+        registerServiceGraph(serviceGraphName,controller);
+
+    }
+    public boolean checkRegistry(){
+        for (Map<String,Object> map : registry){
+            if(!map.containsKey("services")) return false;
+            if(!map.containsKey("pods")) return false;
         }
-        return config;
+        return true;
+    }
+    // 以下方法针既可以处理单个实体的文件注册，也可以处理结构式的文件
+    @NonNull
+    public Service registerService(Map<String,Object> map){
+        Service service = new Service(); //Register the services;
+        String service_name = getValue(map,"name");
+        service.setName(service_name);
+        service.setLabels(getValue(map,"labels"));
+        if(map.containsKey("calls")){
+            List<Communication> calls = new ArrayList<>();
+            for (Map<String,Object> s: (ArrayList<Map>) getValue(map,"calls"))
+                calls.add(registerCommunication(s,service_name));
+            service.setCalls(calls);
+        }
+        submit(service);
+        return service;
+    }
+    public Communication registerCommunication(Map<String,Object> map, String origin_name){ //针对结构式注册
+        Communication commu = new Communication();
+        commu.setOriginName(origin_name);
+        commu.setDestName(getValue(map,"dest"));
+        int num = getValue(map,"num");
+        int len = getValue(map,"len");
+        List<NativeCloudlet> data = createCloudlets(userId,num,len,0,0,1);
+        commu.setData(data);
+        submit(commu);
+        submitCloudlets(data);
+        return commu;
+    }
+    public Communication registerCommunication(Map<String ,Object>map){ //针对单个实体注册
+        return registerCommunication(map,getValue(map,"origin"));
     }
 
-    ServiceChain ServiceChainRegistry(){
-        ServiceChain serviceChain = new ServiceChain();
-        List<Vertex> services = new ArrayList<>();
-        List<Pod> pods = new ArrayList<>();
-    
-        for (Map<String, Object> map : this.config){
-            if (map.get("kind").equals("Service"))
-                services.add(Service.ServiceRegistry(map));
-            if (map.get("kind").equals("Deployment"))
-                pods.add(Pod.PodRegistry(map));
-            else continue;
+    @NonNull
+    public Pod registerPod(Map<String,Object> map){
+        Pod pod = new Pod();
+        pod.setName(getValue(map,"name"));
+        pod.setLabels(getValue(map,"labels")); //TODO: 2023/12/8 要求格式必须是 labels：/n - orders
+        pod.setNum_replicas(getValue(map,"replicas"));
+        pod.setStorage(getValue(map,"storage"));
+        pod.setPrefix(getValue(map,"prefix"));
+        if(map.containsKey("containers")){
+            List<NativeContainer> containers = new ArrayList<>();
+            for (Map<String,Object> c: (ArrayList<Map>) getValue(map,"containers"))
+                containers.add(registerContainer(c,pod));
+            pod.setContainerList(containers);
         }
-    
-        serviceChain.setServices(services);
-        serviceChain.setPods(pods);
+        submit(pod);
+        return pod;
+    }
+    @NonNull
+    public NativeContainer registerContainer(Map<String,Object> map,Pod pod){
+        long size = Long.parseLong(getValue(map,"size").toString());
+        double mips = Double.parseDouble(getValue(map,"mips").toString());
+        int numberOfPes = getValue(map,"pes");
+        int ram = getValue(map,"ram");
+        long bw = Long.parseLong(getValue(map,"bw").toString());
+        ContainerCloudletScheduler cloudletScheduler = new ContainerCloudletSchedulerTimeShared();
+        NativeContainer container = new NativeContainer(0,userId,mips,numberOfPes,ram,bw,size,cloudletScheduler,pod);//Attention: 此处的id会在提交时被controller重置
+        submit(container);
+        return container;
+    }
 
-        List<Edge> communications = new ArrayList<>();
-        Map<String,Object> map = ReadYaml(this.commu_file_path).get(0);
-        int index = 0;
-        for(Map s: (ArrayList<Map>) map.get("services")){  //iterate the services
-            String tailVertex_name = (String) s.get("name");
-            for (String headVertex_name: (ArrayList<String>) s.get("call")){
-                Edge e = new Edge();
-                Vertex tailV = serviceChain.findVertex(tailVertex_name);
-                Vertex headV = serviceChain.findVertex(headVertex_name);
-                e.setTailVec(tailV);
-                e.setHeadVec(headV);
-                if (costs != null) e.setCost(costs[index++]);
-                serviceChain.buildNodeOutEdge(tailV,e);
-                serviceChain.buildNodeInEdge(headV,e);
-                communications.add(e);
-            }
+
+    public ServiceGraph registerServiceGraph(String graphName,NativeController controller){
+        ServiceGraph sg = new ServiceGraph(graphName);
+        sg.init(controller);
+        submit(sg);
+        return sg;
+    }
+
+
+    //TODO: 2023/12/5 用户如何知道pes、fileSize和outputSize？这块应该放进yaml中吗？
+    public static List<NativeCloudlet> createCloudlets(int userId, int cloudletsNum, long length, long fileSize, long outputSize, int pesNumber){
+        // Creates a container to store Cloudlets
+        LinkedList<NativeCloudlet> list = new LinkedList<NativeCloudlet>();
+
+        UtilizationModel utilizationModel = new UtilizationModelFull();
+
+        NativeCloudlet[] cloudlet = new NativeCloudlet[cloudletsNum];
+
+        for(int i=0;i<cloudletsNum;i++){
+            cloudlet[i] = new NativeCloudlet(i, length, pesNumber, fileSize, outputSize, utilizationModel, utilizationModel, utilizationModel);
+            // setting the owner of these Cloudlets
+            cloudlet[i].setUserId(userId);
+            list.add(cloudlet[i]);
         }
-        serviceChain.communications = communications;
-        serviceChain.setCommunications(communications);
 
-        return serviceChain;
+        return list;
     }
-    // TODO: 2023/8/15 利用inputStream动态更新
 
-    List<DataCenter> DataCenterRegistry(){
-        List<DataCenter> dataCenters = new ArrayList<>();
-
-
-        return dataCenters;
-    }
 }

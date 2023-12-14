@@ -13,7 +13,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: carts
   template:
@@ -69,7 +69,7 @@ spec:
     # the port that this service should serve on
   - port: 80
     targetPort: 80
-  selector:
+  controller:
     name: carts
 ---
 apiVersion: apps/v1
@@ -81,7 +81,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: carts-db
   template:
@@ -126,7 +126,7 @@ spec:
     # the port that this service should serve on
   - port: 27017
     targetPort: 27017
-  selector:
+  controller:
     name: carts-db
 ---
 apiVersion: apps/v1
@@ -138,7 +138,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: catalogue
   template:
@@ -199,7 +199,7 @@ spec:
     # the port that this service should serve on
   - port: 80
     targetPort: 80
-  selector:
+  controller:
     name: catalogue
 ---
 apiVersion: apps/v1
@@ -211,7 +211,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: catalogue-db
   template:
@@ -245,7 +245,7 @@ spec:
     # the port that this service should serve on
   - port: 3306
     targetPort: 3306
-  selector:
+  controller:
     name: catalogue-db
 ---
 apiVersion: apps/v1
@@ -255,7 +255,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: front-end
   template:
@@ -315,7 +315,7 @@ spec:
   - port: 80
     targetPort: 8079
     nodePort: 30001
-  selector:
+  controller:
     name: front-end
 ---
 apiVersion: apps/v1
@@ -327,7 +327,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: orders
   template:
@@ -383,7 +383,7 @@ spec:
     # the port that this service should serve on
   - port: 80
     targetPort: 80
-  selector:
+  controller:
     name: orders
 ---
 apiVersion: apps/v1
@@ -395,7 +395,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: orders-db
   template:
@@ -440,7 +440,7 @@ spec:
     # the port that this service should serve on
   - port: 27017
     targetPort: 27017
-  selector:
+  controller:
     name: orders-db
 ---
 apiVersion: apps/v1
@@ -452,7 +452,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: payment
   template:
@@ -510,7 +510,7 @@ spec:
     # the port that this service should serve on
   - port: 80
     targetPort: 80
-  selector:
+  controller:
     name: payment
 ---
 apiVersion: apps/v1
@@ -522,7 +522,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: queue-master
   template:
@@ -562,7 +562,7 @@ spec:
     # the port that this service should serve on
   - port: 80
     targetPort: 80
-  selector:
+  controller:
     name: queue-master
 ---
 apiVersion: apps/v1
@@ -574,7 +574,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: rabbitmq
   template:
@@ -630,7 +630,7 @@ spec:
     name: exporter
     targetPort: exporter
     protocol: TCP
-  selector:
+  controller:
     name: rabbitmq
 ---
 apiVersion: apps/v1
@@ -642,7 +642,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: session-db
   template:
@@ -682,7 +682,7 @@ spec:
     # the port that this service should serve on
   - port: 6379
     targetPort: 6379
-  selector:
+  controller:
     name: session-db
 ---
 apiVersion: apps/v1
@@ -694,7 +694,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: shipping
   template:
@@ -752,7 +752,7 @@ spec:
     # the port that this service should serve on
   - port: 80
     targetPort: 80
-  selector:
+  controller:
     name: shipping
 
 ---
@@ -765,7 +765,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: user
   template:
@@ -826,7 +826,7 @@ spec:
     # the port that this service should serve on
   - port: 80
     targetPort: 80
-  selector:
+  controller:
     name: user
 
 ---
@@ -839,7 +839,7 @@ metadata:
   namespace: sock-shop
 spec:
   replicas: 1
-  selector:
+  controller:
     matchLabels:
       name: user-db
   template:
@@ -885,6 +885,6 @@ spec:
     # the port that this service should serve on
   - port: 27017
     targetPort: 27017
-  selector:
+  controller:
     name: user-db
 

@@ -2,87 +2,118 @@ package org.cloudbus.nativesim.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 import org.cloudbus.nativesim.util.Status;
-import org.cloudbus.nativesim.util.Vertex;
-import org.cloudbus.nativesim.util.*;
+
+import static org.cloudbus.nativesim.NativeController.checkMapping;
+
 
 /**
  * @author JingFeng Wu
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class Service extends Vertex implements SimEntity {
-
-    private int id;
-
-    private int userId;
-
-    Status status = Status.Ready;
+public class Service {
 
     public String name;
+    private int id;
+    private int userId;
+    private String uid;
+    private ArrayList<String> labels;
 
-    public ArrayList<String> labels;
+    List<Pod> pods;
+    List<Communication> calls;
+    ServiceGraph serviceGraph;
 
+    Communication firstIn;
+    Communication firstOut;
+    int inDegree, outDegree;
+    double etv,ltv;
+
+    Status status = Status.Ready;
     public String type;
-
-    private List<Map<String , Object>> ports;
-
-    /** The Service itself does not need to explicitly specify resource requirements and limitations.
-     * Therefore, the design here is the real-time resource consumption of pods.*/
-    Resources realtime_resources;
-
-    private Cloudlet serviceCloudlet;
-
-    /**
-     *  ReplicaList can be none, it means the service has no replicas.
-     *  Assume that every replica has the same amount of resource.
-     *  The resource of service equals to the total of the resource of replicas, but less than the need of service.
-     */
-
-    private int numReplicas;
-
-//    private ArrayList<Service> replica;
-
-    private ArrayList<Pod> EndPoints;
 
     private int num_pods = 1;
 
-    public Service() {
+    public Service(){
+        uid = UUID.randomUUID().toString();
     }
-    /**
-     * ServicesRegistry
-     */
-//    @NonNull
-//    public static List<Vertex> ServicesRegistry(List<Map<String,Object>> config){
-//        List<Vertex> services = new ArrayList<>(); //Register the services;
-//        for (Map<String, Object> map : config){
-//            if (!map.get("kind").equals("Service")) continue;
-//            Service service = new Service();
-//            service.setName(Tools.getValue(map,"metadata.name"));
-////            service.setLabels(Tools.getValue(map,"metadata.labels"));
-//            service.setPorts(Tools.getValue(map,"spec.ports"));
-//            service.setType(Tools.getValue(map,"spec.type"));
-////            service.setEndPoints(EndPointsRegistry());
-//            services.add(service);
-//        }
-//        return services;
-//    }
-
-    @NonNull
-    public static Service ServiceRegistry(Map<String,Object> map){
-        Service service = new Service(); //Register the services;
-        assert (map.get("kind").equals("Service")):"not Service.";
-
-        service.setName(Tools.getValue(map,"metadata.name"));
-//        service.setLabels(Tools.getValue(map,"metadata.labels"));
-        service.setPorts(Tools.getValue(map,"spec.ports"));
-        service.setType(Tools.getValue(map,"spec.type"));
-
-        return service;
+    public Service(String name){
+        uid = UUID.randomUUID().toString();
+        this.name = name;
     }
+
+    public void init(){
+        num_pods = pods.size();
+        buildIn_degree();
+        buildOut_degree();
+        buildEtv();
+        buildLtv();
+    }
+
+    //Unit： DAG相关
+    public void buildIn_degree() {
+        inDegree = 0;
+        if (this.firstIn != null) {
+            Communication commu = this.firstIn;
+            inDegree++;
+            while (commu.hLink != null) {
+                commu = commu.hLink;
+                inDegree++;
+            }
+        }
+    }
+
+    public void buildOut_degree() {
+        outDegree = 0;
+        if (this.firstOut != null) {
+            Communication commu = this.firstOut;
+            this.outDegree++;
+            while (commu.tLink != null) {
+                commu = commu.tLink;
+                this.outDegree++;
+            }
+        }
+    }
+    void buildEtv() {
+        etv = 0.0;
+        for (Communication e = firstOut; e != null; e = e.tLink) {
+            Service dest = e.getDest();
+            int inDegree = dest.getInDegree();
+            dest.setEtv(Math.max(dest.getEtv(), etv + e.getCost()));
+            if (--inDegree == 0) {
+                dest.buildEtv();
+            }
+        }
+    }
+
+    void buildLtv() {
+        ltv = Double.MAX_VALUE;
+        for (Communication e = firstIn; e != null; e = e.hLink) {
+            Service origin = e.getOrigin();
+            int outDegree = origin.getOutDegree();
+            origin.setLtv(Math.min(origin.getLtv(), ltv - e.getCost()));
+            if (--outDegree == 0) {
+                origin.buildLtv();
+            }
+        }
+    }
+    // Unit: Pod相关
+    // 最基础的操作有setPods、addPod和addPods.
+
+    public void addPod(Pod pod){
+        if (checkMapping(this,pod))
+            this.getPods().add(pod);
+    }
+
+
+    // Unit: Commu相关
+
+    public void addCommunication(Communication communication){
+        if (checkMapping(this,communication))
+            this.getCalls().add(communication);
+    }
+
+
 }
