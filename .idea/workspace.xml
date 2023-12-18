@@ -4,14 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2edc029e-21e2-469a-b89f-60ed24fded09" name="Changes" comment="0.7">
-      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/PodAllocationPolicy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/PodMigrationPolicy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/PodScalingPolicy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/ServiceAllocationPolicy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/ServiceMigrationPolicy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/ServiceScalingPolicy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/sockshop.yaml" afterDir="false" />
+    <list default="true" id="2edc029e-21e2-469a-b89f-60ed24fded09" name="Changes" comment="0.1">
+      <change beforePath="$PROJECT_DIR$/examples/src/main/java/org/cloudbus/nativesim/SockShopExample.java" beforeDir="false" afterPath="$PROJECT_DIR$/examples/src/main/java/org/cloudbus/nativesim/SockShopExample.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,11 +30,10 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="dev" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -84,41 +77,41 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Downloaded.Files.Path.Enabled": "false",
-    "Notification.DisplayName-DoNotAsk-Kubernetes Notifications": "Kubernetes",
-    "Notification.DoNotAsk-Kubernetes Notifications": "true",
-    "Repository.Attach.Annotations": "false",
-    "Repository.Attach.JavaDocs": "false",
-    "Repository.Attach.Sources": "false",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "TODO_SCOPE": "All Places",
-    "WebServerToolWindowFactoryState": "true",
-    "WebServerToolWindowPanel.toolwindow.highlight.mappings": "true",
-    "WebServerToolWindowPanel.toolwindow.highlight.symlinks": "true",
-    "WebServerToolWindowPanel.toolwindow.show.date": "false",
-    "WebServerToolWindowPanel.toolwindow.show.permissions": "false",
-    "WebServerToolWindowPanel.toolwindow.show.size": "false",
-    "git-widget-placeholder": "aa87a3a3",
-    "ignore.virus.scanning.warn.message": "true",
-    "jdk.selected.JAVA_MODULE": "17",
-    "last_opened_file_path": "E:/Projects/NativeSim/examples/src/main/resource",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Artifacts",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "settings.sync",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
+    &quot;Notification.DisplayName-DoNotAsk-Kubernetes Notifications&quot;: &quot;Kubernetes&quot;,
+    &quot;Notification.DoNotAsk-Kubernetes Notifications&quot;: &quot;true&quot;,
+    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;TODO_SCOPE&quot;: &quot;All Places&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.mappings&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.highlight.symlinks&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.date&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.permissions&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowPanel.toolwindow.show.size&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;jdk.selected.JAVA_MODULE&quot;: &quot;17&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/Projects/NativeSim/examples/src/main/resource&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;settings.sync&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="org.cloudbus.naivesim.util" />
@@ -324,15 +317,7 @@
       <option name="project" value="LOCAL" />
       <updated>1696648883900</updated>
     </task>
-    <task id="LOCAL-00005" summary="0.7">
-      <option name="closed" value="true" />
-      <created>1702904280486</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1702904280486</updated>
-    </task>
-    <option name="localTasksCounter" value="6" />
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -364,8 +349,7 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="0.1" />
-    <MESSAGE value="0.7" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.7" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.1" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -376,7 +360,7 @@
         </breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/examples/src/main/java/org/cloudbus/nativesim/SockShopExample.java</url>
-          <line>89</line>
+          <line>90</line>
           <option name="timeStamp" value="38" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -386,7 +370,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Service.java</url>
-          <line>45</line>
+          <line>46</line>
           <properties class="org.cloudbus.nativesim.entity.Service" method="init">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
@@ -395,7 +379,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Pod.java</url>
-          <line>64</line>
+          <line>73</line>
           <properties class="org.cloudbus.nativesim.entity.Pod" method="init">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
@@ -432,7 +416,7 @@
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Communication.java</url>
           <line>48</line>
-          <properties class="org.cloudbus.nativesim.entity.Communication">
+          <properties class="org.cloudbus.nativesim.entity.Communication" method="calculate_cost">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
           </properties>
@@ -441,7 +425,7 @@
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/NativeEvent.java</url>
           <line>42</line>
-          <properties class="org.cloudbus.nativesim.event.NativeEvent">
+          <properties class="org.cloudbus.nativesim.event.NativeEvent" method="error">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
           </properties>
@@ -450,7 +434,7 @@
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/NativeEvent.java</url>
           <line>37</line>
-          <properties class="org.cloudbus.nativesim.event.NativeEvent">
+          <properties class="org.cloudbus.nativesim.event.NativeEvent" method="pause">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
           </properties>

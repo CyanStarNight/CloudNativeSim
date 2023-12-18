@@ -52,7 +52,8 @@ public class SockShopExample{
             Datacenter datacenter = createDatacenter("sockshop-DataCenter");
             vmList = createVms(2);
             DatacenterBroker broker = createBroker(userId);
-            int brokerId = broker.getId(); // brokerId = userId
+            int brokerId = broker.getId(); // brokerId != userId
+            vmList = createVms(2,brokerId);
 
             // 1.2: Create the service chains
             String sockshopFile = "examples/src/main/resource/sockshop.yaml";
@@ -60,6 +61,7 @@ public class SockShopExample{
             register.registerEntities("sockshop");
             serviceGraph = controller.getServiceGraph();
             cloudletList = controller.getLocalCloudlets();
+            for (NativeCloudlet cloudlet : cloudletList ) cloudlet.setUserId(brokerId);
 
             // 2: Init the parameters and policies,and then submit to the brokers.
             // 2.1 Submit to the brokers
@@ -91,8 +93,7 @@ public class SockShopExample{
         }
 
     }
-
-    private static List<Vm> createVms(int num){
+    private static List<Vm> createVms(int num,int brokerId){
         List<Vm> vms = new ArrayList<Vm>();
         //VM description
         int mips = 250;
@@ -104,15 +105,16 @@ public class SockShopExample{
 
         //create two VMs: the first one belongs to user1
         for (int i = 0; i < num; i++) {
-            vms.add(new Vm(i, controller.getUserId(), mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared()));
+            vms.add(new Vm(i, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared()));
+
         }
         return vms;
     }
-
-    private static Datacenter createDatacenter(String name) {
+    private static Datacenter createDatacenter(String name){
 
         // Here are the steps needed to create a PowerDatacenter:
-        // 1. We need to create a list to store our machine.
+        // 1. We need to create a list to store
+        //    our machine
         List<Host> hostList = new ArrayList<Host>();
 
         // 2. A Machine contains one or more PEs or CPUs/Cores.
