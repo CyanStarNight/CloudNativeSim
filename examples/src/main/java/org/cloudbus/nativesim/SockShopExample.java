@@ -50,7 +50,6 @@ public class SockShopExample{
 
             // 1.1: Create some machines to act as a datacenter.
             Datacenter datacenter = createDatacenter("sockshop-DataCenter");
-            vmList = createVms(2);
             DatacenterBroker broker = createBroker(userId);
             int brokerId = broker.getId(); // brokerId = userId
 
