@@ -4,12 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2edc029e-21e2-469a-b89f-60ed24fded09" name="Changes" comment="0.1">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/src/main/java/org/cloudbus/nativesim/SockShopExample.java" beforeDir="false" afterPath="$PROJECT_DIR$/examples/src/main/java/org/cloudbus/nativesim/SockShopExample.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Pod.java" beforeDir="false" afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Pod.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Service.java" beforeDir="false" afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Service.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/cloudletScheduler/NativeCloudletScheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/cloudletScheduler/NativeCloudletScheduler.java" afterDir="false" />
+    <list default="true" id="2edc029e-21e2-469a-b89f-60ed24fded09" name="Changes" comment="0.7">
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/PodAllocationPolicy.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/PodMigrationPolicy.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/PodScalingPolicy.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/ServiceAllocationPolicy.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/ServiceMigrationPolicy.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/policy/ServiceScalingPolicy.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/target/classes/sockshop.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -101,7 +103,7 @@
     "WebServerToolWindowPanel.toolwindow.show.date": "false",
     "WebServerToolWindowPanel.toolwindow.show.permissions": "false",
     "WebServerToolWindowPanel.toolwindow.show.size": "false",
-    "git-widget-placeholder": "ec73e5f0",
+    "git-widget-placeholder": "aa87a3a3",
     "ignore.virus.scanning.warn.message": "true",
     "jdk.selected.JAVA_MODULE": "17",
     "last_opened_file_path": "E:/Projects/NativeSim/examples/src/main/resource",
@@ -322,7 +324,15 @@
       <option name="project" value="LOCAL" />
       <updated>1696648883900</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="0.7">
+      <option name="closed" value="true" />
+      <created>1702904280486</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1702904280486</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -354,7 +364,8 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="0.1" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.1" />
+    <MESSAGE value="0.7" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.7" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

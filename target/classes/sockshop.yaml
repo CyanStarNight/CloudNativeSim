@@ -1,0 +1,175 @@
+# 配置文件比较长，而且不够灵活，要做成GUI输入
+services:
+  - name: front-end
+    labels:
+      - front-end
+      - in
+    calls:
+      - dest: carts
+        num: 2
+        len: 100
+
+      - dest: orders
+        num: 1
+        len: 20
+
+      - dest: catalogue
+        num: 1
+        len: 10
+
+  - name: carts
+    labels:
+      - carts
+    calls:
+      - dest: orders
+        num: 1
+        len: 20
+
+  - name: catalogue
+    labels:
+      - catalogue
+    calls:
+      - dest: orders
+        num: 1
+        len: 20
+
+  - name: payment
+    labels:
+      - payment
+    calls:
+      - dest: orders
+        num: 1
+        len: 20
+
+  - name: queue-master
+    labels:
+      - queue-master
+    calls:
+      - dest: rabbitmq
+        num: 2
+        len: 100
+
+  - name: user
+    labels:
+      - user
+    calls:
+      - dest: orders
+        num: 1
+        len: 20
+
+  - name: rabbitmq
+    labels:
+      - rabbitmq
+
+  - name: orders
+    labels:
+      - orders
+    calls:
+      - dest: rabbitmq
+        num: 2
+        len: 100
+
+pods:
+  - name: front-end-pod
+    labels:
+      - front-end
+    replicas: 2
+    storage: 10000
+    prefix: front-end
+    containers:
+      - size: 1000
+        pes: 1
+        mips: 1000
+        ram: 64
+        bw: 100
+
+  - name: orders-request-pod
+    labels:
+      - orders
+    replicas: 2
+    storage: 10000
+    prefix: orders-request
+    containers:
+      - size: 1000
+        pes: 1
+        mips: 1000
+        ram: 64
+        bw: 100
+
+  - name: orders-db-pod
+    labels:
+      - orders
+    replicas: 3
+    storage: 5000
+    prefix: orders-db
+    containers:
+      - size: 1000
+        pes: 1
+        mips: 1000
+        ram: 64
+        bw: 100
+
+  - name: carts-pod
+    labels:
+      - carts
+    replicas: 1
+    storage: 5000
+    prefix: carts
+    containers:
+      - size: 1000
+        pes: 1
+        mips: 1000
+        ram: 64
+        bw: 100
+
+  - name: rabbitmq
+    labels:
+     - rabbitmq
+    replicas: 1
+    storage: 5000
+    prefix: rabbitmq
+    containers:
+      - size: 1000
+        pes: 1
+        mips: 1000
+        ram: 64
+        bw: 100
+
+  - name: catalogue
+    labels:
+    - catalogue
+    replicas: 1
+    storage: 5000
+    prefix: catalogue
+    containers:
+      - size: 1000
+        pes: 1
+        mips: 1000
+        ram: 64
+        bw: 100
+
+  - name: queue-master
+    labels:
+      - queue-master
+    replicas: 1
+    storage: 5000
+    prefix: queue
+    containers:
+      - size: 1000
+        pes: 1
+        mips: 1000
+        ram: 64
+        bw: 100
+
+  - name: payment
+    labels:
+      - payment
+    replicas: 1
+    storage: 5000
+    prefix: payment
+    containers:
+      - size: 1000
+        pes: 1
+        mips: 1000
+        ram: 64
+        bw: 100
