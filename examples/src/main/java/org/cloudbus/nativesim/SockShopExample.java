@@ -91,6 +91,7 @@ public class SockShopExample{
         }
 
     }
+
     private static List<Vm> createVms(int num){
         List<Vm> vms = new ArrayList<Vm>();
         //VM description
@@ -107,11 +108,11 @@ public class SockShopExample{
         }
         return vms;
     }
-    private static Datacenter createDatacenter(String name){
+
+    private static Datacenter createDatacenter(String name) {
 
         // Here are the steps needed to create a PowerDatacenter:
-        // 1. We need to create a list to store
-        //    our machine
+        // 1. We need to create a list to store our machine.
         List<Host> hostList = new ArrayList<Host>();
 
         // 2. A Machine contains one or more PEs or CPUs/Cores.

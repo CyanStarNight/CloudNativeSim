@@ -10,15 +10,6 @@ import org.cloudbus.nativesim.util.Status;
 
 import javax.validation.constraints.AssertTrue;
 
-/**
- * @author JingFeng Wu
- */
-/** Attention: pods对模拟的意义似乎更体现在空间资源和架构解释上
- * 1.All the containers share the same namespace、storage、lifetime and process action.
- * 2.Pod will connect the services and containers with double linkages.
- * 3.Pods are the basic units of scheduling for users.
- * 4.Use replicaSet to implements horizontal scaling.
- * */
 @Data
 public class Pod {
 
