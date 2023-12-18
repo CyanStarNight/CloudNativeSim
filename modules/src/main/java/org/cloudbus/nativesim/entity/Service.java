@@ -9,7 +9,6 @@ import org.cloudbus.nativesim.util.Status;
 
 import static org.cloudbus.nativesim.NativeController.checkMapping;
 
-
 /**
  * @author JingFeng Wu
  */

@@ -10,18 +10,8 @@ import org.cloudbus.cloudsim.container.schedulers.ContainerScheduler;
 
 import java.util.List;
 
-public class NativeCloudletScheduler extends ContainerScheduler {
+public class NativeCloudletScheduler{
     public NativeCloudletScheduler(List<? extends ContainerPe> pelist) {
-        super(pelist);
     }
 
-    @Override
-    public boolean allocatePesForContainer(Container container, List<Double> list) {
-        return false;
-    }
-
-    @Override
-    public void deallocatePesForContainer(Container container) {
-
-    }
 }
