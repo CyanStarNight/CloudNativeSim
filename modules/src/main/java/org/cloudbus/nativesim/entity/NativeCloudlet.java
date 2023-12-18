@@ -4,12 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.UtilizationModel;
-import org.cloudbus.cloudsim.container.core.ContainerCloudlet;
 
 import java.util.List;
 import java.util.UUID;
 
-public class NativeCloudlet extends ContainerCloudlet {
+public class NativeCloudlet extends Cloudlet {
     @Getter @Setter private String uid;
     @Getter @Setter public int id;
 
