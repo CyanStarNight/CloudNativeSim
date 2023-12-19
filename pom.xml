@@ -64,9 +64,9 @@
         <dependency>
             <groupId>org.cloudsim</groupId>
             <artifactId>cloudsim</artifactId>
-            <version>5.0</version>
+            <version>3.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/cloudsim-5.0.jar</systemPath>
+            <systemPath>${project.basedir}/cloudsim-3.0.3.jar</systemPath>
         </dependency>
 
         <dependency>
