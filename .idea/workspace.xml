@@ -5,7 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2edc029e-21e2-469a-b89f-60ed24fded09" name="Changes" comment="0.1">
-      <change beforePath="$PROJECT_DIR$/examples/src/main/java/org/cloudbus/nativesim/SockShopExample.java" beforeDir="false" afterPath="$PROJECT_DIR$/examples/src/main/java/org/cloudbus/nativesim/SockShopExample.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/SockShopExample.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/SockShopExample.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/entity/Pod.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/entity/Pod.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/entity/Service.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/entity/Service.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/policy/cloudletScheduler/NativeCloudletScheduler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/policy/cloudletScheduler/NativeCloudletScheduler.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -370,8 +374,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Service.java</url>
-          <line>46</line>
-          <properties class="org.cloudbus.nativesim.entity.Service" method="init">
+          <line>47</line>
+          <properties class="org.cloudbus.nativesim.entity.Service">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
           </properties>
@@ -379,8 +383,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Pod.java</url>
-          <line>73</line>
-          <properties class="org.cloudbus.nativesim.entity.Pod" method="init">
+          <line>72</line>
+          <properties class="org.cloudbus.nativesim.entity.Pod">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
           </properties>
@@ -416,7 +420,7 @@
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Communication.java</url>
           <line>48</line>
-          <properties class="org.cloudbus.nativesim.entity.Communication" method="calculate_cost">
+          <properties class="org.cloudbus.nativesim.entity.Communication">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
           </properties>
