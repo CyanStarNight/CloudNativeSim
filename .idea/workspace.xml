@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2edc029e-21e2-469a-b89f-60ed24fded09" name="Changes" comment="0.1">
+    <list default="true" id="2edc029e-21e2-469a-b89f-60ed24fded09" name="Changes" comment="0.75 基于cloudsim5.0">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/SockShopExample.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/SockShopExample.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/entity/Pod.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/entity/Pod.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/entity/Service.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/entity/Service.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/policy/cloudletScheduler/NativeCloudletScheduler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/cloudbus/nativesim/policy/cloudletScheduler/NativeCloudletScheduler.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -321,7 +318,23 @@
       <option name="project" value="LOCAL" />
       <updated>1696648883900</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="0.75 不引入CCS">
+      <option name="closed" value="true" />
+      <created>1702948761133</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1702948761133</updated>
+    </task>
+    <task id="LOCAL-00006" summary="0.75 基于cloudsim5.0">
+      <option name="closed" value="true" />
+      <created>1702948964764</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1702948964764</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -353,7 +366,9 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="0.1" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.1" />
+    <MESSAGE value="0.75 不引入CCS" />
+    <MESSAGE value="0.75 基于cloudsim5.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.75 基于cloudsim5.0" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -363,32 +378,9 @@
           <option name="timeStamp" value="1" />
         </breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/examples/src/main/java/org/cloudbus/nativesim/SockShopExample.java</url>
-          <line>90</line>
-          <option name="timeStamp" value="38" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/NativeEvent.java</url>
           <line>60</line>
           <option name="timeStamp" value="85" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Service.java</url>
-          <line>47</line>
-          <properties class="org.cloudbus.nativesim.entity.Service">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="47" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Pod.java</url>
-          <line>72</line>
-          <properties class="org.cloudbus.nativesim.entity.Pod">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="53" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/Update.java</url>
@@ -398,33 +390,6 @@
             <option name="WATCH_EXIT" value="false" />
           </properties>
           <option name="timeStamp" value="58" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/Register.java</url>
-          <line>68</line>
-          <properties class="org.cloudbus.nativesim.event.Register" method="checkRegistry">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="65" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/Register.java</url>
-          <line>53</line>
-          <properties class="org.cloudbus.nativesim.event.Register" method="registerEntities">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="69" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/entity/Communication.java</url>
-          <line>48</line>
-          <properties class="org.cloudbus.nativesim.entity.Communication">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="72" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/modules/src/main/java/org/cloudbus/nativesim/event/NativeEvent.java</url>

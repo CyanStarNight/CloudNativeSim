@@ -1,5 +1,4 @@
 ### IntelliJ IDEA ###
-.idea/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
@@ -23,8 +22,34 @@ bin/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
-.vscode/
+# Created by .ignore support plugin (hsz.mobi)
+### Java template
+# Compiled class file
+*.class
 
-### Mac OS ###
-!/cloudsim-3.0.3.jar
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, s
+hs_err_pid*
+
+# other more
+.idea/
+target/
+*.iml
+/target/
