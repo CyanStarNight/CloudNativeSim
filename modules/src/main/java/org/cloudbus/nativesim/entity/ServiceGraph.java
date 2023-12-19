@@ -1,8 +1,6 @@
 package org.cloudbus.nativesim.entity;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 import org.cloudbus.nativesim.NativeController;
@@ -13,14 +11,12 @@ import java.util.*;
  * @author JingFeng Wu
  * @describe the service chains with orthogonalList and maintain the critical path.
  */
-@Getter
-@Setter
-@EqualsAndHashCode(callSuper = false)
-public class ServiceGraph {//Attention：maybe extends DataCenter
+@Data
+@EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
+@NoArgsConstructor
+public class ServiceGraph extends NativeEntity {//Attention：maybe extends DataCenter
 
-    public String appName;
-
-    private int userId;
     private List<Service> services; // the entity of Communications.
     private List<Communication> communications;
     private int num_commu,num_services;
@@ -31,8 +27,8 @@ public class ServiceGraph {//Attention：maybe extends DataCenter
     
     private int[][] serviceMatrix; //Attention: matrix may bring some benefits.
 
-    public ServiceGraph(String appName){
-        this.appName = appName;
+    public ServiceGraph(int userId,String appName){
+        super(userId,appName);
     }
 
 /**Unit: Commons*/
@@ -49,14 +45,14 @@ public class ServiceGraph {//Attention：maybe extends DataCenter
         communications = new ArrayList<>();
         // Initialize the service nodes list by the number of rows of the matrix.
         for(int i=0;i<matrix.length;i++){
-            services.add(new Service(names[i]));
+            services.add(new Service(getUserId(),names[i]));
         }
         // Traverse the matrix and generate the orthogonal list.
         for(int i=0;i<matrix.length;i++){
             for(int j=0;j<matrix[0].length;j++){
                 if(matrix[i][j]!=0){
                     // if there has a communication, add it to the orthogonal list.
-                    Communication communication = new Communication();
+                    Communication communication = new Communication(getUserId());
                     if (matrix[i][j]!=0) {
                         communication.setCost(matrix[i][j]);
                     }
@@ -205,7 +201,7 @@ public class ServiceGraph {//Attention：maybe extends DataCenter
         System.out.println(sb.toString());
     }
 
-    public void init(NativeController controller){//TODO: 2023/12/9 要检测出现循环
+    public void init(NativeController controller){//TODO: 2023/12/9 DAG算法等要预防输入不正当（缺失或存在环路）
         setServices(controller.getLocalServices());
         List<Communication> commus = controller.getLocalCommunications();
         setCommunications(commus);
@@ -223,11 +219,8 @@ public class ServiceGraph {//Attention：maybe extends DataCenter
         findCriticalPath();
     }
 
-    public void setId(int id){
-        userId =id;
-    }
-    public int getId(){
-        return userId;
+    public void setId(){
+        super.setId(getUserId());
     }
 
 /**Unit: Log*/

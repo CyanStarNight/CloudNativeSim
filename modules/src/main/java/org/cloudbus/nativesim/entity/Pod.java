@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.cloudbus.nativesim.NativeController;
 import org.cloudbus.nativesim.util.Status;
 
@@ -19,18 +22,17 @@ import javax.validation.constraints.AssertTrue;
  * 3.Pods are the basic units of scheduling for users.
  * 4.Use replicaSet to implements horizontal scaling.
  * */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class Pod {
-
-    private String uid; // the global id
-    private int id; // the id in service
-    private int userId; // the user
+@NoArgsConstructor
+@AllArgsConstructor
+public class Pod extends NativeEntity {
 
     public String name; // really need ?
 
     private ArrayList<String> labels; // one service n pods
     private List<Service> serviceList;
-    private List<NativeContainer> containerList;
+    private List<Container> containerList;
 
     private String prefix; // the prefix identifying the replicas
     private List<Pod> replicas;
@@ -44,10 +46,9 @@ public class Pod {
 
     public Status status = Status.Ready;
 
-    public Pod(){
-        uid = UUID.randomUUID().toString();
+    public Pod(int userId, String name){
+        super(userId,name);
     }
-
     /**Unit: Combine*/
     @AssertTrue
     public boolean matchServices(NativeController controller){

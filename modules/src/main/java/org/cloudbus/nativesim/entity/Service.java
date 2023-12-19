@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.cloudbus.nativesim.util.Status;
 
 import static org.cloudbus.nativesim.NativeController.checkMapping;
@@ -13,13 +15,11 @@ import static org.cloudbus.nativesim.NativeController.checkMapping;
 /**
  * @author JingFeng Wu
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class Service {
+@AllArgsConstructor
+public class Service extends NativeEntity {
 
-    public String name;
-    private int id;
-    private int userId;
-    private String uid;
     private ArrayList<String> labels;
 
     List<Pod> pods;
@@ -37,11 +37,10 @@ public class Service {
     private int num_pods = 1;
 
     public Service(){
-        uid = UUID.randomUUID().toString();
+        super();
     }
-    public Service(String name){
-        uid = UUID.randomUUID().toString();
-        this.name = name;
+    public Service(int userId,String name){
+        super(userId,name);
     }
 
     public void init(){

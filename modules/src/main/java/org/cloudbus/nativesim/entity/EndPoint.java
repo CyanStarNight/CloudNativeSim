@@ -4,5 +4,5 @@
 
 package org.cloudbus.nativesim.entity;
 
-public class EndPoint { // end point functions
+public class EndPoint extends NativeEntity { // end point functions
 }

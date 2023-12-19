@@ -28,3 +28,4 @@ bin/
 
 ### Mac OS ###
 !/cloudsim-3.0.3.jar
+!/.idea/workspace.xml

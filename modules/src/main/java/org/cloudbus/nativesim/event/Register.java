@@ -90,7 +90,7 @@ public class Register extends NativeEvent{
         return service;
     }
     public Communication registerCommunication(Map<String,Object> map, String origin_name){ //针对结构式注册
-        Communication commu = new Communication();
+        Communication commu = new Communication(userId);
         commu.setOriginName(origin_name);
         commu.setDestName(getValue(map,"dest"));
         int num = getValue(map,"num");
@@ -114,7 +114,7 @@ public class Register extends NativeEvent{
         pod.setStorage(getValue(map,"storage"));
         pod.setPrefix(getValue(map,"prefix"));
         if(map.containsKey("containers")){
-            List<NativeContainer> containers = new ArrayList<>();
+            List<Container> containers = new ArrayList<>();
             for (Map<String,Object> c: (ArrayList<Map>) getValue(map,"containers"))
                 containers.add(registerContainer(c,pod));
             pod.setContainerList(containers);
@@ -123,21 +123,21 @@ public class Register extends NativeEvent{
         return pod;
     }
     @NonNull
-    public NativeContainer registerContainer(Map<String,Object> map,Pod pod){
+    public Container registerContainer(Map<String,Object> map,Pod pod){
         long size = Long.parseLong(getValue(map,"size").toString());
         double mips = Double.parseDouble(getValue(map,"mips").toString());
         int numberOfPes = getValue(map,"pes");
         int ram = getValue(map,"ram");
         long bw = Long.parseLong(getValue(map,"bw").toString());
         ContainerCloudletScheduler cloudletScheduler = new ContainerCloudletSchedulerTimeShared();
-        NativeContainer container = new NativeContainer(0,userId,mips,numberOfPes,ram,bw,size,cloudletScheduler,pod);//Attention: 此处的id会在提交时被controller重置
+        Container container = new Container(userId,mips,numberOfPes,ram,bw,size);//Attention: 此处的id会在提交时被controller重置
         submit(container);
         return container;
     }
 
 
     public ServiceGraph registerServiceGraph(String graphName,NativeController controller){
-        ServiceGraph sg = new ServiceGraph(graphName);
+        ServiceGraph sg = new ServiceGraph(userId,graphName);
         sg.init(controller);
         submit(sg);
         return sg;

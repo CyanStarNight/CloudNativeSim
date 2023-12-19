@@ -1,0 +1,37 @@
+services:
+  - name: front-end
+    call:
+      - carts
+      - catalogue
+      - orders
+      - payment
+      - shipping
+      - user
+
+  - name: carts
+    call:
+      - carts-db
+
+  - name: catalogue
+    call:
+      - catalogue-db
+
+  - name: orders
+    call:
+      - orders-db
+
+  - name: payment
+    call:
+      - queue-master
+
+  - name: queue-master
+    call:
+      - rabbitmq
+
+  - name: rabbitmq
+    call:
+      - session-db
+
+  - name: user
+    call:
+      - user-db

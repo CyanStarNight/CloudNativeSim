@@ -1,0 +1,36 @@
+services:
+  - name: front-end
+    labels:
+      - front-end
+      - in
+    calls:
+      - dest: carts
+        num: 10
+        len: 100
+
+      - dest: orders
+        num: 5
+        len: 20
+
+pods:
+  - name: front-end-pod
+    labels: front-end
+    replicas: 2
+    storage: 10000
+    prefix: front-end
+
+  - name: orders-request
+    labels: orders
+    replicas: 2
+    storage: 10000
+    prefix: orders
+
+containers:
+  - label:
+    size:
+    pes:
+    mips:
+    ram:
+    bw:
+
+  - label:
