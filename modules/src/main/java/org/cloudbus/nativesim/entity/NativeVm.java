@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.*;
-
+import org.cloudbus.nativesim.Log;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -89,4 +89,6 @@ public class NativeVm extends Vm {
             container.setVm(null);
         }
     }
+
+
 }

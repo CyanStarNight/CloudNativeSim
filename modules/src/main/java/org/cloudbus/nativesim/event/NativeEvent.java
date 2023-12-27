@@ -73,7 +73,7 @@ public class NativeEvent {
                 case "Service" -> controller.getLocalServices().add((Service) entity);
                 case "Pod" -> controller.getLocalPods().add((Pod) entity);
                 case "Communication" -> controller.getLocalCommunications().add((Communication) entity);
-                case "NativeContainer" -> controller.getLocalContainers().add((NativeContainer) entity);
+                case "NativeContainer" -> controller.getLocalContainers().add((Container) entity);
                 case "ServiceGraph" -> controller.setServiceGraph((ServiceGraph) entity);
                 case "NativeCloudlet" -> controller.getLocalCloudlets().add((NativeCloudlet) entity);
                 default -> throw new IllegalArgumentException("Unsupported entity type: " + entityType.getSimpleName());

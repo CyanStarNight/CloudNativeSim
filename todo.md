@@ -1,0 +1,8 @@
+- ~~重构容器类~~
+- 简化容器类
+- ~~重构Provisioner，保持扩展性~~
+- 重构出NativeVm
+- 重写输出，参考笔记
+- 重构NativeCloudletScheduler & NativeCloudletSchedulerTimeShared
+- 
+- 标记出哪里复制或参考了ContainerCloudSim的代码

@@ -31,7 +31,7 @@ public class NativeController {
     private List<Service> localServices=new ArrayList<>();
     private List<Pod> localPods=new ArrayList<>();
     private List<Communication> localCommunications=new ArrayList<>();
-    private List<NativeContainer> localContainers=new ArrayList<>();
+    private List<Container> localContainers=new ArrayList<>();
     private List<NativeCloudlet> localCloudlets=new ArrayList<>();
 
     public NativeController(int userId, Calendar calendar){//TODO: 2023/12/7 the same user can't create two controllers
@@ -135,7 +135,7 @@ public class NativeController {
                 .findFirst()
                 .orElse(null);
     }
-    public NativeContainer selectContainerByUID(String uid){
+    public Container selectContainerByUID(String uid){
         return localContainers.stream().filter(c -> c.getUid().equals(uid))
                 .findFirst()
                 .orElse(null);

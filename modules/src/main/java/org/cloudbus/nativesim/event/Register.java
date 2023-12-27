@@ -2,17 +2,6 @@ package org.cloudbus.nativesim.event;
 
 import lombok.*;
 import org.cloudbus.cloudsim.*;
-import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
-import org.cloudbus.cloudsim.container.containerProvisioners.CotainerPeProvisionerSimple;
-
-import org.cloudbus.cloudsim.container.containerVmProvisioners.ContainerVmBwProvisionerSimple;
-import org.cloudbus.cloudsim.container.containerVmProvisioners.ContainerVmRamProvisionerSimple;
-import org.cloudbus.cloudsim.container.core.ContainerDatacenter;
-import org.cloudbus.cloudsim.container.core.ContainerDatacenterBroker;
-import org.cloudbus.cloudsim.container.core.ContainerDatacenterCharacteristics;
-import org.cloudbus.cloudsim.container.core.ContainerHost;
-import org.cloudbus.cloudsim.container.schedulers.ContainerCloudletScheduler;
-import org.cloudbus.cloudsim.container.schedulers.ContainerCloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
@@ -129,7 +118,7 @@ public class Register extends NativeEvent{
         int numberOfPes = getValue(map,"pes");
         int ram = getValue(map,"ram");
         long bw = Long.parseLong(getValue(map,"bw").toString());
-        ContainerCloudletScheduler cloudletScheduler = new ContainerCloudletSchedulerTimeShared();
+        CloudletScheduler cloudletScheduler = new CloudletSchedulerTimeShared();
         Container container = new Container(userId,mips,numberOfPes,ram,bw,size);//Attention: 此处的id会在提交时被controller重置
         submit(container);
         return container;

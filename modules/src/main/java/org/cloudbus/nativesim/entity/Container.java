@@ -15,7 +15,7 @@ import java.util.*;
  * the memeber of containers will be specified in file inputs.
  */
 
-//TODO: 2023/12/17 overbooking等属性要考虑下怎么运用，兼容性不行的话就自己重新实现
+//TODO: 2023/12/17 overbooking等属性要考虑下怎么运用，能不能简化
 
 @AllArgsConstructor
 @Data

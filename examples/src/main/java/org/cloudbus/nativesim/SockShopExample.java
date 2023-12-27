@@ -5,7 +5,6 @@
 package org.cloudbus.nativesim;
 
 import org.cloudbus.cloudsim.*;
-import org.cloudbus.cloudsim.container.core.ContainerCloudlet;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
