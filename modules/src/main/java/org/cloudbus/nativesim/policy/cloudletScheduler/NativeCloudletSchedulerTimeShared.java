@@ -22,7 +22,7 @@ public class NativeCloudletSchedulerTimeShared extends NativeCloudletScheduler{
     }
 
     @Override
-    public double updateContainerProcessing(double currentTime, List<Double> mipsShare) {
+    public double updateEntityProcessing(double currentTime, List<Double> mipsShare) {
         return 0;
     }
 
