@@ -3,8 +3,6 @@
  */
 
 package org.cloudbus.nativesim;
-
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +10,6 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.nativesim.entity.*;
 import org.cloudbus.nativesim.event.NativeEvent;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +27,7 @@ public class NativeSim extends CloudSim {
     private List<Service> globalServices = new ArrayList<>();
     private List<Pod> globalPods = new ArrayList<>();
     private List<Communication> globalCommunications = new ArrayList<>();
-    private List<NativeContainer> globalContainers = new ArrayList<>();
+    private List<Container> globalContainers = new ArrayList<>();
 
     public static List<NativeController> controllers = new ArrayList<>();//TODO: 2023/12/7 对于这些全局字段如何进行访问控制呢？
     public static List<NativeEvent> events = new ArrayList<>();
