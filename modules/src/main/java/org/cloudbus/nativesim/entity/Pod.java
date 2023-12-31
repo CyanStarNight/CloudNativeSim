@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.cloudbus.nativesim.NativeController;
+import org.cloudbus.nativesim.scheduler.PodCloudletScheduler;
 import org.cloudbus.nativesim.util.Status;
 
 import javax.validation.constraints.AssertTrue;
@@ -28,8 +29,8 @@ import javax.validation.constraints.AssertTrue;
 @AllArgsConstructor
 public class Pod extends NativeEntity {
 
-    public String name; // really need ?
-
+    private NativeVm Vm;
+    private long size;
     private ArrayList<String> labels; // one service n pods
     private List<Service> serviceList;
     private List<Container> containerList;
@@ -43,6 +44,7 @@ public class Pod extends NativeEntity {
     private int pod_cpu,pod_ram,pod_bw;
     private int storage;
     private long lifeTime; // controlled by simulation
+    private PodCloudletScheduler cloudletScheduler;
 
     public Status status = Status.Ready;
 
@@ -75,4 +77,20 @@ public class Pod extends NativeEntity {
     public void init(){ // link the entities and initialize the parameters.
 
     }
+
+    public double updateEntityProcessing(double currentTime, List<Double> mipsShare) {
+        if (mipsShare != null) {
+            return getCloudletScheduler().updatePodProcessing(currentTime, mipsShare);
+        }
+        return 0.0;
+    }
+
+    public double getTotalUtilizationOfCpu(double time) {
+        return getCloudletScheduler().getTotalUtilizationOfCpu(time);
+    }
+
+    public double getTotalUtilizationOfCpuMips(double time) {
+        return getTotalUtilizationOfCpu(time) * getMips();
+    }
+
 }

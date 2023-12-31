@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by sareh on 10/07/15.
  */
-public abstract class ContainerCloudletScheduler {
+public abstract class PodCloudletScheduler {
         /** The previous time. */
         private double previousTime;
 
@@ -38,7 +38,7 @@ public abstract class ContainerCloudletScheduler {
          * @pre $none
          * @post $none
          */
-        public ContainerCloudletScheduler() {
+        public PodCloudletScheduler() {
             setPreviousTime(0.0);
             cloudletWaitingList = new ArrayList<ResCloudlet>();
             cloudletExecList = new ArrayList<ResCloudlet>();
@@ -57,7 +57,7 @@ public abstract class ContainerCloudletScheduler {
          * @pre currentTime >= 0
          * @post $none
          */
-        public abstract double updateContainerProcessing(double currentTime, List<Double> mipsShare);
+        public abstract double updatePodProcessing(double currentTime, List<Double> mipsShare);
 
         /**
          * Receives an cloudlet to be executed in the VM managed by this scheduler.

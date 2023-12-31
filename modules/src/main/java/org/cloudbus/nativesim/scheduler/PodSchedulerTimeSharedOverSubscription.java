@@ -11,13 +11,13 @@ import java.util.Map;
 /**
  * Created by sareh on 22/07/15.
  */
-public class ContainerSchedulerTimeSharedOverSubscription extends ContainerSchedulerTimeShared {
+public class PodSchedulerTimeSharedOverSubscription extends PodSchedulerTimeShared {
     /**
      * Instantiates a new container scheduler time shared.
      *
      * @param pelist the pelist
      */
-    public ContainerSchedulerTimeSharedOverSubscription(List<? extends ContainerPe> pelist) {
+    public PodSchedulerTimeSharedOverSubscription(List<? extends ContainerPe> pelist) {
         super(pelist);
     }
 

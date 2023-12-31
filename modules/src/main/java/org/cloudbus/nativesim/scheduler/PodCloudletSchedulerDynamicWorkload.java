@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ContainerCloudletSchedulerDynamicWorkload extends ContainerCloudletSchedulerTimeShared {
+public class PodCloudletSchedulerDynamicWorkload extends PodCloudletSchedulerTimeShared {
 
         /** The mips. */
         private double mips;
@@ -40,7 +40,7 @@ public class ContainerCloudletSchedulerDynamicWorkload extends ContainerCloudlet
          * @param mips the mips
          * @param numberOfPes the pes number
          */
-        public ContainerCloudletSchedulerDynamicWorkload (double mips, int numberOfPes) {
+        public PodCloudletSchedulerDynamicWorkload(double mips, int numberOfPes) {
             super();
             setMips(mips);
             setNumberOfPes(numberOfPes);

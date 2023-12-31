@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import org.cloudbus.cloudsim.CloudletScheduler;
 import org.cloudbus.cloudsim.VmStateHistoryEntry;
 import org.cloudbus.nativesim.NativeStateHistoryEntry;
-import org.cloudbus.nativesim.policy.cloudletScheduler.NativeCloudletScheduler;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +27,6 @@ public class NativeEntity {
     private int ram;
     private long bw;
 
-    private NativeCloudletScheduler cloudletScheduler;
     private boolean inMigration;
     private long currentAllocatedSize;
     private int currentAllocatedRam;
@@ -55,21 +53,6 @@ public class NativeEntity {
         setName(name);
     }
 
-    public double updateEntityProcessing(double currentTime, List<Double> mipsShare) {
-        if (mipsShare != null) {
-            return getCloudletScheduler().updateEntityProcessing(currentTime, mipsShare);
-        }
-        return 0.0;
-    }
-
-    public double getTotalUtilizationOfCpu(double time) {
-        return getCloudletScheduler().getTotalUtilizationOfCpu(time);
-    }
-
-    public double getTotalUtilizationOfCpuMips(double time) {
-        return getTotalUtilizationOfCpu(time) * getMips();
-    }
-
     public void addStateHistoryEntry(
             double time,
             double allocatedMips,
@@ -89,4 +72,5 @@ public class NativeEntity {
         }
         getStateHistory().add(newState);
     }
+
 }

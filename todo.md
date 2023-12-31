@@ -4,5 +4,5 @@
 - 重构出NativeVm
 - 重写输出，参考笔记
 - 重构NativeCloudletScheduler & NativeCloudletSchedulerTimeShared
-- 
+- cloudletScheduler应该在Pod中，那就得关掉Vm中的cloudlet处理，会导致什么问题？
 - 标记出哪里复制或参考了ContainerCloudSim的代码

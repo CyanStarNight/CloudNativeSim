@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * Created by sareh on 9/07/15.
  */
-public class ContainerSchedulerTimeShared extends ContainerScheduler {
+public class PodSchedulerTimeShared extends PodScheduler {
     /**
      * The mips map requested.
      */
@@ -27,7 +27,7 @@ public class ContainerSchedulerTimeShared extends ContainerScheduler {
      *
      * @param pelist the pelist
      */
-    public ContainerSchedulerTimeShared(List<? extends ContainerPe> pelist) {
+    public PodSchedulerTimeShared(List<? extends ContainerPe> pelist) {
         super(pelist);
         setMipsMapRequested(new HashMap<String, List<Double>>());
     }

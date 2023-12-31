@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by sareh on 10/07/15.
  */
-public class ContainerCloudletSchedulerTimeShared extends ContainerCloudletScheduler {
+public class PodCloudletSchedulerTimeShared extends PodCloudletScheduler {
 
     /**
      * The current cp us.
@@ -25,7 +25,7 @@ public class ContainerCloudletSchedulerTimeShared extends ContainerCloudletSched
      * @pre $none
      * @post $none
      */
-    public ContainerCloudletSchedulerTimeShared() {
+    public PodCloudletSchedulerTimeShared() {
         super();
         currentCPUs = 0;
     }
