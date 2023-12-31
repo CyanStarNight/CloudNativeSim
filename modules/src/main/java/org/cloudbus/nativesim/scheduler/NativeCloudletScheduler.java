@@ -1,15 +1,16 @@
 package org.cloudbus.nativesim.scheduler;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.ResCloudlet;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by sareh on 10/07/15.
- */
-public abstract class PodCloudletScheduler {
+@Getter
+@Setter
+public abstract class NativeCloudletScheduler {
         /** The previous time. */
         private double previousTime;
 
@@ -31,14 +32,7 @@ public abstract class PodCloudletScheduler {
         /** The cloudlet failed list. */
         protected List<? extends ResCloudlet> cloudletFailedList;
 
-        /**
-         * Creates a new CloudletScheduler object. This method must be invoked before starting the
-         * actual simulation.
-         *
-         * @pre $none
-         * @post $none
-         */
-        public PodCloudletScheduler() {
+        public NativeCloudletScheduler() {
             setPreviousTime(0.0);
             cloudletWaitingList = new ArrayList<ResCloudlet>();
             cloudletExecList = new ArrayList<ResCloudlet>();
@@ -57,7 +51,7 @@ public abstract class PodCloudletScheduler {
          * @pre currentTime >= 0
          * @post $none
          */
-        public abstract double updatePodProcessing(double currentTime, List<Double> mipsShare);
+        public abstract double updateContainerProcessing(double currentTime, List<Double> mipsShare);
 
         /**
          * Receives an cloudlet to be executed in the VM managed by this scheduler.
@@ -221,147 +215,15 @@ public abstract class PodCloudletScheduler {
          */
         public abstract double getCurrentRequestedUtilizationOfBw();
 
-        /**
-         * Gets the previous time.
-         *
-         * @return the previous time
-         */
-        public double getPreviousTime() {
-            return previousTime;
+        protected <T extends ResCloudlet> List<T> getCloudletPausedList() {
+                return (List<T>) cloudletPausedList;
         }
-
-        /**
-         * Sets the previous time.
-         *
-         * @param previousTime the new previous time
-         */
-        protected void setPreviousTime(double previousTime) {
-            this.previousTime = previousTime;
+        protected <T extends ResCloudlet> List<T> getCloudletFinishedList() {
+                return (List<T>) cloudletFinishedList;
         }
-
-        /**
-         * Sets the current mips share.
-         *
-         * @param currentMipsShare the new current mips share
-         */
-        protected void setCurrentMipsShare(List<Double> currentMipsShare) {
-            this.currentMipsShare = currentMipsShare;
+        protected <T extends ResCloudlet> List<T> getCloudletExecList() {
+                return (List<T>) cloudletExecList;
         }
-
-        /**
-         * Gets the current mips share.
-         *
-         * @return the current mips share
-         */
-        public List<Double> getCurrentMipsShare() {
-            return currentMipsShare;
-        }
-
-        /**
-         * Gets the cloudlet waiting list.
-         *
-         * @param <T> the generic type
-         * @return the cloudlet waiting list
-         */
-        @SuppressWarnings("unchecked")
-        public <T extends ResCloudlet> List<T> getCloudletWaitingList() {
-            return (List<T>) cloudletWaitingList;
-        }
-
-        /**
-         * Cloudlet waiting list.
-         *
-         * @param <T> the generic type
-         * @param cloudletWaitingList the cloudlet waiting list
-         */
-        protected <T extends ResCloudlet> void setCloudletWaitingList(List<T> cloudletWaitingList) {
-            this.cloudletWaitingList = cloudletWaitingList;
-        }
-
-        /**
-         * Gets the cloudlet exec list.
-         *
-         * @param <T> the generic type
-         * @return the cloudlet exec list
-         */
-        @SuppressWarnings("unchecked")
-        public <T extends ResCloudlet> List<T> getCloudletExecList() {
-            return (List<T>) cloudletExecList;
-        }
-
-        /**
-         * Sets the cloudlet exec list.
-         *
-         * @param <T> the generic type
-         * @param cloudletExecList the new cloudlet exec list
-         */
-        protected <T extends ResCloudlet> void setCloudletExecList(List<T> cloudletExecList) {
-            this.cloudletExecList = cloudletExecList;
-        }
-
-        /**
-         * Gets the cloudlet paused list.
-         *
-         * @param <T> the generic type
-         * @return the cloudlet paused list
-         */
-        @SuppressWarnings("unchecked")
-        public <T extends ResCloudlet> List<T> getCloudletPausedList() {
-            return (List<T>) cloudletPausedList;
-        }
-
-        /**
-         * Sets the cloudlet paused list.
-         *
-         * @param <T> the generic type
-         * @param cloudletPausedList the new cloudlet paused list
-         */
-        protected <T extends ResCloudlet> void setCloudletPausedList(List<T> cloudletPausedList) {
-            this.cloudletPausedList = cloudletPausedList;
-        }
-
-        /**
-         * Gets the cloudlet finished list.
-         *
-         * @param <T> the generic type
-         * @return the cloudlet finished list
-         */
-        @SuppressWarnings("unchecked")
-        public <T extends ResCloudlet> List<T> getCloudletFinishedList() {
-            return (List<T>) cloudletFinishedList;
-        }
-
-        /**
-         * Sets the cloudlet finished list.
-         *
-         * @param <T> the generic type
-         * @param cloudletFinishedList the new cloudlet finished list
-         */
-        protected <T extends ResCloudlet> void setCloudletFinishedList(List<T> cloudletFinishedList) {
-            this.cloudletFinishedList = cloudletFinishedList;
-        }
-
-        /**
-         * Gets the cloudlet failed list.
-         *
-         * @param <T> the generic type
-         * @return the cloudlet failed list.
-         */
-        @SuppressWarnings("unchecked")
-        public <T extends ResCloudlet> List<T>  getCloudletFailedList() {
-            return (List<T>) cloudletFailedList;
-        }
-
-        /**
-         * Sets the cloudlet failed list.
-         *
-         * @param <T> the generic type
-         * @param cloudletFailedList the new cloudlet failed list.
-         */
-        protected <T extends ResCloudlet> void setCloudletFailedList(List<T> cloudletFailedList) {
-            this.cloudletFailedList = cloudletFailedList;
-        }
-
-    }
+}
 
 

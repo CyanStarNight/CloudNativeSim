@@ -6,8 +6,6 @@ package org.cloudbus.nativesim.provisioner;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.cloudbus.cloudsim.Vm;
-import org.cloudbus.cloudsim.provisioners.PeProvisioner;
 import org.cloudbus.nativesim.entity.NativeEntity;
 import java.util.List;
 

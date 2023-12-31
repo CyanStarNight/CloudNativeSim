@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.cloudbus.cloudsim.CloudletScheduler;
 import org.cloudbus.cloudsim.VmStateHistoryEntry;
 import org.cloudbus.nativesim.NativeStateHistoryEntry;
+import org.cloudbus.nativesim.scheduler.NativeCloudletScheduler;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -22,21 +23,26 @@ public class NativeEntity {
     private int userId;
     private String name;
 
+    private long size;
     private double mips;
     private int numberOfPes;
     private int ram;
     private long bw;
-
-    private boolean inMigration;
     private long currentAllocatedSize;
     private int currentAllocatedRam;
     private long currentAllocatedBw;
     private List<Double> currentAllocatedMips;
+
+
+    private NativeCloudletScheduler cloudletScheduler;
+
+    private boolean inMigration;
     private boolean beingInstantiated;
+
     private final List<NativeStateHistoryEntry> stateHistory = new LinkedList<NativeStateHistoryEntry>();
 
     public void setUid() {
-        uid = userId + "-" + id;
+        uid = UUID.randomUUID().toString();
     }
 
     public static String getUid(int userId, int id) {
@@ -51,6 +57,14 @@ public class NativeEntity {
         setUid();
         setUserId(userId);
         setName(name);
+    }
+
+    public double getTotalUtilizationOfCpu(double time) {
+        return getCloudletScheduler().getTotalUtilizationOfCpu(time);
+    }
+
+    public double getTotalUtilizationOfCpuMips(double time) {
+        return getTotalUtilizationOfCpu(time) * getMips();
     }
 
     public void addStateHistoryEntry(
@@ -72,5 +86,4 @@ public class NativeEntity {
         }
         getStateHistory().add(newState);
     }
-
 }

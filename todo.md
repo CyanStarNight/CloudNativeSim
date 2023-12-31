@@ -1,8 +1,9 @@
 - ~~重构容器类~~
-- 简化容器类
+- ~~简化容器类~~
+- ~~如果Pe发生无可避免的绑定问题，就把Pe全换成NativePe~~
 - ~~重构Provisioner，保持扩展性~~
-- 重构出NativeVm
+- ~~重构出NativeVm~~
+- ~~重构NativeCloudletScheduler & NativeCloudletSchedulerTimeShared~~
+- 关掉Vm中的cloudletScheduler，会导致什么问题？
+- updateContainerProcessing这个方法可能需要改进
 - 重写输出，参考笔记
-- 重构NativeCloudletScheduler & NativeCloudletSchedulerTimeShared
-- cloudletScheduler应该在Pod中，那就得关掉Vm中的cloudlet处理，会导致什么问题？
-- 标记出哪里复制或参考了ContainerCloudSim的代码

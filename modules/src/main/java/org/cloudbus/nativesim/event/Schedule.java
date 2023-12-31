@@ -4,7 +4,6 @@
 
 package org.cloudbus.nativesim.event;
 
-import org.cloudbus.nativesim.Log;
 import org.cloudbus.nativesim.entity.Container;
 
 public class Schedule extends NativeEvent{
@@ -14,10 +13,10 @@ public class Schedule extends NativeEvent{
     }
 
     protected void deallocate(Container container, NativeVm vm) {
-        Log.printLine("Deallocated the VM:......" + vm.getId());
-        container.getRamProvisioner().deallocateRamForContainer(container);
-        getContainerBwProvisioner().deallocateBwForContainer(container);
-        getContainerScheduler().deallocatePesForContainer(container);
-        setSize(getSize() + container.getSize());
+//        Log.printLine("Deallocated the VM:......" + vm.getId());
+//        container.getRamProvisioner().deallocateRamForContainer(container);
+//        getContainerBwProvisioner().deallocateBwForContainer(container);
+//        getContainerScheduler().deallocatePesForContainer(container);
+//        setSize(getSize() + container.getSize());
     }
 }

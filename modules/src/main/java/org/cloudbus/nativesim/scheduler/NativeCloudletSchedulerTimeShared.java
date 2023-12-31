@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by sareh on 10/07/15.
  */
-public class PodCloudletSchedulerTimeShared extends PodCloudletScheduler {
+public class NativeCloudletSchedulerTimeShared extends NativeCloudletScheduler {
 
     /**
      * The current cp us.
@@ -25,7 +25,7 @@ public class PodCloudletSchedulerTimeShared extends PodCloudletScheduler {
      * @pre $none
      * @post $none
      */
-    public PodCloudletSchedulerTimeShared() {
+    public NativeCloudletSchedulerTimeShared() {
         super();
         currentCPUs = 0;
     }
@@ -43,10 +43,10 @@ public class PodCloudletSchedulerTimeShared extends PodCloudletScheduler {
     @Override
     public double updateContainerProcessing(double currentTime, List<Double> mipsShare) {
         setCurrentMipsShare(mipsShare);
-        double timeSpam = currentTime - getPreviousTime();
+        double timeSpan = currentTime - getPreviousTime();
 
         for (ResCloudlet rcl : getCloudletExecList()) {
-            rcl.updateCloudletFinishedSoFar((long) (getCapacity(mipsShare) * timeSpam * rcl.getNumberOfPes() * Consts.MILLION));
+            rcl.updateCloudletFinishedSoFar((long) (getCapacity(mipsShare) * timeSpan * rcl.getNumberOfPes() * Consts.MILLION));
         }
 
         if (getCloudletExecList().size() == 0) {
@@ -345,25 +345,11 @@ public class PodCloudletSchedulerTimeShared extends PodCloudletScheduler {
         return totalUtilization;
     }
 
-    /**
-     * Informs about completion of some cloudlet in the VM managed by this scheduler.
-     *
-     * @return $true if there is at least one finished cloudlet; $false otherwise
-     * @pre $none
-     * @post $none
-     */
     @Override
     public boolean isFinishedCloudlets() {
         return getCloudletFinishedList().size() > 0;
     }
 
-    /**
-     * Returns the next cloudlet in the finished list, $null if this list is empty.
-     *
-     * @return a finished cloudlet
-     * @pre $none
-     * @post $none
-     */
     @Override
     public Cloudlet getNextFinishedCloudlet() {
         if (getCloudletFinishedList().size() > 0) {
@@ -372,25 +358,11 @@ public class PodCloudletSchedulerTimeShared extends PodCloudletScheduler {
         return null;
     }
 
-    /**
-     * Returns the number of cloudlets runnning in the virtual machine.
-     *
-     * @return number of cloudlets runnning
-     * @pre $none
-     * @post $none
-     */
     @Override
     public int runningCloudlets() {
         return getCloudletExecList().size();
     }
 
-    /**
-     * Returns one cloudlet to migrate to another vm.
-     *
-     * @return one running cloudlet
-     * @pre $none
-     * @post $none
-     */
     @Override
     public Cloudlet migrateCloudlet() {
         ResCloudlet rgl = getCloudletExecList().remove(0);
@@ -398,41 +370,21 @@ public class PodCloudletSchedulerTimeShared extends PodCloudletScheduler {
         return rgl.getCloudlet();
     }
 
-
-    /*
-     * (non-Javadoc)
-     * @see cloudsim.CloudletScheduler#getCurrentRequestedMips()
-     */
     @Override
     public List<Double> getCurrentRequestedMips() {
         return new ArrayList<>();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see cloudsim.CloudletScheduler#getTotalCurrentAvailableMipsForCloudlet(cloudsim.ResCloudlet,
-     * java.util.List)
-     */
     @Override
     public double getTotalCurrentAvailableMipsForCloudlet(ResCloudlet rcl, List<Double> mipsShare) {
         return getCapacity(getCurrentMipsShare());
     }
 
-    /*
-     * (non-Javadoc)
-     * @see cloudsim.CloudletScheduler#getTotalCurrentAllocatedMipsForCloudlet(cloudsim.ResCloudlet,
-     * double)
-     */
     @Override
     public double getTotalCurrentAllocatedMipsForCloudlet(ResCloudlet rcl, double time) {
         return 0.0;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see cloudsim.CloudletScheduler#getTotalCurrentRequestedMipsForCloudlet(cloudsim.ResCloudlet,
-     * double)
-     */
     @Override
     public double getTotalCurrentRequestedMipsForCloudlet(ResCloudlet rcl, double time) {
         // TODO Auto-generated method stub
@@ -440,8 +392,7 @@ public class PodCloudletSchedulerTimeShared extends PodCloudletScheduler {
     }
 
     @Override
-    public double getCurrentRequestedUtiliz
-    ationOfRam() {
+    public double getCurrentRequestedUtilizationOfRam() {
         double ram = 0;
         for (ResCloudlet cloudlet : cloudletExecList) {
             ram += cloudlet.getCloudlet().getUtilizationOfRam(CloudSim.clock());

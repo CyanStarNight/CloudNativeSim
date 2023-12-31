@@ -1,11 +1,10 @@
 package org.cloudbus.nativesim.entity;
 
 import lombok.*;
-import org.cloudbus.cloudsim.Pe;
-import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.VmStateHistoryEntry;
 import org.cloudbus.cloudsim.util.MathUtil;
-import org.cloudbus.nativesim.policy.cloudletScheduler.NativeCloudletScheduler;
+import org.cloudbus.nativesim.NativeStateHistoryEntry;
+import org.cloudbus.nativesim.scheduler.NativeCloudletScheduler;
 
 import javax.lang.model.element.PackageElement;
 import java.util.*;
@@ -20,33 +19,11 @@ import java.util.*;
 @AllArgsConstructor
 @Data
 public class Container extends NativeEntity{//Attention: 继承的目的是为了双向映射pods和communications
-    private long size;
-    private double mips;
-    private double workloadMips;
-    private int numberOfPes;
-    private float ram;
-    private long bw;
-
-    private String containerManager;
 
     private NativeCloudletScheduler cloudletScheduler;
     
-    Pod pod;
-    Vm vm;
-
-    private boolean inMigration;
-
-    private long currentAllocatedSize;
-
-    private float currentAllocatedRam;
-
-    private long currentAllocatedBw;
-
-    private List<Double> currentAllocatedMips;
-
-    private boolean beingInstantiated;
-
-    private final List<VmStateHistoryEntry> stateHistory = new LinkedList<VmStateHistoryEntry>();
+    private Pod pod;
+    private NativeVm vm;
 
     public static final int HISTORY_LENGTH = 30;
 
@@ -55,10 +32,10 @@ public class Container extends NativeEntity{//Attention: 继承的目的是为�
     private double previousTime;
 
     private double schedulingInterval; //TODO: 2023/12/17 interval暂时没用上，待定
-    private List<? extends Pe> peList;
+    private List<? extends NativePe> peList;
 
     /** The map of VMs to PEs. */
-    private Map<String, List<Pe>> peMap;
+    private Map<String, List<NativePe>> peMap;
 
     /** The MIPS that are currently allocated to the VMs. */
     private Map<String, List<Double>> mipsMap;
@@ -79,7 +56,6 @@ public class Container extends NativeEntity{//Attention: 继承的目的是为�
             int ram,
             long bw,
             long size) {
-        setWorkloadMips(mips);
         setUserId(userId);
         setUid();
         setMips(mips);
@@ -116,6 +92,13 @@ public class Container extends NativeEntity{//Attention: 继承的目的是为�
                 "} ";
     }
 
+
+    public double updateContainerProcessing(double currentTime, List<Double> mipsShare) {
+        if (mipsShare != null) {
+            return getCloudletScheduler().updateContainerProcessing(currentTime, mipsShare);
+        }
+        return 0.0;
+    }
 
     public double getCurrentRequestedTotalMips() {
         double totalRequestedMips = 0;
@@ -159,22 +142,18 @@ public class Container extends NativeEntity{//Attention: 继承的目的是为�
         return getTotalUtilizationOfCpu(time) * getMips();
     }
 
-    public boolean isBeingInstantiated() {
-        return beingInstantiated;
-    }
-
     public void addStateHistoryEntry(
             double time,
             double allocatedMips,
             double requestedMips,
             boolean isInMigration) {
-        VmStateHistoryEntry newState = new VmStateHistoryEntry(
+        NativeStateHistoryEntry newState = new NativeStateHistoryEntry(
                 time,
                 allocatedMips,
                 requestedMips,
                 isInMigration);
         if (!getStateHistory().isEmpty()) {
-            VmStateHistoryEntry previousState = getStateHistory().get(getStateHistory().size() - 1);
+            NativeStateHistoryEntry previousState = getStateHistory().get(getStateHistory().size() - 1);
             if (previousState.getTime() == time) {
                 getStateHistory().set(getStateHistory().size() - 1, newState);
                 return;
@@ -243,23 +222,6 @@ public class Container extends NativeEntity{//Attention: 继承的目的是为�
         return utilizationHistory;
     }
 
-    public double getPreviousTime() {
-        return previousTime;
-    }
-
-    public void setPreviousTime(final double previousTime) {
-        this.previousTime = previousTime;
-    }
-
-    public double getSchedulingInterval() {
-        return schedulingInterval;
-    }
-
-    protected void setSchedulingInterval(double schedulingInterval) {
-        this.schedulingInterval = schedulingInterval;
-    }
-
-//
 
     public List<Double> getCurrentRequestedMips() {
         if (isBeingInstantiated()) {
@@ -274,12 +236,6 @@ public class Container extends NativeEntity{//Attention: 继承的目的是为�
         }
 
         return getCloudletScheduler().getCurrentRequestedMips();
-    }
-
-    public double getWorkloadTotalMips() {
-
-        //Log.printLine("Container: get Current totalRequestedMips"+ totalRequestedMips);
-        return getWorkloadMips() * getNumberOfPes();
     }
 
     @Override
