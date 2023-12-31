@@ -119,7 +119,7 @@ public class Container extends NativeEntity{//Attention: 继承的目的是为�
 
     public double updateContainerProcessing(double currentTime, List<Double> mipsShare) {
         if (mipsShare != null) {
-            return getCloudletScheduler().updateContainerProcessing(currentTime, mipsShare);
+            return getCloudletScheduler().updateEntityProcessing(currentTime, mipsShare);
         }
         return 0.0;
     }
