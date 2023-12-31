@@ -10,12 +10,18 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.nativesim.Log;
+import org.cloudbus.nativesim.provisioner.NativeBwProvisioner;
+import org.cloudbus.nativesim.provisioner.NativePeProvisioner;
+import org.cloudbus.nativesim.provisioner.NativeRamProvisioner;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 @Getter
 @Setter
 public class NativeVm extends Vm {
+
+    private List<? extends Pe> peList;
 
     private boolean inMigration;
     private boolean inWaiting;
@@ -24,11 +30,19 @@ public class NativeVm extends Vm {
     private long currentAllocatedBw;
     private List<Double> currentAllocatedMips;
     private boolean beingInstantiated;
+    private final List<Container> containersMigratingIn = new ArrayList<>();
     private final List<VmStateHistoryEntry> stateHistory = new LinkedList<VmStateHistoryEntry>();
 
+    private NativeBwProvisioner containerBwProvisioner;
+    private NativeRamProvisioner containerRamProvisioner;
+    private NativePeProvisioner containerPeProvision;
     private final List<? extends Container> containerList = new ArrayList<>();
-    private List<? extends Pe> peList;
-    private final List<Container> containersMigratingIn = new ArrayList<>();
+
+    private NativeBwProvisioner podBwProvisioner;
+    private NativeRamProvisioner podRamProvisioner;
+    private NativePeProvisioner podPeProvision;
+    private final List<? extends Pod> podList = new ArrayList<>();
+
 
     public NativeVm(int id, int userId, double mips, int numberOfPes, int ram, long bw, long size, String vmm, CloudletScheduler cloudletScheduler) {
         super(id, userId, mips, numberOfPes, ram, bw, size, vmm, cloudletScheduler);
