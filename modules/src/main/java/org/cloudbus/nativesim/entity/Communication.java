@@ -18,7 +18,7 @@ public class Communication extends NativeEntity { //TODO: 2023/12/17 cloudletsä¸
     private String uid; // the global id
     private int userId; // the user id
     private int id;
-    private int bw;
+    private long bw;
     private String tag; // tags may identify the definition of commu.
 
     String originName, destName;

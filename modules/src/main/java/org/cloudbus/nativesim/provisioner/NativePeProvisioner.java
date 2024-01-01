@@ -6,17 +6,19 @@ package org.cloudbus.nativesim.provisioner;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.cloudbus.cloudsim.provisioners.PeProvisioner;
 import org.cloudbus.nativesim.entity.NativeEntity;
 import java.util.List;
 
 @Getter
 @Setter
-public abstract class NativePeProvisioner{
+public abstract class NativePeProvisioner extends PeProvisioner {
     private double mips;
 
     private double availableMips;
 
     public NativePeProvisioner(double mips) {
+        super(mips);
         setMips(mips);
         setAvailableMips(mips);
     }

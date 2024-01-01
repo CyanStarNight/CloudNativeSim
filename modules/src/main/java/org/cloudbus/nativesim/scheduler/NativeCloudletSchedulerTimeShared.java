@@ -30,6 +30,50 @@ public class NativeCloudletSchedulerTimeShared extends NativeCloudletScheduler {
         currentCPUs = 0;
     }
 
+    @Override
+    public double updateVmProcessing(double currentTime, List<Double> mipsShare) {
+        setCurrentMipsShare(mipsShare);
+        double timeSpam = currentTime - getPreviousTime();
+
+        for (ResCloudlet rcl : getCloudletExecList()) {
+            rcl.updateCloudletFinishedSoFar((long) (getCapacity(mipsShare) * timeSpam * rcl.getNumberOfPes() * Consts.MILLION));
+        }
+
+        if (getCloudletExecList().size() == 0) {
+            setPreviousTime(currentTime);
+            return 0.0;
+        }
+
+        // check finished cloudlets
+        double nextEvent = Double.MAX_VALUE;
+        List<ResCloudlet> toRemove = new ArrayList<ResCloudlet>();
+        for (ResCloudlet rcl : getCloudletExecList()) {
+            long remainingLength = rcl.getRemainingCloudletLength();
+            if (remainingLength == 0) {// finished: remove from the list
+                toRemove.add(rcl);
+                cloudletFinish(rcl);
+                continue;
+            }
+        }
+        getCloudletExecList().removeAll(toRemove);
+
+        // estimate finish time of cloudlets
+        for (ResCloudlet rcl : getCloudletExecList()) {
+            double estimatedFinishTime = currentTime
+                    + (rcl.getRemainingCloudletLength() / (getCapacity(mipsShare) * rcl.getNumberOfPes()));
+            if (estimatedFinishTime - currentTime < CloudSim.getMinTimeBetweenEvents()) {
+                estimatedFinishTime = currentTime + CloudSim.getMinTimeBetweenEvents();
+            }
+
+            if (estimatedFinishTime < nextEvent) {
+                nextEvent = estimatedFinishTime;
+            }
+        }
+
+        setPreviousTime(currentTime);
+        return nextEvent;
+    }
+
     /**
      * Updates the processing of cloudlets running under management of this scheduler.
      *

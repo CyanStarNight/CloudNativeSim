@@ -103,7 +103,7 @@ public class NativeController {
             case "Service" -> id = localServices.indexOf(entity);
             case "Pod" -> id = localPods.indexOf(entity);
             case "Communication" -> id = localCommunications.indexOf(entity);
-            case "NativeContainer" -> id = localContainers.indexOf(entity);
+            case "Container" -> id = localContainers.indexOf(entity);
             case "ServiceGraph" -> id = userId;
             case "NativeCloudlet" -> id = localCloudlets.indexOf(entity);
             default -> throw new IllegalArgumentException("Unsupported entity type: " + entityType.getSimpleName());

@@ -3,6 +3,7 @@ package org.cloudbus.nativesim.scheduler;
 import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.CloudletScheduler;
 import org.cloudbus.cloudsim.ResCloudlet;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public abstract class NativeCloudletScheduler {
+public abstract class NativeCloudletScheduler extends CloudletScheduler {
         /** The previous time. */
         private double previousTime;
 

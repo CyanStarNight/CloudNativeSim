@@ -62,9 +62,8 @@ public class NativeEvent {
             error();
         }
     }
-    /**Unit: Submit*/
-    //TODO: 2023/12/8 cloudlets已经提交给了broker，contro
-    public <T> void submit(T entity) {
+
+    public <T> void submit(NativeEntity entity) {
         try {
             // 获取实体类型
             Class<?> entityType = entity.getClass();
@@ -73,18 +72,21 @@ public class NativeEvent {
                 case "Service" -> controller.getLocalServices().add((Service) entity);
                 case "Pod" -> controller.getLocalPods().add((Pod) entity);
                 case "Communication" -> controller.getLocalCommunications().add((Communication) entity);
-                case "NativeContainer" -> controller.getLocalContainers().add((Container) entity);
+                case "Container" -> controller.getLocalContainers().add((Container) entity);
                 case "ServiceGraph" -> controller.setServiceGraph((ServiceGraph) entity);
-                case "NativeCloudlet" -> controller.getLocalCloudlets().add((NativeCloudlet) entity);
                 default -> throw new IllegalArgumentException("Unsupported entity type: " + entityType.getSimpleName());
             }
             // 调用 setId 方法
-            Method setIdMethod = entityType.getDeclaredMethod("setId", int.class);
-            setIdMethod.invoke(entity, controller.order(entity));
+            entity.setId( controller.order(entity));
         } catch (Exception e) {
             e.printStackTrace();
             // 处理异常
         }
+    }
+
+    public void submitCloudlet(NativeCloudlet cloudlet){
+        controller.getLocalCloudlets().add(cloudlet);
+        cloudlet.setId(controller.getLocalCloudlets().indexOf(cloudlet));
     }
 
     public void submitCloudlets(List<NativeCloudlet> cloudlets){

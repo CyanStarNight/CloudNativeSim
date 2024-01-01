@@ -6,16 +6,18 @@ package org.cloudbus.nativesim.provisioner;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.cloudbus.cloudsim.provisioners.BwProvisioner;
 import org.cloudbus.nativesim.entity.NativeEntity;
 
 @Getter
 @Setter
-public abstract class NativeBwProvisioner {
+public abstract class NativeBwProvisioner extends BwProvisioner {
     private long bw;
 
     private long availableBw;
 
     public NativeBwProvisioner(long bw) {
+        super(bw);
         setBw(bw);
         setAvailableBw(bw);
     }

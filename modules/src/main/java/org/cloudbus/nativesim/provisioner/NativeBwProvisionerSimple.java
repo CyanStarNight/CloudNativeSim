@@ -7,6 +7,7 @@ package org.cloudbus.nativesim.provisioner;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.nativesim.entity.NativeEntity;
 import org.cloudbus.nativesim.entity.Service;
 
@@ -67,5 +68,91 @@ public class NativeBwProvisionerSimple extends NativeBwProvisioner{
         }
         return result;
     }
+
+    @Override
+    public boolean allocateBwForVm(Vm vm, long bw) {
+        deallocateBwForVm(vm);
+
+        if (getAvailableBw() >= bw) {
+            setAvailableBw(getAvailableBw() - bw);
+            getBwTable().put(vm.getUid(), bw);
+            vm.setCurrentAllocatedBw(getAllocatedBwForVm(vm));
+            return true;
+        }
+
+        vm.setCurrentAllocatedBw(getAllocatedBwForVm(vm));
+        return false;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see cloudsim.provisioners.BwProvisioner#getAllocatedBwForVm(cloudsim.Vm)
+     */
+    @Override
+    public long getAllocatedBwForVm(Vm vm) {
+        if (getBwTable().containsKey(vm.getUid())) {
+            return getBwTable().get(vm.getUid());
+        }
+        return 0;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see cloudsim.provisioners.BwProvisioner#deallocateBwForVm(cloudsim.Vm)
+     */
+    @Override
+    public void deallocateBwForVm(Vm vm) {
+        if (getBwTable().containsKey(vm.getUid())) {
+            long amountFreed = getBwTable().remove(vm.getUid());
+            setAvailableBw(getAvailableBw() + amountFreed);
+            vm.setCurrentAllocatedBw(0);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see cloudsim.provisioners.BwProvisioner#deallocateBwForVm(cloudsim.Vm)
+     */
+    @Override
+    public void deallocateBwForAllVms() {
+        super.deallocateBwForAllVms();
+        getBwTable().clear();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * gridsim.virtualization.power.provisioners.BWProvisioner#isSuitableForVm(gridsim.virtualization
+     * .power.VM, long)
+     */
+    @Override
+    public boolean isSuitableForVm(Vm vm, long bw) {
+        long allocatedBw = getAllocatedBwForVm(vm);
+        boolean result = allocateBwForVm(vm, bw);
+        deallocateBwForVm(vm);
+        if (allocatedBw > 0) {
+            allocateBwForVm(vm, allocatedBw);
+        }
+        return result;
+    }
+
+    /**
+     * Gets the bw table.
+     *
+     * @return the bw table
+     */
+    protected Map<String, Long> getBwTable() {
+        return bwTable;
+    }
+
+    /**
+     * Sets the bw table.
+     *
+     * @param bwTable the bw table
+     */
+    protected void setBwTable(Map<String, Long> bwTable) {
+        this.bwTable = bwTable;
+    }
+
 
 }

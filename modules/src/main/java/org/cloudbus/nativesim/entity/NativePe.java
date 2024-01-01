@@ -15,9 +15,8 @@ public class NativePe extends Pe {
 
     private NativePeProvisioner nativePeProvisioner;
 
-    public NativePe(int id, PeProvisioner VmpeProvisioner, NativePeProvisioner nativePeProvisioner) {
-        super(id, VmpeProvisioner);
-        setNativePeProvisioner(nativePeProvisioner);
+    public NativePe(int id, NativePeProvisioner peProvisioner) {
+        super(id, peProvisioner);
     }
 
 }

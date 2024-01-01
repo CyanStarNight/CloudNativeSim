@@ -12,12 +12,13 @@ import org.cloudbus.nativesim.entity.NativeEntity;
 
 @Getter
 @Setter
-public abstract class NativeRamProvisioner{
+public abstract class NativeRamProvisioner extends RamProvisioner{
     private int ram;
 
     private int availableRam;
 
     public NativeRamProvisioner(int ram) {
+        super(ram);
         setRam(ram);
         setAvailableRam(ram);
     }

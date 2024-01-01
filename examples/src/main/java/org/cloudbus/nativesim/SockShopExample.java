@@ -7,14 +7,20 @@ package org.cloudbus.nativesim;
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
-import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.cloudbus.nativesim.entity.NativeCloudlet;
+import org.cloudbus.nativesim.entity.NativePe;
+import org.cloudbus.nativesim.entity.NativeVm;
 import org.cloudbus.nativesim.entity.ServiceGraph;
 import org.cloudbus.nativesim.event.Print;
 import org.cloudbus.nativesim.event.Register;
 import org.cloudbus.nativesim.policy.allocationAlgorithm.ServiceAllocationPolicy;
 import org.cloudbus.nativesim.policy.scalingAlgorithm.ServiceScalingPolicy;
+import org.cloudbus.nativesim.provisioner.NativeBwProvisionerSimple;
+import org.cloudbus.nativesim.provisioner.NativePeProvisionerSimple;
+import org.cloudbus.nativesim.provisioner.NativeRamProvisioner;
+import org.cloudbus.nativesim.provisioner.NativeRamProvisionerSimple;
+import org.cloudbus.nativesim.scheduler.NativeCloudletSchedulerTimeShared;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -30,7 +36,7 @@ import static org.cloudbus.nativesim.event.Register.*;
  * @Data 2023/11/20
  */
 public class SockShopExample{
-    private static List<Vm> vmList;
+    private static List<NativeVm> vmList;
     private static List<NativeCloudlet> cloudletList;
     private static ServiceGraph serviceGraph;
     private static NativeController controller;
@@ -51,6 +57,7 @@ public class SockShopExample{
             Datacenter datacenter = createDatacenter("sockshop-DataCenter");
             DatacenterBroker broker = createBroker(userId);
             int brokerId = broker.getId(); // brokerId = userId
+            vmList = createVms(2,brokerId);
 
             // 1.2: Create the service chains
             String sockshopFile = "examples/src/main/resource/sockshop.yaml";
@@ -58,6 +65,7 @@ public class SockShopExample{
             register.registerEntities("sockshop");
             serviceGraph = controller.getServiceGraph();
             cloudletList = controller.getLocalCloudlets();
+            cloudletList.forEach(c -> c.setUserId(brokerId));
 
             // 2: Init the parameters and policies,and then submit to the brokers.
             // 2.1 Submit to the brokers
@@ -90,10 +98,10 @@ public class SockShopExample{
 
     }
 
-    private static List<Vm> createVms(int num){
-        List<Vm> vms = new ArrayList<Vm>();
+    private static List<NativeVm> createVms(int num, int brokerId){
+        List<NativeVm> vms = new ArrayList<NativeVm>();
         //VM description
-        int mips = 250;
+        double mips = 250;
         long size = 10000; //image size (MB)
         int ram = 512; //vm memory (MB)
         long bw = 1000;
@@ -102,7 +110,7 @@ public class SockShopExample{
 
         //create two VMs: the first one belongs to user1
         for (int i = 0; i < num; i++) {
-            vms.add(new Vm(i, controller.getUserId(), mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared()));
+            vms.add(new NativeVm(i, brokerId, mips, pesNumber, ram, bw, size, vmm, new NativeCloudletSchedulerTimeShared()));
         }
         return vms;
     }
@@ -115,13 +123,13 @@ public class SockShopExample{
 
         // 2. A Machine contains one or more PEs or CPUs/Cores.
         // In this example, it will have only one core.
-        List<Pe> peList = new ArrayList<Pe>();
+        List<NativePe> peList = new ArrayList<NativePe>();
 
-        int mips=1000;
+        double mips=1000;
 
         // 3. Create PEs and add these into a list.
-        peList.add(new Pe(0, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
-        peList.add(new Pe(1, new PeProvisionerSimple(mips)));
+        peList.add(new NativePe(0, new NativePeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
+        peList.add(new NativePe(1, new NativePeProvisionerSimple(mips)));
         //4. Create Host with its id and list of PEs and add them to the list of machines
         int ram = 2048; //host memory (MB)
         long storage = 1000000; //host storage
@@ -133,8 +141,9 @@ public class SockShopExample{
         hostList.add(
                 new Host(
                         0,
-                        new RamProvisionerSimple(ram),
-                        new BwProvisionerSimple(bw),
+                        new NativeRamProvisionerSimple(ram) {
+                        },
+                        new NativeBwProvisionerSimple(bw),
                         storage,
                         peList,
                         new VmSchedulerSpaceShared(peList)
@@ -143,8 +152,8 @@ public class SockShopExample{
         hostList.add(
                 new Host(
                         1,
-                        new RamProvisionerSimple(ram),
-                        new BwProvisionerSimple(bw),
+                        new NativeRamProvisionerSimple(ram),
+                        new NativeBwProvisionerSimple(bw),
                         storage,
                         peList,
                         new VmSchedulerSpaceShared(peList)
