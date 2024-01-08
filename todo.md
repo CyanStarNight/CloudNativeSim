@@ -14,51 +14,48 @@
 * [X]  关掉Vm中的cloudletScheduler，重构NativeCloudletScheduler
 * [X]  构建Request、Dispatcher、EndPoint、LoadBalancer
 * [X]  保留Controller，删掉Events
-  * [X]  重构输入
+* [X]  重构输入
 
-      * [X] dependency.json
+    * [X] dependency.json
+    ```json
+    {
+      "services": [
+        {
+        "name": "front-end",
+        "labels": ["front-end", "origin"],
+        "calls": ["carts", "orders", "catalogue", "user", "payment", "session-db"],
+        "endpoints": ["GetHealth", "GetUsers", "GetOrders"]
+        }]
+    }
+    ```
+    * [X] requests.json
       ```json
       {
-        "services": [
-        {
-          "name": "front-end",
-          "labels": ["front-end", "origin"],
-          "calls": ["carts", "orders", "catalogue", "user", "payment", "session-db"],
-          "endpoints": ["GetHealth", "GetUsers", "GetOrders"]
-        },
-      ···
+          "requests": [
+          {
+              "method": "GET",
+              "url": "/orders",
+              "endpoint": "GetOrders",
+              "num": 200
+          }]
       }
       ```
-      * [X] requests.json
-        ```json
-        {
-            "requests": [
-            {
-                "method": "GET",
-                "url": "/orders",
-                "endpoint": "GetOrders",
-                "num": 200
-            },
-        ···
-        }
-        ```
-     * [X] deployment.yaml
-     ```yaml
-      pods:
-        - name: front-end-pod
-          labels:
-            - front-end
-              replicas: 2
-              storage: 10000
-              prefix: front-end
-              containers:
-            - size: 1000
-              pes: 1
-              mips: 1000
-              ram: 64
-              bw: 100
-         ··· 
-     ```
+   * [X] deployment.yaml
+   ```yaml
+    pods:
+      - name: front-end-pod
+        labels:
+          - front-end
+        replicas: 2
+        storage: 10000
+        prefix: front-end
+        containers:
+      - size: 1000
+        pes: 1
+        mips: 1000
+        ram: 64
+        bw: 100
+   ```
 * [X]  重构输出格式
 * [ ]  计算输出指标
 
