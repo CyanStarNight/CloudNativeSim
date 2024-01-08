@@ -12,15 +12,54 @@
 * [X]  重构NativeVm、NativeDatacenter、NativeDatacenterBroker
 * [X]  重构NativeCloudlet，它的提交应该在进入执行队列以后
 * [X]  关掉Vm中的cloudletScheduler，重构NativeCloudletScheduler
-* [X]  构建Request、Dispatcher、EndPoint、LoadBalancer![1591b3a71add750e3e9ce54275707f9.png](assets/1591b3a71add750e3e9ce54275707f9.png)
+* [X]  构建Request、Dispatcher、EndPoint、LoadBalancer
 * [X]  保留Controller，删掉Events
-* [X]  重构输入![bc1b9ab44eac8a63d5f9524d4d67441.png](assets/bc1b9ab44eac8a63d5f9524d4d67441.png)
+  * [X]  重构输入
 
-  ![be52d0e23638c158fb1b506f5660ec4.png](assets/be52d0e23638c158fb1b506f5660ec4.png)![image.png](assets/deployment.png)
+      * [X] dependency.json
+      ```json
+      {
+        "services": [
+        {
+          "name": "front-end",
+          "labels": ["front-end", "origin"],
+          "calls": ["carts", "orders", "catalogue", "user", "payment", "session-db"],
+          "endpoints": ["GetHealth", "GetUsers", "GetOrders"]
+        },
+      ···
+      }
+      ```
+      * [X] requests.json
+        ```json
+        {
+            "requests": [
+            {
+                "method": "GET",
+                "url": "/orders",
+                "endpoint": "GetOrders",
+                "num": 200
+            },
+        ···
+        }
+        ```
+     * [X] deployment.yaml
+     ```yaml
+      pods:
+        - name: front-end-pod
+          labels:
+            - front-end
+              replicas: 2
+              storage: 10000
+              prefix: front-end
+              containers:
+            - size: 1000
+              pes: 1
+              mips: 1000
+              ram: 64
+              bw: 100
+         ··· 
+     ```
 * [X]  重构输出格式
-  ![image.png](assets/image.png)
-
-  ![image.png](assets/criticalpathout.png)
 * [ ]  计算输出指标
 
   * [ ]  响应时间
@@ -37,7 +76,7 @@
   * [ ]  融合endpoint&servicegraph
   * [ ]  将各层实体通过部署算法来映射起来
 * [ ]  让cloudlet在container中被执行
-* [ ]  经典场景建模![413fd4079fe50dc83006246d7626e8c.png](assets/413fd4079fe50dc83006246d7626e8c.png?t=1704689325438)
+* [ ]  经典场景建模
 * [ ]  重新调整调度间隔
   300s调度会不会限制精度？这个间隔来源于planetLab？在微服务下合理吗？
 * [ ]  网络通信建模
