@@ -7,7 +7,6 @@ package org.cloudbus.nativesim.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.*;
-import org.cloudbus.nativesim.Log;
 import org.cloudbus.nativesim.provisioner.NativeBwProvisioner;
 import org.cloudbus.nativesim.provisioner.NativePeProvisioner;
 import org.cloudbus.nativesim.provisioner.NativeRamProvisioner;
@@ -15,7 +14,6 @@ import org.cloudbus.nativesim.scheduler.ContainerScheduler;
 import org.cloudbus.nativesim.scheduler.NativeCloudletScheduler;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 @Getter
 @Setter

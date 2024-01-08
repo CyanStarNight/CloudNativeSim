@@ -6,9 +6,7 @@ package org.cloudbus.nativesim.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.cloudbus.cloudsim.CloudletScheduler;
-import org.cloudbus.cloudsim.VmStateHistoryEntry;
-import org.cloudbus.nativesim.NativeStateHistoryEntry;
+import org.cloudbus.nativesim.util.NativeStateHistoryEntry;
 import org.cloudbus.nativesim.scheduler.NativeCloudletScheduler;
 
 import java.util.LinkedList;
@@ -85,5 +83,12 @@ public class NativeEntity {
             }
         }
         getStateHistory().add(newState);
+    }
+
+    @Override
+    public String toString() {
+        return "\n"+this.getClass().getSimpleName()+":\n"
+                +"name: "+name
+                +"\nid: "+id;
     }
 }

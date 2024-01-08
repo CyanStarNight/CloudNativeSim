@@ -1,52 +1,84 @@
 package org.cloudbus.nativesim.util;
 
+import lombok.NonNull;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * @author JingFeng Wu
  */
 public class Tools {
-//    public static String UUID(){
-//        return UUID.randomUUID().toString();
-//    }
-    public static void callFunction(Object obj, String methodName) throws Exception {
-        Method method = obj.getClass().getMethod(methodName);
-        method.invoke(obj);
-    }
     public static List< Map<String,Object> > ReadMultilineYaml(String filePath) {
         InputStream inputStream = null;
+        List<Map<String, Object>> maps = new ArrayList<>();
+        Yaml yaml = new Yaml();
         try{
             inputStream = new FileInputStream(filePath);
         }catch (FileNotFoundException e){
             e.printStackTrace();
         }
-        Yaml yaml = new Yaml();
-        List< Map<String,Object> > config = new ArrayList<>();
         for (Object obj : yaml.loadAll(inputStream)){
-            Map<String, Object> map = (Map<String, Object>) obj;
-            config.add(map);
+            Map<String, Object> d = (Map<String, Object>) obj;
+            maps.add(d);
         }
-        return config;
+        assert !maps.isEmpty();
+        return maps;
     }
+
     public static Map<String, Object> ReadYaml(String filePath){
         InputStream inputStream = null;
+        Map<String, Object> map = null;
+        Yaml yaml = new Yaml();
         try{
             inputStream = new FileInputStream(filePath);
+            map = yaml.load(inputStream);
         }catch (FileNotFoundException e){
             e.printStackTrace();
         }
-        Yaml yaml = new Yaml();
-        return yaml.load(inputStream);
+        assert map != null;
+        return map;
+    }
+
+    public static Map<String,Object> ReadJson(String filePath) {
+        ObjectMapper mapper = new ObjectMapper();
+        File jsonFile = new File(filePath);
+        Map<String, Object> map = null;
+        try {
+            map = mapper.readValue(jsonFile, new TypeReference<Map<String, Object>>() {
+            });
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        assert map != null;
+        return map;
+    }
+
+    //    public static String UUID(){
+//        return UUID.randomUUID().toString();
+//    }
+
+    public static void callFunction(Object obj, String methodName) throws Exception {
+        try {
+            Method method = obj.getClass().getMethod(methodName, int.class);
+            method.invoke(obj, 123);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     public static Integer GetNumFromString(String s){

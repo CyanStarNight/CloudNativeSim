@@ -1,8 +1,8 @@
 /*
- * Copyright ©2023. Jingfeng Wu.
+ * Copyright ©2024. Jingfeng Wu.
  */
 
-package org.cloudbus.nativesim;
+package org.cloudbus.nativesim.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -11,8 +11,8 @@ import org.cloudbus.cloudsim.core.*;
 import org.cloudbus.cloudsim.core.predicates.Predicate;
 import org.cloudbus.cloudsim.core.predicates.PredicateAny;
 import org.cloudbus.cloudsim.core.predicates.PredicateNone;
+import org.cloudbus.nativesim.network.Communication;
 import org.cloudbus.nativesim.entity.*;
-import org.cloudbus.nativesim.event.NativeEvent;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -56,8 +56,7 @@ public class NativeSim extends CloudSim {
     private List<Communication> globalCommunications = new ArrayList<>();
     private List<Container> globalContainers = new ArrayList<>();
 
-    public static List<NativeController> controllers = new ArrayList<>();//TODO: 2023/12/7 对于这些全局字段如何进行访问控制呢？
-    public static List<NativeEvent> events = new ArrayList<>();
+    public static List<Controller> controllers = new ArrayList<>();//TODO: 2023/12/7 对于这些全局字段如何进行访问控制呢？
 
     public static double startSimulation() throws NullPointerException {
         Log.printLine("Starting NativeSim version" + NativeSim_VERSION_STRING);
@@ -76,12 +75,6 @@ public class NativeSim extends CloudSim {
         }
     }
 
-    public static void connectWithController(NativeEvent event,int userId){
-        event.setController(controllers.stream().
-                filter(u -> userId == u.getUserId()).
-                findFirst().orElse(null));
-
-    }
 
 
 }

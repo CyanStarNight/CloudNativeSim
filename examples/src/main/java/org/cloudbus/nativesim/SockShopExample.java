@@ -1,48 +1,46 @@
 /*
  * Copyright ©2023. Jingfeng Wu.
  */
-
 package org.cloudbus.nativesim;
 
 import org.cloudbus.cloudsim.*;
-import org.cloudbus.cloudsim.core.CloudSim;
-import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
-import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
-import org.cloudbus.nativesim.entity.NativeCloudlet;
-import org.cloudbus.nativesim.entity.NativePe;
-import org.cloudbus.nativesim.entity.NativeVm;
-import org.cloudbus.nativesim.entity.ServiceGraph;
-import org.cloudbus.nativesim.event.Print;
-import org.cloudbus.nativesim.event.Register;
-import org.cloudbus.nativesim.policy.allocationAlgorithm.ServiceAllocationPolicy;
-import org.cloudbus.nativesim.policy.scalingAlgorithm.ServiceScalingPolicy;
+import org.cloudbus.nativesim.entity.*;
+import org.cloudbus.nativesim.policy.allocation.ServiceAllocationPolicy;
+import org.cloudbus.nativesim.policy.scaling.ServiceScalingPolicy;
 import org.cloudbus.nativesim.provisioner.NativeBwProvisionerSimple;
 import org.cloudbus.nativesim.provisioner.NativePeProvisionerSimple;
-import org.cloudbus.nativesim.provisioner.NativeRamProvisioner;
 import org.cloudbus.nativesim.provisioner.NativeRamProvisionerSimple;
+import org.cloudbus.nativesim.network.Request;
 import org.cloudbus.nativesim.scheduler.NativeCloudletSchedulerTimeShared;
+import org.cloudbus.nativesim.util.NativeLog;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
-
-import static org.cloudbus.nativesim.event.Register.*;
-
 
 /**
  * @Author JingFeng Wu
  * @Data 2023/11/20
  */
 public class SockShopExample{
+    private static Controller controller;
+
+    private static String deploymentFile = "examples/src/main/resource/sockshop/deployment.yaml";
     private static List<NativeVm> vmList;
     private static List<NativeCloudlet> cloudletList;
+    private static List<Pod> podList;
+
+    private static String dependencyFile = "examples/src/main/resource/sockshop/dependency.json";
     private static ServiceGraph serviceGraph;
-    private static NativeController controller;
+
+    private static String requestsFile = "examples/src/main/resource/sockshop/requests.json";
+    private static List<Request> requests;
+
+
 
     public static void main(String[] args) {
-        Log.printLine("Starting SockShopExample...");
+        NativeLog.printLine("Starting SockShopExample...");
         try {
             // 1: Create and register the entities and match them.
             int num_user = 1;
@@ -51,19 +49,22 @@ public class SockShopExample{
             boolean trace_flag = false;
 
             NativeSim.init(num_user, calendar, trace_flag);
-            controller = new NativeController(userId, calendar);
+            controller = new Controller(userId, calendar);
 
             // 1.1: Create some machines to act as a datacenter.
-            Datacenter datacenter = createDatacenter("sockshop-DataCenter");
+            NativeDatacenter datacenter = createDatacenter("sockshop-DataCenter");
             DatacenterBroker broker = createBroker(userId);
             int brokerId = broker.getId(); // brokerId = userId
             vmList = createVms(2,brokerId);
 
             // 1.2: Create the service chains
-            String sockshopFile = "examples/src/main/resource/sockshop.yaml";
-            Register register = new Register(userId,sockshopFile,controller);
-            register.registerEntities("sockshop");
-            serviceGraph = controller.getServiceGraph();
+            Register register = new Register(userId,controller);
+            podList = register.registerDeployment(deploymentFile);
+            serviceGraph = register.registerDependencies("sockshop",dependencyFile);
+            requests = register.registerRequests(requestsFile);
+
+            controller.initialize();
+
             cloudletList = controller.getLocalCloudlets();
             cloudletList.forEach(c -> c.setUserId(brokerId));
 
@@ -78,22 +79,23 @@ public class SockShopExample{
 
             // 3: Start the simulation.
             NativeSim.startSimulation();
-            List<Cloudlet> newList = broker.getCloudletReceivedList();
-            Print.printCloudletList(newList);
+
             // 4: Pause
             // 5: Update the status
             // 6. Print the logs
-
-//            serviceGraph.printServiceChain();
-            serviceGraph.printCriticalPath();
+            List<Cloudlet> newList = broker.getCloudletReceivedList();
+            double total_time = NativeSim.clock();
+            NativeLog.printCloudletList(newList);
+            NativeLog.printRequestStatistics(requests,total_time);
+            NativeLog.printServiceGraphDetails(serviceGraph);
 
             // x: End the simulation
             NativeSim.stopSimulation();
-            Log.printLine("SockShopExample finished!");
+            NativeLog.printLine("SockShopExample finished!");
 
         } catch (Exception e) {
             e.printStackTrace();
-            Log.printLine("Errors happen.");
+            NativeLog.printLine("Errors happen.");
         }
 
     }
@@ -115,7 +117,7 @@ public class SockShopExample{
         return vms;
     }
 
-    private static Datacenter createDatacenter(String name) {
+    private static NativeDatacenter createDatacenter(String name) {
 
         // Here are the steps needed to create a PowerDatacenter:
         // 1. We need to create a list to store our machine.
@@ -176,15 +178,16 @@ public class SockShopExample{
 
 
         // 6. Finally, we need to create a PowerDatacenter object.
-        Datacenter datacenter = null;
+        NativeDatacenter datacenter = null;
         try {
-            datacenter = new Datacenter(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 0);
+            datacenter = new NativeDatacenter(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 0);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return datacenter;
     }
+
     private static DatacenterBroker createBroker(int id){
 
         DatacenterBroker broker = null;

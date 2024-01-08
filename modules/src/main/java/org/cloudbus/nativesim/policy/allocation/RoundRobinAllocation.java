@@ -1,4 +1,4 @@
-package org.cloudbus.nativesim.policy.allocationAlgorithm;
+package org.cloudbus.nativesim.policy.allocation;
 
 /**
  * @author JingFeng Wu

@@ -81,35 +81,28 @@
             <version>6.1.0.Final</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.glassfish</groupId>-->
-<!--            <artifactId>javax.el</artifactId>-->
-<!--            <version>3.0.1-b11</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator-cdi</artifactId>
             <version>6.1.0.Final</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>commons-beanutils</groupId>-->
-<!--            <artifactId>commons-beanutils</artifactId>-->
-<!--            <version>1.9.4</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>LATEST</version>
+        </dependency>
 
-
-<!--        cloudsimplus会与automation产生依赖冲突-->
-
-<!--        <dependency>-->
-<!--            <groupId>org.cloudsimplus</groupId>-->
-<!--            <artifactId>cloudsimplus-automation</artifactId>-->
-<!--            &lt;!&ndash; Set a specific version or use the latest one &ndash;&gt;-->
-<!--            <version>LATEST</version>-->
-<!--        </dependency>-->
-
-
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.28</version>
+        </dependency>
+        <dependency>
+            <groupId>de.vandermeer</groupId>
+            <artifactId>asciitable</artifactId>
+            <version>0.3.2</version>
+        </dependency>
 
     </dependencies>
 

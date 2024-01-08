@@ -1,9 +1,8 @@
 package org.cloudbus.nativesim.entity;
 
 import lombok.*;
-import org.cloudbus.cloudsim.core.SimEntity;
-import org.cloudbus.cloudsim.core.SimEvent;
-import org.cloudbus.nativesim.NativeController;
+import org.cloudbus.nativesim.Controller;
+import org.cloudbus.nativesim.network.Communication;
 
 import java.util.*;
 
@@ -11,75 +10,46 @@ import java.util.*;
  * @author JingFeng Wu
  * @describe the service chains with orthogonalList and maintain the critical path.
  */
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServiceGraph extends NativeEntity {//Attention：maybe extends DataCenter
+public class ServiceGraph extends NativeEntity { // Attention：maybe extends DataCenter
 
+    Controller controller;
     private List<Service> services; // the entity of Communications.
     private List<Communication> communications;
     private int num_commu,num_services;
 
-    LinkedList<Communication> CriticalPath;
+    private LinkedList<Communication> serviceChains;
+    double totalChainCost;
+
+    LinkedList<Communication> criticalPath;
     double totalCriticalCost;
     int num_critics;
     
-    private int[][] serviceMatrix; //Attention: matrix may bring some benefits.
+    private int[][] serviceMatrix; // Attention: matrix may bring some benefits.
 
-    public ServiceGraph(int userId,String appName){
+    public ServiceGraph(int userId,String appName, Controller controller){
         super(userId,appName);
+        this.controller = controller;
     }
 
-/**Unit: Commons*/
-
-//    public void buildCommunications(List<Communication> communications) {
-//        this.communications = communications;
-//        buildDegree();
-//        setCriticalPath(findCriticalPath());
-//    }
-
-    public void buildDAGFromMatrix(int[][] matrix, String[] names) throws Exception {
-        this.serviceMatrix = matrix;
-        services = new ArrayList<>();
-        communications = new ArrayList<>();
-        // Initialize the service nodes list by the number of rows of the matrix.
-        for(int i=0;i<matrix.length;i++){
-            services.add(new Service(getUserId(),names[i]));
-        }
-        // Traverse the matrix and generate the orthogonal list.
-        for(int i=0;i<matrix.length;i++){
-            for(int j=0;j<matrix[0].length;j++){
-                if(matrix[i][j]!=0){
-                    // if there has a communication, add it to the orthogonal list.
-                    Communication communication = new Communication(getUserId());
-                    if (matrix[i][j]!=0) {
-                        communication.setCost(matrix[i][j]);
-                    }
-                    communication.setOrigin(services.get(i));
-                    communication.setDest(services.get(j));
-                    // i build in-degree
-                    buildNodeOut(services.get(i), communication);
-                    // j build out-degree
-                    buildNodeIn(services.get(j), communication);
-                    communications.add(communication);
-                }
-            }
-        }
-        buildDegree();
-        num_services = services.toArray().length;
-        num_commu = communications.toArray().length;
+    public ServiceGraph(int userId) {
+        super(userId);
     }
+
     public void buildNodeIn(Service service, Communication communication){
         if(service.getFirstIn()==null){
             service.setFirstIn(communication);
             return;
         }
         Communication tempCommunication = service.getFirstIn();
-        while (tempCommunication.hLink!=null){
-            tempCommunication = tempCommunication.hLink;
+        while (tempCommunication.getHLink()!=null){
+            tempCommunication = tempCommunication.getHLink();
         }
-        tempCommunication.hLink = communication;
+        tempCommunication.setHLink(communication);
     }
 
     public void buildNodeOut(Service service, Communication communication){
@@ -88,10 +58,10 @@ public class ServiceGraph extends NativeEntity {//Attention：maybe extends Data
             return;
         }
         Communication tempCommunication = service.getFirstOut();
-        while (tempCommunication.tLink!=null){
-            tempCommunication = tempCommunication.tLink;
+        while (tempCommunication.getTLink()!=null){
+            tempCommunication = tempCommunication.getTLink();
         }
-        tempCommunication.tLink = communication;
+        tempCommunication.setTLink(communication);
     }
 
     public void buildDegree(){
@@ -147,61 +117,9 @@ public class ServiceGraph extends NativeEntity {//Attention：maybe extends Data
         return criticalPath;
     }
 
-    /**
-     * print the total in-degree and out-degree.
-     */
-    public void printAllNodeIn(){
-        System.out.println("In-Chain: ");
-        for(Service service : services){
-            System.out.println("    Service: "+ service.getName());
-            System.out.println("    in-degree: "+ service.getInDegree());
-            Communication firstIn = service.getFirstIn();
-            while (firstIn!=null){
-                System.out.println("    " + firstIn.getOrigin().getName()+"-->"+firstIn.getDest().getName()+" (cost="+firstIn.getCost()+")");
-                firstIn = firstIn.hLink;
 
-            }
-            System.out.println();
-        }
-    }
 
-    public void printAllNodeOut(){
-        System.out.println("Out-Chain:");
-        for(Service service : services){
-            System.out.println("    Service: "+ service.getName());
-            System.out.println("    out-degree: "+ service.getOutDegree());
-            Communication firstOut = service.getFirstOut();
-            while (firstOut!=null){
-                System.out.println("    " + firstOut.getOrigin().getName()+"-->"+firstOut.getDest().getName()+" (cost="+firstOut.getCost()+")");
-                firstOut = firstOut.tLink;
-            }
-            System.out.println();
-        }
-    }
-
-    public void printAllCommunications(){
-        System.out.println("Communications:"+ communications.toArray().length);
-        for (Communication Communication:this.communications){
-            System.out.println(" "+Communication.toString());
-        }
-    }
-
-    public void printCriticalPath() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("\n========== Critical Path ==========\n");
-//        sb.append(CriticalPath.getFirst().getOriginName());
-//        for (Communication Communication : CriticalPath) {
-//            sb.append(" -> ").append(Communication.getDestName());
-//        }
-//        sb.append("\nCritical Communications:\n");
-        for (Communication communication : CriticalPath) {
-            sb.append(communication).append("\n");
-        }
-        sb.append("Total Critical Cost: ").append(totalCriticalCost);
-        System.out.println(sb.toString());
-    }
-
-    public void init(NativeController controller){//TODO: 2023/12/9 DAG算法等要预防输入不正当（缺失或存在环路）
+    public void init(){//TODO: 2023/12/9 DAG算法等要预防输入不正当（缺失或存在环路）
         setServices(controller.getLocalServices());
         List<Communication> commus = controller.getLocalCommunications();
         setCommunications(commus);
@@ -223,25 +141,5 @@ public class ServiceGraph extends NativeEntity {//Attention：maybe extends Data
         super.setId(getUserId());
     }
 
-/**Unit: Log*/
-    public void printServiceChain() {
-        printAllNodeOut();
-//        printCriticalPath();
-    }
 
-///**Unit: SimEntity*/
-//    @Override
-//    public void startEntity() {
-//
-//    }
-//
-//    @Override
-//    public void processEvent(SimEvent simEvent) {
-//
-//    }
-//
-//    @Override
-//    public void shutdownEntity() {
-//
-//    }
 }

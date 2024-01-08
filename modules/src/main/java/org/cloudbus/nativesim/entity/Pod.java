@@ -2,13 +2,13 @@ package org.cloudbus.nativesim.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.cloudbus.nativesim.NativeController;
+import org.cloudbus.nativesim.Controller;
+import org.cloudbus.nativesim.network.EndPoint;
 import org.cloudbus.nativesim.util.Status;
 
 import javax.validation.constraints.AssertTrue;
@@ -31,8 +31,10 @@ public class Pod extends NativeEntity {
     public String name; // really need ?
 
     private ArrayList<String> labels; // one service n pods
-    private List<Service> serviceList;
+    private Service service;
     private List<Container> containerList;
+    List<EndPoint> endPoints;
+    private NativeVm vm;
 
     private String prefix; // the prefix identifying the replicas
     private List<Pod> replicas;
@@ -49,21 +51,22 @@ public class Pod extends NativeEntity {
     public Pod(int userId, String name){
         super(userId,name);
     }
-    /**Unit: Combine*/
+
+//    @AssertTrue
+//    public boolean matchServices(Controller controller){
+//        List<Service> serviceList = new ArrayList<>();
+//        for (String label : labels){
+//            serviceList.addAll(controller.selectServicesByLabel(label));
+//        }
+//        if (!serviceList.isEmpty()) {
+//            setServiceList(serviceList);
+//            return true;
+//        }
+//        return false;
+//    }
+
     @AssertTrue
-    public boolean matchServices(NativeController controller){
-        List<Service> serviceList = new ArrayList<>();
-        for (String label : labels){
-            serviceList.addAll(controller.selectServicesByLabel(label));
-        }
-        if (!serviceList.isEmpty()) {
-            setServiceList(serviceList);
-            return true;
-        }
-        return false;
-    }
-    @AssertTrue
-    public boolean matchReplicas(NativeController controller){
+    public boolean matchReplicas(Controller controller){
         List<Pod> replicas = controller.selectPodsByPrefix(prefix);
         if (!replicas.isEmpty()) {
             setReplicas(replicas);

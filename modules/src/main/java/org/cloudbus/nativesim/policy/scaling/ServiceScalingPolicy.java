@@ -1,4 +1,4 @@
-package org.cloudbus.nativesim.policy.scalingAlgorithm;
+package org.cloudbus.nativesim.policy.scaling;
 
 // TODO: 2023/7/2
 

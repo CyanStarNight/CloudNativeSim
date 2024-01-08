@@ -1,12 +1,10 @@
 package org.cloudbus.nativesim.entity;
 
 import lombok.*;
-import org.cloudbus.cloudsim.VmStateHistoryEntry;
 import org.cloudbus.cloudsim.util.MathUtil;
-import org.cloudbus.nativesim.NativeStateHistoryEntry;
+import org.cloudbus.nativesim.util.NativeStateHistoryEntry;
 import org.cloudbus.nativesim.scheduler.NativeCloudletScheduler;
 
-import javax.lang.model.element.PackageElement;
 import java.util.*;
 
 /**

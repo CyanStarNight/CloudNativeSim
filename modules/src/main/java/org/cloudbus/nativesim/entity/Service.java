@@ -2,14 +2,14 @@ package org.cloudbus.nativesim.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
+import org.cloudbus.nativesim.network.Communication;
+import org.cloudbus.nativesim.network.EndPoint;
 import org.cloudbus.nativesim.util.Status;
 
-import static org.cloudbus.nativesim.NativeController.checkMapping;
+import static org.cloudbus.cloudsim.Log.printLine;
+import static org.cloudbus.nativesim.Controller.checkMapping;
 
 
 /**
@@ -24,6 +24,8 @@ public class Service extends NativeEntity {
 
     List<Pod> pods;
     List<Communication> calls;
+    List<EndPoint> endPoints;
+    List<NativeVm> vmList;
     ServiceGraph serviceGraph;
 
     Communication firstIn;
@@ -32,9 +34,8 @@ public class Service extends NativeEntity {
     double etv,ltv;
 
     Status status = Status.Ready;
-    public String type;
 
-    private int num_pods = 1;
+    private int num_pods;
 
     public Service(){
         super();
@@ -57,8 +58,8 @@ public class Service extends NativeEntity {
         if (this.firstIn != null) {
             Communication commu = this.firstIn;
             inDegree++;
-            while (commu.hLink != null) {
-                commu = commu.hLink;
+            while (commu.getHLink() != null) {
+                commu = commu.getHLink();
                 inDegree++;
             }
         }
@@ -69,15 +70,15 @@ public class Service extends NativeEntity {
         if (this.firstOut != null) {
             Communication commu = this.firstOut;
             this.outDegree++;
-            while (commu.tLink != null) {
-                commu = commu.tLink;
+            while (commu.getTLink() != null) {
+                commu = commu.getTLink();
                 this.outDegree++;
             }
         }
     }
     void buildEtv() {
         etv = 0.0;
-        for (Communication e = firstOut; e != null; e = e.tLink) {
+        for (Communication e = firstOut; e != null; e = e.getTLink()) {
             Service dest = e.getDest();
             int inDegree = dest.getInDegree();
             dest.setEtv(Math.max(dest.getEtv(), etv + e.getCost()));
@@ -89,7 +90,7 @@ public class Service extends NativeEntity {
 
     void buildLtv() {
         ltv = Double.MAX_VALUE;
-        for (Communication e = firstIn; e != null; e = e.hLink) {
+        for (Communication e = firstIn; e != null; e = e.getHLink()) {
             Service origin = e.getOrigin();
             int outDegree = origin.getOutDegree();
             origin.setLtv(Math.min(origin.getLtv(), ltv - e.getCost()));
@@ -114,5 +115,22 @@ public class Service extends NativeEntity {
             this.getCalls().add(communication);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("\nout-degree: "+ getOutDegree());
+        Communication firstOut = getFirstOut();
+        while (firstOut!=null){
+            sb.append("\n    ").
+                    append(firstOut.getOrigin().getName()).
+                    append("-->").
+                    append(firstOut.getDest().getName()).
+                    append(" (cost=").append(String.format("%.3f", firstOut.getCost())).append(")");
+            firstOut = firstOut.getTLink();
+        }
 
+        return super.toString()
+                + "\nstatus: "+status
+                + "\nlabels: "+labels
+                + "\npods: " +num_pods +sb;
+    }
 }
