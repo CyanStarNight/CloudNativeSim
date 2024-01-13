@@ -5,7 +5,7 @@ package org.cloudbus.nativesim;
 
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.nativesim.entity.*;
-import org.cloudbus.nativesim.policy.allocation.ServiceAllocationPolicy;
+import org.cloudbus.nativesim.policy.allocation.ContainerAllocationPolicy;
 import org.cloudbus.nativesim.policy.scaling.ServiceScalingPolicy;
 import org.cloudbus.nativesim.provisioner.NativeBwProvisionerSimple;
 import org.cloudbus.nativesim.provisioner.NativePeProvisionerSimple;
@@ -29,7 +29,7 @@ public class SockShopExample{
     private static String deploymentFile = "examples/src/main/resource/sockshop/deployment.yaml";
     private static List<NativeVm> vmList;
     private static List<NativeCloudlet> cloudletList;
-    private static List<Pod> podList;
+    private static List<Container> podList;
 
     private static String dependencyFile = "examples/src/main/resource/sockshop/dependency.json";
     private static ServiceGraph serviceGraph;
@@ -74,7 +74,7 @@ public class SockShopExample{
             broker.submitCloudletList(cloudletList); //CloudletList.subList(0, num_cloudlets)
 
             // 2.2 init the policies
-            ServiceAllocationPolicy placementPolicy;
+            ContainerAllocationPolicy placementPolicy;
             ServiceScalingPolicy scalingPolicy;
 
             // 3: Start the simulation.

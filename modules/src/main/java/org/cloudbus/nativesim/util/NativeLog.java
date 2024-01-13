@@ -6,12 +6,11 @@ package org.cloudbus.nativesim.util;
 import de.vandermeer.asciitable.AsciiTable;
 import de.vandermeer.asciitable.CWC_LongestLine;
 import de.vandermeer.asciithemes.TA_GridThemes;
-import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.nativesim.entity.NativeVm;
+import org.cloudbus.nativesim.entity.Container;
 import org.cloudbus.nativesim.entity.Pod;
-import org.cloudbus.nativesim.entity.Service;
 import org.cloudbus.nativesim.entity.ServiceGraph;
 import org.cloudbus.nativesim.network.Communication;
 import org.cloudbus.nativesim.network.Request;
@@ -135,28 +134,28 @@ public class NativeLog extends Log {
         System.out.println(rend);
     }
 
-    public static void printStatisticsToCSV(List<Pod> podList, List<Double> utilizationList) throws IOException {
-        FileWriter csvWriter = new FileWriter("request_statistics.csv");
-
-        // 写入标题行
-        csvWriter.append("Pod/Service,VM ID,Utilization,Other Col1,Other Col2,Other Col3,Other Col4\n");
-
-        for (Pod pod: podList) {
-            int i = podList.indexOf(pod);
-            NativeVm tmpVm = pod.getVm();
-            // 写入数据行
-            csvWriter.append(pod.getName()).append(",")
-                    .append(String.valueOf(tmpVm.getId())).append(",")
-                    .append(String.format("%.2f", utilizationList.get(i))).append(",")
-                    .append("0").append(",")
-                    .append("0.00").append(",")
-                    .append("0.00").append(",")
-                    .append("0.00").append("\n");
-        }
-
-        csvWriter.flush();
-        csvWriter.close();
-    }
+//    public static void printStatisticsToCSV(List<Container> podList, List<Double> utilizationList) throws IOException {
+//        FileWriter csvWriter = new FileWriter("request_statistics.csv");
+//
+//        // 写入标题行
+//        csvWriter.append("Pod/Service,VM ID,Utilization,Other Col1,Other Col2,Other Col3,Other Col4\n");
+//
+//        for (Pod pod: podList) {
+//            int i = podList.indexOf(pod);
+//            NativeVm tmpVm = pod.getVm();
+//            // 写入数据行
+//            csvWriter.append(pod.getName()).append(",")
+//                    .append(String.valueOf(tmpVm.getId())).append(",")
+//                    .append(String.format("%.2f", utilizationList.get(i))).append(",")
+//                    .append("0").append(",")
+//                    .append("0.00").append(",")
+//                    .append("0.00").append(",")
+//                    .append("0.00").append("\n");
+//        }
+//
+//        csvWriter.flush();
+//        csvWriter.close();
+//    }
 
 
 }

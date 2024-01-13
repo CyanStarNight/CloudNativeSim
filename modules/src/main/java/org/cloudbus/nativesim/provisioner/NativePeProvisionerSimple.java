@@ -5,9 +5,9 @@
 package org.cloudbus.nativesim.provisioner;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.cloudbus.cloudsim.Vm;
-import org.cloudbus.nativesim.entity.NativeEntity;
+import org.cloudbus.nativesim.entity.Container;
+import org.cloudbus.nativesim.entity.Pod;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-public class NativePeProvisionerSimple extends NativePeProvisioner{
+public class NativePeProvisionerSimple extends NativePeProvisioner {
     private Map<String, List<Double>> peTable;
     public NativePeProvisionerSimple(double availableMips) {
         super(availableMips);
@@ -23,20 +23,20 @@ public class NativePeProvisionerSimple extends NativePeProvisioner{
     }
 
     @Override
-    public boolean allocateMipsForEntity(NativeEntity entity, double mips) {
-        return allocateMipsForEntity(entity.getUid(), mips);
+    public boolean allocateMipsForContainer(Container container, double mips) {
+        return allocateMipsForContainer(container.getUid(), mips);
     }
 
     @Override
-    public boolean allocateMipsForEntity(String entityUid, double mips) {
+    public boolean allocateMipsForContainer(String containerUid, double mips) {
         if (getAvailableMips() < mips) {
             return false;
         }
 
         List<Double> allocatedMips;
 
-        if (getPeTable().containsKey(entityUid)) {
-            allocatedMips = getPeTable().get(entityUid);
+        if (getPeTable().containsKey(containerUid)) {
+            allocatedMips = getPeTable().get(containerUid);
         } else {
             allocatedMips = new ArrayList<Double>();
         }
@@ -44,42 +44,42 @@ public class NativePeProvisionerSimple extends NativePeProvisioner{
         allocatedMips.add(mips);
 
         setAvailableMips(getAvailableMips() - mips);
-        getPeTable().put(entityUid, allocatedMips);
+        getPeTable().put(containerUid, allocatedMips);
 
         return true;
     }
 
     @Override
-    public boolean allocateMipsForEntity(NativeEntity entity, List<Double> mips) {
+    public boolean allocateMipsForContainer(Container container, List<Double> mips) {
         int totalMipsToAllocate = 0;
         for (double _mips : mips) {
             totalMipsToAllocate += _mips;
         }
 
-        if (getAvailableMips() + getTotalAllocatedMipsForEntity(entity) < totalMipsToAllocate) {
+        if (getAvailableMips() + getTotalAllocatedMipsForContainer(container) < totalMipsToAllocate) {
             return false;
         }
 
-        setAvailableMips(getAvailableMips() + getTotalAllocatedMipsForEntity(entity) - totalMipsToAllocate);
+        setAvailableMips(getAvailableMips() + getTotalAllocatedMipsForContainer(container) - totalMipsToAllocate);
 
-        getPeTable().put(entity.getUid(), mips);
+        getPeTable().put(container.getUid(), mips);
 
         return true;
     }
 
     @Override
-    public List<Double> getAllocatedMipsForEntity(NativeEntity entity) {
-        if (getPeTable().containsKey(entity.getUid())) {
-            return getPeTable().get(entity.getUid());
+    public List<Double> getAllocatedMipsForContainer(Container container) {
+        if (getPeTable().containsKey(container.getUid())) {
+            return getPeTable().get(container.getUid());
         }
         return null;
     }
 
     @Override
-    public double getTotalAllocatedMipsForEntity(NativeEntity entity) {
-        if (getPeTable().containsKey(entity.getUid())) {
+    public double getTotalAllocatedMipsForContainer(Container container) {
+        if (getPeTable().containsKey(container.getUid())) {
             double totalAllocatedMips = 0.0;
-            for (double mips : getPeTable().get(entity.getUid())) {
+            for (double mips : getPeTable().get(container.getUid())) {
                 totalAllocatedMips += mips;
             }
             return totalAllocatedMips;
@@ -88,10 +88,10 @@ public class NativePeProvisionerSimple extends NativePeProvisioner{
     }
 
     @Override
-    public double getAllocatedMipsForEntityByVirtualPeId(NativeEntity entity, int peId) {
-        if (getPeTable().containsKey(entity.getUid())) {
+    public double getAllocatedMipsForContainerByVirtualPeId(Container container, int peId) {
+        if (getPeTable().containsKey(container.getUid())) {
             try {
-                return getPeTable().get(entity.getUid()).get(peId);
+                return getPeTable().get(container.getUid()).get(peId);
             } catch (Exception e) {
             }
         }
@@ -99,14 +99,17 @@ public class NativePeProvisionerSimple extends NativePeProvisioner{
     }
 
     @Override
-    public void deallocateMipsForEntity(NativeEntity entity) {
-        if (getPeTable().containsKey(entity.getUid())) {
-            for (double mips : getPeTable().get(entity.getUid())) {
+    public void deallocateMipsForContainer(Container container) {
+        if (getPeTable().containsKey(container.getUid())) {
+            for (double mips : getPeTable().get(container.getUid())) {
                 setAvailableMips(getAvailableMips() + mips);
             }
-            getPeTable().remove(entity.getUid());
+            getPeTable().remove(container.getUid());
         }
     }
+
+
+
     @Override
     public boolean allocateMipsForVm(Vm vm, double mips) {
         return allocateMipsForVm(vm.getUid(), mips);

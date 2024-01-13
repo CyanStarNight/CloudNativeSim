@@ -6,6 +6,7 @@ import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.lists.PeList;
 import org.cloudbus.nativesim.entity.Container;
 import org.cloudbus.nativesim.entity.NativePe;
+import org.cloudbus.nativesim.entity.Pod;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +34,6 @@ public abstract class ContainerScheduler {
     /** The VMs migrating out. */
     private List<String> containersMigratingOut;
 
-
     /**
      * Creates a new HostAllocationPolicy.
      *
@@ -59,7 +59,7 @@ public abstract class ContainerScheduler {
         getMipsMap().clear();
         setAvailableMips(PeList.getTotalMips(getPeList()));
         for (NativePe pe : getPeList()) {
-             pe.getNativePeProvisioner().deallocateMipsForAllEntities();
+             pe.getNativePeProvisioner().deallocateMipsForAllContainers();
         }
     }
 
@@ -108,5 +108,5 @@ public abstract class ContainerScheduler {
     }
 
 
-
+    public abstract boolean allocatePesForPod(Pod pod, List<Double> currentRequestedMips);
 }

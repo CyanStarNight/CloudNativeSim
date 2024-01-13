@@ -52,7 +52,7 @@ public class NativeSim extends CloudSim {
     //Attention: use UIDs to identify entities
     private List<ServiceGraph> globalGraphs = new ArrayList<>();
     private List<Service> globalServices = new ArrayList<>();
-    private List<Pod> globalPods = new ArrayList<>();
+    private List<Container> globalPods = new ArrayList<>();
     private List<Communication> globalCommunications = new ArrayList<>();
     private List<Container> globalContainers = new ArrayList<>();
 

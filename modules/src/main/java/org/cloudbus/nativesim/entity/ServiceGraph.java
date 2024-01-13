@@ -3,6 +3,7 @@ package org.cloudbus.nativesim.entity;
 import lombok.*;
 import org.cloudbus.nativesim.Controller;
 import org.cloudbus.nativesim.network.Communication;
+import org.cloudbus.nativesim.network.EndPoint;
 
 import java.util.*;
 
@@ -12,16 +13,20 @@ import java.util.*;
  */
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServiceGraph extends NativeEntity { // Attention：maybe extends DataCenter
-
+public class ServiceGraph{ // Attention：maybe extends DataCenter
+    private int userId;
+    private String name;
     Controller controller;
+
     private List<Service> services; // the entity of Communications.
     private List<Communication> communications;
     private int num_commu,num_services;
 
+    private List<EndPoint> endPoints;
+    private int num_endpoints;
     private LinkedList<Communication> serviceChains;
     double totalChainCost;
 
@@ -32,12 +37,13 @@ public class ServiceGraph extends NativeEntity { // Attention：maybe extends Da
     private int[][] serviceMatrix; // Attention: matrix may bring some benefits.
 
     public ServiceGraph(int userId,String appName, Controller controller){
-        super(userId,appName);
+        this.userId = userId;
+        this.name = appName;
         this.controller = controller;
     }
 
     public ServiceGraph(int userId) {
-        super(userId);
+        this.userId = userId;
     }
 
     public void buildNodeIn(Service service, Communication communication){
@@ -118,7 +124,6 @@ public class ServiceGraph extends NativeEntity { // Attention：maybe extends Da
     }
 
 
-
     public void init(){//TODO: 2023/12/9 DAG算法等要预防输入不正当（缺失或存在环路）
         setServices(controller.getLocalServices());
         List<Communication> commus = controller.getLocalCommunications();
@@ -136,10 +141,5 @@ public class ServiceGraph extends NativeEntity { // Attention：maybe extends Da
         buildCosts();
         findCriticalPath();
     }
-
-    public void setId(){
-        super.setId(getUserId());
-    }
-
 
 }

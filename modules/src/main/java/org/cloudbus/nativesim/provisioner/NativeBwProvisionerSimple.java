@@ -4,19 +4,17 @@
 
 package org.cloudbus.nativesim.provisioner;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.Vm;
-import org.cloudbus.nativesim.entity.NativeEntity;
-import org.cloudbus.nativesim.entity.Service;
+import org.cloudbus.nativesim.entity.Container;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Getter
 @Setter
-public class NativeBwProvisionerSimple extends NativeBwProvisioner{
+public class NativeBwProvisionerSimple extends NativeBwProvisioner {
     private Map<String, Long> bwTable;
     
     public NativeBwProvisionerSimple(long bw) {
@@ -24,47 +22,47 @@ public class NativeBwProvisionerSimple extends NativeBwProvisioner{
         setBwTable(new HashMap<String, Long>());
     }
     @Override
-    public boolean allocateBwForEntity(NativeEntity entity, long bw) {
-        deallocateBwForEntity(entity);
+    public boolean allocateBwForContainer(Container container, long bw) {
+        deallocateBwForContainer(container);
 
         if (getAvailableBw() >= bw) {
             setAvailableBw(getAvailableBw() - bw);
-            getBwTable().put(entity.getUid(), bw);
-            entity.setCurrentAllocatedBw(getAllocatedBwForEntity(entity));
+            getBwTable().put(container.getUid(), bw);
+            container.setCurrentAllocatedBw(getAllocatedBwForContainer(container));
             return true;
         }
 
-        entity.setCurrentAllocatedBw(getAllocatedBwForEntity(entity));
+        container.setCurrentAllocatedBw(getAllocatedBwForContainer(container));
         return false;
     }
     @Override
-    public long getAllocatedBwForEntity(NativeEntity entity) {
-        if (getBwTable().containsKey(entity.getUid())) {
-            return getBwTable().get(entity.getUid());
+    public long getAllocatedBwForContainer(Container container) {
+        if (getBwTable().containsKey(container.getUid())) {
+            return getBwTable().get(container.getUid());
         }
         return 0;
     }
 
     @Override
-    public void deallocateBwForEntity(NativeEntity entity) {
-        if (getBwTable().containsKey(entity.getUid())) {
-            long amountFreed = getBwTable().remove(entity.getUid());
+    public void deallocateBwForContainer(Container container) {
+        if (getBwTable().containsKey(container.getUid())) {
+            long amountFreed = getBwTable().remove(container.getUid());
             setAvailableBw(getAvailableBw() + amountFreed);
-            entity.setCurrentAllocatedBw(0);
+            container.setCurrentAllocatedBw(0);
         }
     }
 
-    public void deallocateBwForAllEntities() {
+    public void deallocateBwForAllContainers() {
         setAvailableBw(getBw());
         getBwTable().clear();
     }
     @Override
-    public boolean isSuitableForEntity(NativeEntity entity, long bw) {
-        long allocatedBw = getAllocatedBwForEntity(entity);
-        boolean result = allocateBwForEntity(entity, bw);
-        deallocateBwForEntity(entity);
+    public boolean isSuitableForContainer(Container container, long bw) {
+        long allocatedBw = getAllocatedBwForContainer(container);
+        boolean result = allocateBwForContainer(container, bw);
+        deallocateBwForContainer(container);
         if (allocatedBw > 0) {
-            allocateBwForEntity(entity, allocatedBw);
+            allocateBwForContainer(container, allocatedBw);
         }
         return result;
     }

@@ -3,16 +3,26 @@
  */
 
 package org.cloudbus.nativesim.entity;
+import lombok.Getter;
+import lombok.Setter;
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
+import org.cloudbus.nativesim.policy.allocation.ContainerAllocationPolicy;
 
 import java.util.List;
 
+@Getter
+@Setter
 public class NativeDatacenter extends Datacenter{
-    public NativeDatacenter(String name, DatacenterCharacteristics characteristics, VmAllocationPolicy vmAllocationPolicy, List<Storage> storageList, double schedulingInterval) throws Exception {
+
+    private List<? extends Service> serviceList;
+    ContainerAllocationPolicy serviceAllocationPolicy;
+
+    public NativeDatacenter(String name, DatacenterCharacteristics characteristics, VmAllocationPolicy vmAllocationPolicy, ContainerAllocationPolicy serviceAllocationPolicy, List<Storage> storageList, double schedulingInterval) throws Exception {
         super(name, characteristics, vmAllocationPolicy, storageList, schedulingInterval);
+        this.serviceAllocationPolicy = serviceAllocationPolicy;
     }
     protected void processCloudletResume(int cloudletId, int userId, int vmId, boolean ack) {
         double eventTime = getVmAllocationPolicy().getHost(vmId, userId).getVm(vmId,userId)
@@ -39,16 +49,6 @@ public class NativeDatacenter extends Datacenter{
         }
     }
 
-    /**
-     * Processes a Cloudlet pause request.
-     *
-     * @param cloudletId resuming cloudlet ID
-     * @param userId ID of the cloudlet's owner
-     * @param ack $true if an ack is requested after operation
-     * @param vmId the vm id
-     * @pre $none
-     * @post $none
-     */
     protected void processCloudletPause(int cloudletId, int userId, int vmId, boolean ack) {
         boolean status = getVmAllocationPolicy().getHost(vmId, userId).getVm(vmId,userId)
                 .getCloudletScheduler().cloudletPause(cloudletId);
@@ -66,15 +66,6 @@ public class NativeDatacenter extends Datacenter{
         }
     }
 
-    /**
-     * Processes a Cloudlet cancel request.
-     *
-     * @param cloudletId resuming cloudlet ID
-     * @param userId ID of the cloudlet's owner
-     * @param vmId the vm id
-     * @pre $none
-     * @post $none
-     */
     protected void processCloudletCancel(int cloudletId, int userId, int vmId) {
         Cloudlet cl = getVmAllocationPolicy().getHost(vmId, userId).getVm(vmId,userId)
                 .getCloudletScheduler().cloudletCancel(cloudletId);
@@ -165,15 +156,6 @@ public class NativeDatacenter extends Datacenter{
 
     }
 
-    /**
-     * Process the event for an User/Broker who wants to move a Cloudlet.
-     *
-     * @param receivedData information about the migration
-     * @param type event tag
-     * @pre receivedData != null
-     * @pre type > 0
-     * @post $none
-     */
     protected void processCloudletMove(int[] receivedData, int type) {
         updateCloudletProcessing();
 
@@ -235,14 +217,6 @@ public class NativeDatacenter extends Datacenter{
         }
     }
 
-    /**
-     * Processes a Cloudlet submission.
-     *
-     * @param ev a SimEvent object
-     * @param ack an acknowledgement
-     * @pre ev != null
-     * @post $none
-     */
     protected void processCloudletSubmit(SimEvent ev, boolean ack) {
         updateCloudletProcessing();
 

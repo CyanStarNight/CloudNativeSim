@@ -77,7 +77,7 @@ public class Register {
     }
 
     //TODO: 2024/1/3 实现动态注册
-    public <T extends NativeEntity> T registerEntityFromMap(String entityType, Map<String,Object> map){
+    public <T> T registerEntityFromMap(String entityType, Map<String,Object> map){
         T entity = null;
         switch (entityType){
             case "Service":
@@ -139,7 +139,7 @@ public class Register {
     }
 
     @NonNull
-    public Container registerContainer(Map<String,Object> map,Pod pod){
+    public Container registerContainer(Map<String,Object> map, Pod pod){
         long size = Long.parseLong(getValue(map,"size").toString());
         double mips = Double.parseDouble(getValue(map,"mips").toString());
         int numberOfPes = getValue(map,"pes");

@@ -7,13 +7,13 @@ package org.cloudbus.nativesim.provisioner;
 import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.Vm;
-import org.cloudbus.nativesim.entity.NativeEntity;
+import org.cloudbus.nativesim.entity.Container;
 
 import java.util.HashMap;
 import java.util.Map;
 @Getter
 @Setter
-public class NativeRamProvisionerSimple extends NativeRamProvisioner{
+public class NativeRamProvisionerSimple extends NativeRamProvisioner {
     private Map<String, Integer> ramTable;
 
     public NativeRamProvisionerSimple(int ram) {
@@ -21,42 +21,42 @@ public class NativeRamProvisionerSimple extends NativeRamProvisioner{
         setRamTable(new HashMap<String, Integer>());
     }
     @Override
-    public boolean allocateRamForEntity(NativeEntity entity, int ram) {
-        int maxRam = entity.getRam();
+    public boolean allocateRamForContainer(Container container, int ram) {
+        int maxRam = container.getRam();
                 /* If the requested amount of RAM to be allocated to the ENTITY is greater than
                 the amount of ENTITY is in fact requiring, allocate only the
-                amount defined in the Entity requirements.*/
+                amount defined in the Container requirements.*/
         if (ram >= maxRam) {
             ram = maxRam;
         }
 
-        deallocateRamForEntity(entity);
+        deallocateRamForContainer(container);
 
         if (getAvailableRam() >= ram) {
             setAvailableRam(getAvailableRam() - ram);
-            getRamTable().put(entity.getUid(), ram);
-            entity.setCurrentAllocatedRam(getAllocatedRamForEntity(entity));
+            getRamTable().put(container.getUid(), ram);
+            container.setCurrentAllocatedRam(getAllocatedRamForContainer(container));
             return true;
         }
 
-        entity.setCurrentAllocatedRam(getAllocatedRamForEntity(entity));
+        container.setCurrentAllocatedRam(getAllocatedRamForContainer(container));
 
         return false;
     }
     @Override
-    public int getAllocatedRamForEntity(NativeEntity entity) {
-        if (getRamTable().containsKey(entity.getUid())) {
-            return getRamTable().get(entity.getUid());
+    public int getAllocatedRamForContainer(Container container) {
+        if (getRamTable().containsKey(container.getUid())) {
+            return getRamTable().get(container.getUid());
         }
         return 0;
     }
 
     @Override
-    public void deallocateRamForEntity(NativeEntity entity) {
-        if (getRamTable().containsKey(entity.getUid())) {
-            int amountFreed = getRamTable().remove(entity.getUid());
+    public void deallocateRamForContainer(Container container) {
+        if (getRamTable().containsKey(container.getUid())) {
+            int amountFreed = getRamTable().remove(container.getUid());
             setAvailableRam(getAvailableRam() + amountFreed);
-            entity.setCurrentAllocatedRam(0);
+            container.setCurrentAllocatedRam(0);
         }
     }
 
@@ -65,12 +65,12 @@ public class NativeRamProvisionerSimple extends NativeRamProvisioner{
         getRamTable().clear();
     }
     @Override
-    public boolean isSuitableForEntity(NativeEntity entity, int ram) {
-        int allocatedRam = getAllocatedRamForEntity(entity);
-        boolean result = allocateRamForEntity(entity, ram);
-        deallocateRamForEntity(entity);
+    public boolean isSuitableForContainer(Container container, int ram) {
+        int allocatedRam = getAllocatedRamForContainer(container);
+        boolean result = allocateRamForContainer(container, ram);
+        deallocateRamForContainer(container);
         if (allocatedRam > 0) {
-            allocateRamForEntity(entity, allocatedRam);
+            allocateRamForContainer(container, allocatedRam);
         }
         return result;
     }

@@ -2,6 +2,7 @@ package org.cloudbus.nativesim.entity;
 
 import lombok.*;
 import org.cloudbus.cloudsim.util.MathUtil;
+import org.cloudbus.nativesim.network.EndPoint;
 import org.cloudbus.nativesim.util.NativeStateHistoryEntry;
 import org.cloudbus.nativesim.scheduler.NativeCloudletScheduler;
 
@@ -16,37 +17,62 @@ import java.util.*;
 
 @AllArgsConstructor
 @Data
-public class Container extends NativeEntity{//Attention: 继承的目的是为了双向映射pods和communications
+public class Container{//Attention: 继承的目的是为了双向映射pods和communications
 
-    private NativeCloudletScheduler cloudletScheduler;
+    private String uid; // the global id
+    private int id;
+    private int userId;
+    private String name;
     
     private Pod pod;
     private NativeVm vm;
+    List<EndPoint> endPoints;
+    private Service service;
 
-    public static final int HISTORY_LENGTH = 30;
-
-    private final List<Double> utilizationHistory = new LinkedList<Double>();
-
-    private double previousTime;
-
-    private double schedulingInterval; //TODO: 2023/12/17 interval暂时没用上，待定
+    private long size;
+    private double mips;
+    private int numberOfPes;
+    private int ram;
+    private long bw;
+    private long currentAllocatedSize;
+    private int currentAllocatedRam;
+    private long currentAllocatedBw;
+    private List<Double> currentAllocatedMips;
     private List<? extends NativePe> peList;
-
-    /** The map of VMs to PEs. */
     private Map<String, List<NativePe>> peMap;
-
-    /** The MIPS that are currently allocated to the VMs. */
     private Map<String, List<Double>> mipsMap;
-
-    /** The total available mips. */
     private double availableMips;
 
-    /** The VMs migrating in. */
+    private NativeCloudletScheduler cloudletScheduler;
+    private double previousTime;
+    private double schedulingInterval; //TODO: 2023/12/17 interval暂时没用上，待定
+
     private List<String> containersMigratingIn;
-
-    /** The VMs migrating out. */
     private List<String> containersMigratingOut;
+    private boolean inMigration;
 
+    private boolean beingInstantiated;
+    public static final int HISTORY_LENGTH = 30;
+    private final List<Double> utilizationHistory = new LinkedList<Double>();
+    private final List<NativeStateHistoryEntry> stateHistory = new LinkedList<NativeStateHistoryEntry>();
+
+    public void setUid() {
+        uid = userId + "-" + id;
+    }
+
+    public static String getUid(int userId, int id) {
+        return userId + "-" + id;
+    }
+
+    public Container(int userId) {
+        setUid();
+        setUserId(userId);
+    }
+    public Container(int userId,String name) {
+        setUid();
+        setUserId(userId);
+        setName(name);
+    }
     public Container(
             int userId,
             double mips,
@@ -123,11 +149,11 @@ public class Container extends NativeEntity{//Attention: 继承的目的是为�
         return (long) (getCloudletScheduler().getCurrentRequestedUtilizationOfBw() * getBw());
     }
 
-    public float getCurrentRequestedRam() {
+    public int getCurrentRequestedRam() {
         if (isBeingInstantiated()) {
             return getRam();
         }
-        return (float) (getCloudletScheduler().getCurrentRequestedUtilizationOfRam() * getRam());
+        return (int) (getCloudletScheduler().getCurrentRequestedUtilizationOfRam() * getRam());
     }
 
     public double getTotalUtilizationOfCpu(double time) {

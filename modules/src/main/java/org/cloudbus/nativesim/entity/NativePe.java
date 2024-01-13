@@ -7,7 +7,6 @@ package org.cloudbus.nativesim.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.Pe;
-import org.cloudbus.cloudsim.provisioners.PeProvisioner;
 import org.cloudbus.nativesim.provisioner.NativePeProvisioner;
 @Getter
 @Setter

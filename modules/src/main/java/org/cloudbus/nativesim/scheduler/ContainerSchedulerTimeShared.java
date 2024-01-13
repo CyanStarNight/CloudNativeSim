@@ -96,7 +96,7 @@ public class ContainerSchedulerTimeShared extends ContainerScheduler {
     protected void updatePeProvisioning() {
         getPeMap().clear();
         for (NativePe pe : getPeList()) {
-            pe.getNativePeProvisioner().deallocateMipsForAllEntities();
+            pe.getNativePeProvisioner().deallocateMipsForAllContainers();
         }
 
         Iterator<NativePe> peIterator = (Iterator<NativePe>) getPeList().iterator();
@@ -111,12 +111,12 @@ public class ContainerSchedulerTimeShared extends ContainerScheduler {
             for (double mips : entry.getValue()) {
                 while (mips >= 0.1) {
                     if (availableMips >= mips) {
-                        peProvisioner.allocateMipsForEntity(containerUid, mips);
+                        peProvisioner.allocateMipsForContainer(containerUid, mips);
                         getPeMap().get(containerUid).add(pe);
                         availableMips -= mips;
                         break;
                     } else {
-                        peProvisioner.allocateMipsForEntity(containerUid, availableMips);
+                        peProvisioner.allocateMipsForContainer(containerUid, availableMips);
                         getPeMap().get(containerUid).add(pe);
                         mips -= availableMips;
                         if (mips <= 0.1) {
@@ -144,7 +144,7 @@ public class ContainerSchedulerTimeShared extends ContainerScheduler {
         setAvailableMips(PeList.getTotalMips(getPeList()));
 
         for (NativePe pe : getPeList()) {
-            pe.getNativePeProvisioner().deallocateMipsForEntity(container);
+            pe.getNativePeProvisioner().deallocateMipsForContainer(container);
         }
 
         for (Map.Entry<String, List<Double>> entry : getMipsMapRequested().entrySet()) {

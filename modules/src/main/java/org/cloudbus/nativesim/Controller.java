@@ -84,6 +84,7 @@ public class Controller {
     }
 
     public void initialize() {
+
     }
 
     public <T> int index(T entity) {
@@ -127,11 +128,7 @@ public class Controller {
     }
 
     @AssertTrue
-    public static boolean checkMapping(ServiceGraph serviceGraph, int userId){
-        return serviceGraph.getId() == userId;
-    }
-    @AssertTrue
-    public static boolean checkMapping(Service service,Pod pod){
+    public static boolean checkMapping(Service service, Pod pod){
         return service.getLabels().stream().anyMatch(u -> pod.getLabels().contains(u));
     }
     //TODO: 2023/12/7 check container mapping
