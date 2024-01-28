@@ -5,7 +5,6 @@
 package org.cloudbus.nativesim.network;
 
 import lombok.Data;
-import org.cloudbus.nativesim.entity.NativeEntity;
 import org.cloudbus.nativesim.entity.Service;
 
 import java.util.LinkedList;

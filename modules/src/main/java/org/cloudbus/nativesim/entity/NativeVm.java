@@ -7,10 +7,10 @@ package org.cloudbus.nativesim.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.*;
-import org.cloudbus.nativesim.provisioner.NativeBwProvisioner;
-import org.cloudbus.nativesim.provisioner.NativePeProvisioner;
-import org.cloudbus.nativesim.provisioner.NativeRamProvisioner;
-import org.cloudbus.nativesim.scheduler.ContainerScheduler;
+import org.cloudbus.nativesim.provisioner.InstanceBwProvisioner;
+import org.cloudbus.nativesim.provisioner.InstancePeProvisioner;
+import org.cloudbus.nativesim.provisioner.InstanceRamProvisioner;
+import org.cloudbus.nativesim.scheduler.InstanceScheduler;
 import org.cloudbus.nativesim.scheduler.NativeCloudletScheduler;
 
 import java.util.ArrayList;
@@ -19,21 +19,40 @@ import java.util.List;
 @Setter
 public class NativeVm extends Vm {
 
+    private String uid; // the global id
+    private int id;
+    private int userId;
+
     private long storage;
     private List<? extends NativePe> peList;
 
-    private NativeBwProvisioner nativeBwProvisioner;
-    private NativeRamProvisioner nativeRamProvisioner;
-    private NativePeProvisioner nativePeProvisioner;
+    private InstanceBwProvisioner instanceBwProvisioner;
+    private InstanceRamProvisioner instanceRamProvisioner;
+    private InstancePeProvisioner instancePeProvisioner;
 
+    private final List<Instance> instanceList= new ArrayList<>();
     private final List<Container> containerList = new ArrayList<>();
     private final List<Container> containersMigratingIn = new ArrayList<>();
     private final List<Pod> podList = new ArrayList<>();
     private final List<Pod> podsMigratingIn = new ArrayList<>();
-    private ContainerScheduler containerScheduler;
+    private InstanceScheduler instanceScheduler;
 
-    public NativeVm(int id, int userId, double mips, int numberOfPes, int ram, long bw, long size, String vmm, NativeCloudletScheduler cloudletScheduler) {
+    public void setUid() {
+        uid = userId + "-Vm-" + id;
+    }
+
+    public static String getUid(int userId, int id) {
+        return userId + "-Vm-" + id;
+    }
+    public NativeVm(int id, int userId, double mips, int numberOfPes, int ram, long bw, long size, String vmm,
+                    InstanceBwProvisioner instanceBwProvisioner,
+                    InstanceRamProvisioner instanceRamProvisioner,
+                    InstancePeProvisioner instancePeProvisioner,
+                    NativeCloudletScheduler cloudletScheduler) {
         super(id, userId, mips, numberOfPes, ram, bw, size, vmm, cloudletScheduler);
+        this.instanceBwProvisioner = instanceBwProvisioner;
+        this.instanceRamProvisioner = instanceRamProvisioner;
+        this.instancePeProvisioner = instancePeProvisioner;
     }
 
     public double updateVmProcessing(double currentTime, List<Double> mipsShare) {
@@ -61,45 +80,90 @@ public class NativeVm extends Vm {
 //        return 0.0;
 //    }
 
-    public boolean containerCreate(Container container) {
-        if (getStorage() < container.getSize()) {
-            Log.printLine("[ContainerScheduler.containerCreate] Allocation of CONTAINER #" + container.getId() + " to Vm #" + getId()
+    public boolean instanceCreate(Instance instance){
+        if (getStorage() < instance.getSize()) {
+            Log.printLine("[InstanceScheduler.instanceCreate] Allocation of INSTANCE #" + instance.getId() + " to Vm #" + getId()
                     + " failed by storage");
             return false;
         }
 
-        if (!getNativeRamProvisioner().allocateRamForContainer(container, container.getCurrentRequestedRam())) {
-            Log.printLine("[ContainerScheduler.containerCreate] Allocation of CONTAINER #" + container.getId() + " to Vm #" + getId()
+        if (!getInstanceRamProvisioner().allocateRamForInstance(instance, instance.getCurrentRequestedRam())) {
+            Log.printLine("[InstanceScheduler.instanceCreate] Allocation of INSTANCE #" + instance.getId() + " to Vm #" + getId()
                     + " failed by RAM");
             return false;
         }
 
-        if (!getNativeBwProvisioner().allocateBwForContainer(container, container.getCurrentRequestedBw())) {
-            Log.printLine("[ContainerScheduler.containerCreate] Allocation of CONTAINER #" + container.getId() + " to Vm #" + getId()
+        if (!getInstanceBwProvisioner().allocateBwForInstance(instance, instance.getCurrentRequestedBw())) {
+            Log.printLine("[InstanceScheduler.instanceCreate] Allocation of INSTANCE #" + instance.getId() + " to Vm #" + getId()
                     + " failed by BW");
-            getNativeRamProvisioner().deallocateRamForContainer(container);
+            getInstanceRamProvisioner().deallocateRamForInstance(instance);
             return false;
         }
 
-        if (!getContainerScheduler().allocatePesForContainer(container, container.getCurrentRequestedMips())) {
-            Log.printLine("[ContainerScheduler.containerCreate] Allocation of CONTAINER #" + container.getId() + " to Vm #" + getId()
+        if (!getInstanceScheduler().allocatePesForInstance(instance, instance.getCurrentRequestedMips())) {
+            Log.printLine("[InstanceScheduler.instanceCreate] Allocation of INSTANCE #" + instance.getId() + " to Vm #" + getId()
                     + " failed by MIPS");
-            getNativeRamProvisioner().deallocateRamForContainer(container);
-            getNativeBwProvisioner().deallocateBwForContainer(container);
+            getInstanceRamProvisioner().deallocateRamForInstance(instance);
+            getInstanceBwProvisioner().deallocateBwForInstance(instance);
             return false;
         }
 
-        setStorage(getStorage() - container.getSize());
-        getContainerList().add(container);
-        container.setVm(this);
+        String class_name = instance.getClass().getSimpleName();
+        switch (class_name){
+            case "Pod":
+                assert instance instanceof Pod;
+                getPodList().add((Pod) instance);
+            case "Container":
+                assert instance instanceof Container;
+                getContainerList().add((Container) instance);
+            default: break;
+        }
+
+        setStorage(getStorage() - instance.getSize());
+        instance.setVm(this);
+
         return true;
+
     }
 
-    public boolean podCreate(Pod pod) {
-        Log.printLine("[ContainerScheduler.podCreate] Allocation of POD #" + pod.getId() + " to Vm #" + getId());
-        pod.getContainerList().forEach(this::containerCreate);
-        getPodList().add(pod);
-        pod.setVm(this);
-        return true;
+    public void instanceDestroy(Instance instance) {
+        if (instance != null) {
+            instanceDeallocate(instance);
+            getInstanceList().remove(instance);
+            instance.setVm(null);
+        }
+    }
+
+    public void instanceDestroyAll() {
+        instanceDeallocateAll();
+        for (Instance instance : getInstanceList()) {
+            instance.setVm(null);
+            setStorage(getStorage() + instance.getSize());
+        }
+        getInstanceList().clear();
+    }
+
+    protected void instanceDeallocate(Instance instance) {
+        getInstanceRamProvisioner().deallocateRamForInstance(instance);
+        getInstanceBwProvisioner().deallocateBwForInstance(instance);
+        getInstanceScheduler().deallocatePesForInstance(instance);
+        setStorage(getStorage() + instance.getSize());
+    }
+
+
+    protected void instanceDeallocateAll() {
+        getInstanceRamProvisioner().deallocateRamForAllInstances();
+        getInstanceBwProvisioner().deallocateBwForAllInstances();
+        getInstanceScheduler().deallocatePesForAllInstances();
+    }
+
+
+    public Instance getInstance(int instanceId, int userId) {
+        for (Instance instance : getInstanceList()) {
+            if (instance.getId() == instanceId && instance.getUserId() == userId) {
+                return instance;
+            }
+        }
+        return null;
     }
 }

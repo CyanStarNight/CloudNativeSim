@@ -8,6 +8,7 @@
 * [X]  重构NativeVm、NativeDatacenter、NativeDatacenterBroker
 * [X]  重构NativeCloudlet，它的提交应该在进入执行队列以后
 * [X]  关掉Vm中的cloudletScheduler，重构NativeCloudletScheduler
+* [x]  PodServiceAllocationSimple、PodXXXProvisionerSimple
 * [X]  构建Request、Dispatcher、EndPoint、LoadBalancer
 * [X]  保留Controller，删掉Events
 * [X]  重构输入
@@ -15,22 +16,14 @@
     * [X] dependency.json
     * [X] requests.json
     * [X] deployment.yaml
-   
-* [x]  既能支持Pod，也能支持单个容器
-    *[x] 将Pod透明化，pod只是container的集合操作
-    *[x] 像mpis、ram、bw这些直接分配给pod不合理，因为pod只是容器的集合.所以像allocateXXXForPod这样的方法需要注释掉
 
-* [ ]  Service 部署在 Datacenter
-    * [ ] ServiceAllocation，运行在Datacenter上，根据系统负载和业务需求去创建实例
-    * [ ] ContainerAllocation,运行在VM上，部署单个Container或单个Pod，即服务的实例
 
-* [ ]  将各层实体通过部署算法来映射起来实现
-   
-    *[ ] vm、container、pod是先置的，实现ServiceAllocationPolicy
-    *[x] requests、endpoints是先置的，根据文件定义
-    *[ ] network是后置的
+* [ ]  Service调度
+    * [x] ServiceAllocation，部署Container或Pod，即服务的实例
+    * [ ] ServiceMigration
+    * [ ] ServiceScaling
 
-* [ ]  NativeVm继承SimEntity，让cloudlet在container中被执行
+* [ ]  重写submit的逻辑，让cloudlet在container中被执行
 
 * [X]  重构输出格式
 * [ ]  计算输出指标

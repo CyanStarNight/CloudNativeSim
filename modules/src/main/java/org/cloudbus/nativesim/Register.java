@@ -67,7 +67,7 @@ public class Register {
     }
 
 
-    public List<Pod> registerDeployment(String deploymentFile){
+    public List<Pod> registerPods(String deploymentFile){
         Map<String,Object> map = ReadYaml(deploymentFile);
         List<Pod> pods = new ArrayList<Pod>();
         for (Map<String,Object> m : (List<Map<String,Object>>)map.get("pods")){
@@ -96,7 +96,7 @@ public class Register {
 
     @NonNull
     public Service registerService(Map<String,Object> map){
-        Service service = new Service(); //Register the services;
+        Service service = new Service(userId); //Register the services;
         String service_name = getValue(map,"name");
         service.setName(service_name);
         service.setLabels(getValue(map,"labels"));
@@ -122,11 +122,11 @@ public class Register {
 
     @NonNull
     public Pod registerPod(Map<String,Object> map){
-        Pod pod = new Pod();
+        Pod pod = new Pod(userId);
         pod.setName(getValue(map,"name"));
         pod.setLabels(getValue(map,"labels")); //TODO: 2023/12/8 要求格式必须是 labels：/n - orders
         pod.setNum_replicas(getValue(map,"replicas"));
-        pod.setStorage(getValue(map,"storage"));
+        pod.setSize(Long.parseLong(getValue(map,"storage").toString()));
         pod.setPrefix(getValue(map,"prefix"));
         if(map.containsKey("containers")){
             List<Container> containers = new ArrayList<>();

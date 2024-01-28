@@ -48,15 +48,10 @@ public class NativeSim extends CloudSim {
     public static final PredicateAny SIM_ANY = new PredicateAny();
     public static final PredicateNone SIM_NONE = new PredicateNone();
 
-
     //Attention: use UIDs to identify entities
-    private List<ServiceGraph> globalGraphs = new ArrayList<>();
-    private List<Service> globalServices = new ArrayList<>();
-    private List<Container> globalPods = new ArrayList<>();
-    private List<Communication> globalCommunications = new ArrayList<>();
-    private List<Container> globalContainers = new ArrayList<>();
-
-    public static List<Controller> controllers = new ArrayList<>();//TODO: 2023/12/7 对于这些全局字段如何进行访问控制呢？
+    private static List<ServiceGraph> globalGraphs = new ArrayList<>();
+    public static List<Controller> controllers = new ArrayList<>();
+    public static List<List<Instance>> instances = new ArrayList<>();
 
     public static double startSimulation() throws NullPointerException {
         Log.printLine("Starting NativeSim version" + NativeSim_VERSION_STRING);

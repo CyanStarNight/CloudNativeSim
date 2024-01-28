@@ -8,6 +8,7 @@ import lombok.*;
 import org.cloudbus.nativesim.network.Communication;
 import org.cloudbus.nativesim.network.EndPoint;
 import org.cloudbus.nativesim.scheduler.NativeCloudletScheduler;
+import org.cloudbus.nativesim.util.NativeLog;
 import org.cloudbus.nativesim.util.NativeStateHistoryEntry;
 import org.cloudbus.nativesim.util.Status;
 
@@ -27,12 +28,13 @@ public class Service{
     public String name;
     private ArrayList<String> labels;
 
-    private List<Pod> pods;
+    private List<Instance> instanceList;
+    private List<Pod> podList;
     private List<Container> containerList;
     private List<Communication> calls;
     private List<EndPoint> endPoints;
     private List<NativeVm> vmList;
-    private int num_pods,num_containers,num_calls,num_vms,num_endpoints;
+    private int num_instance,num_pods,num_containers,num_calls,num_vms,num_endpoints;
     private ServiceGraph serviceGraph;
     private NativeDatacenter datacenter;
 
@@ -47,10 +49,6 @@ public class Service{
     private int numberOfPes;
     private int ram;
     private long bw;
-    private long currentAllocatedSize;
-    private int currentAllocatedRam;
-    private long currentAllocatedBw;
-    private List<Double> currentAllocatedMips;
 
     private NativeCloudletScheduler cloudletScheduler;
 
@@ -60,11 +58,11 @@ public class Service{
     private final List<NativeStateHistoryEntry> stateHistory = new LinkedList<NativeStateHistoryEntry>();
 
     public void setUid() {
-        uid = userId + "-service-" + id;
+        uid = userId + "-Service-" + id;
     }
 
     public static String getUid(int userId, int id) {
-        return userId + "-service-" + id;
+        return userId + "-Service-" + id;
     }
 
     public Service(int userId) {
@@ -72,16 +70,13 @@ public class Service{
         setUserId(userId);
     }
 
-    public Service(){
-        super();
-    }
     public Service(int userId,String name){
-        this.userId = userId;
+        setUid();
+        setUserId(userId);
         this.name = name;
     }
 
-    public void init(){
-        num_pods = pods.size();
+    public void build(){
         buildIn_degree();
         buildOut_degree();
         buildEtv();
@@ -137,17 +132,72 @@ public class Service{
         }
     }
 
-    // 最基础的操作有setPods、addPod和addPods.
-    public void addPod(Pod pod){
-        if (checkMapping(this,pod))
-            this.getPods().add(pod);
+    public boolean matchInstance(Instance instance){
+        return checkMapping(this,instance);
+    }
+    public boolean addInstance(Instance instance){
+        if (instanceList.contains(instance)){ return true; }
+
+        String class_name = instance.getClass().getSimpleName();
+        switch (class_name){
+            case "Pod":
+                assert instance instanceof Pod;
+                podList.add((Pod) instance);
+                num_pods++;
+            case "Container":
+                assert instance instanceof Container;
+                containerList.add((Container) instance); num_containers++;
+            default: break;
+        }
+
+        instanceList.add(instance);
+        instance.setId(instanceList.indexOf(instance));
+        num_instance++;
+
+        return true;
+    }
+//TODO: 2024/1/24 除了删除映射，还需要删除资源
+    public boolean removeInstance(Instance instance){
+        if (!instanceList.contains(instance)){
+            NativeLog.printLine("Failed to remove: Instance not exist.");
+            return false;
+        }else {
+            instanceList.remove(instance);
+            num_instance--;
+            String class_name = instance.getClass().getSimpleName();
+            switch (class_name){
+                case "Pod": num_pods--;
+                case "Container": num_containers--;
+                default: break;
+            }
+        }
+        return true;
     }
 
+    public boolean matchCommunication(Communication communication){
+        return checkMapping(this,communication);
+    }
 
-    // Unit: Commu相关
-    public void addCommunication(Communication communication){
-        if (checkMapping(this,communication))
-            this.getCalls().add(communication);
+    public boolean addCommunication(Communication communication){
+        if (getCalls().contains(communication)){ return true; }
+
+        this.getCalls().add(communication);
+        communication.setId(getCalls().indexOf(communication));
+        num_calls++;
+
+        return true;
+    }
+
+    public boolean removeCommunication(Communication communication){
+        if (!getCalls().contains(communication)){
+            NativeLog.printLine("Failed to remove: communication not exist.");
+            return false;
+        }else {
+            getCalls().remove(communication);
+            num_calls--;
+            build();
+        }
+        return true;
     }
 
     public double getTotalUtilizationOfCpu(double time) {

@@ -4,9 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.lists.PeList;
-import org.cloudbus.nativesim.entity.Container;
+import org.cloudbus.nativesim.entity.Instance;
 import org.cloudbus.nativesim.entity.NativePe;
-import org.cloudbus.nativesim.entity.Pod;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +14,7 @@ import java.util.Map;
 
 @Setter
 @Getter
-public abstract class ContainerScheduler {
+public abstract class InstanceScheduler {
     /** The peList. */
     private List<? extends NativePe> peList;
 
@@ -29,51 +28,45 @@ public abstract class ContainerScheduler {
     private double availableMips;
 
     /** The VMs migrating in. */
-    private List<String> containersMigratingIn;
+    private List<String> instanceMigratingIn;
 
     /** The VMs migrating out. */
-    private List<String> containersMigratingOut;
+    private List<String> instanceMigratingOut;
 
-    /**
-     * Creates a new HostAllocationPolicy.
-     *
-     * @param pelist the pelist
-     * @pre peList != $null
-     * @post $none
-     */
-    public ContainerScheduler(List<? extends NativePe> pelist) {
+
+    public InstanceScheduler(List<? extends NativePe> pelist) {
         setPeList(pelist);
         setPeMap(new HashMap<String, List<NativePe>>());
         setMipsMap(new HashMap<String, List<Double>>());
         setAvailableMips(PeList.getTotalMips(getPeList()));
-        setContainersMigratingIn(new ArrayList<String>());
-        setContainersMigratingOut(new ArrayList<String>());
+        setInstanceMigratingIn(new ArrayList<String>());
+        setInstanceMigratingOut(new ArrayList<String>());
 
     }
 
-    public abstract boolean allocatePesForContainer(Container container, List<Double> mipsShare);
+    public abstract boolean allocatePesForInstance(Instance instance, List<Double> mipsShare);
 
-    public abstract void deallocatePesForContainer(Container container);
+    public abstract void deallocatePesForInstance(Instance instance);
 
-    public void deallocatePesForAllContainers() {
+    public void deallocatePesForAllInstances() {
         getMipsMap().clear();
         setAvailableMips(PeList.getTotalMips(getPeList()));
         for (NativePe pe : getPeList()) {
-             pe.getNativePeProvisioner().deallocateMipsForAllContainers();
+             pe.getInstancePeProvisioner().deallocateMipsForAllInstances();
         }
     }
 
-    public List<NativePe> getPesAllocatedForContainer(Container container) {
-        return getPeMap().get(container.getUid());
+    public List<NativePe> getPesAllocatedForInstance(Instance instance) {
+        return getPeMap().get(instance.getUid());
     }
 
-    public List<Double> getAllocatedMipsForContainer(Container container) {
-        return getMipsMap().get(container.getUid());
+    public List<Double> getAllocatedMipsForInstance(Instance instance) {
+        return getMipsMap().get(instance.getUid());
     }
 
-    public double getTotalAllocatedMipsForContainer(Container container) {
+    public double getTotalAllocatedMipsForInstance(Instance instance) {
         double allocated = 0;
-        List<Double> mipsMap = getAllocatedMipsForContainer(container);
+        List<Double> mipsMap = getAllocatedMipsForInstance(instance);
         if (mipsMap != null) {
             for (double mips : mipsMap) {
                 allocated += mips;
@@ -107,6 +100,4 @@ public abstract class ContainerScheduler {
         return getPeList().get(0).getMips();
     }
 
-
-    public abstract boolean allocatePesForPod(Pod pod, List<Double> currentRequestedMips);
 }

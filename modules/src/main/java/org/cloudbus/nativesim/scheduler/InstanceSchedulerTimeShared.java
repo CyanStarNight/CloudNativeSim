@@ -4,55 +4,44 @@ import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.lists.PeList;
-import org.cloudbus.nativesim.entity.Container;
+import org.cloudbus.nativesim.entity.Instance;
 import org.cloudbus.nativesim.entity.NativePe;
-import org.cloudbus.nativesim.provisioner.NativePeProvisioner;
+import org.cloudbus.nativesim.provisioner.InstancePeProvisioner;
 
 import java.util.*;
 @Getter
 @Setter
-public class ContainerSchedulerTimeShared extends ContainerScheduler {
-    /**
-     * The mips map requested.
-     */
-    private Map<String, List<Double>> mipsMapRequested;
+public class InstanceSchedulerTimeShared extends InstanceScheduler {
 
-    /**
-     * The pes in use.
-     */
+    private Map<String, List<Double>> mipsMapRequested;
     private int pesInUse;
 
-    /**
-     * Instantiates a new container scheduler time shared.
-     *
-     * @param pelist the pelist
-     */
-    public ContainerSchedulerTimeShared(List<NativePe> pelist) {
+    public InstanceSchedulerTimeShared(List<NativePe> pelist) {
         super(pelist);
         setMipsMapRequested(new HashMap<String, List<Double>>());
     }
 
     @Override
-    public boolean allocatePesForContainer(Container container, List<Double> mipsShareRequested) {
-        if (container.isInMigration()) {
-            if (!getContainersMigratingIn().contains(container.getUid()) && !getContainersMigratingOut().contains(container.getUid())) {
-                getContainersMigratingOut().add(container.getUid());
+    public boolean allocatePesForInstance(Instance instance, List<Double> mipsShareRequested) {
+        if (instance.isInMigration()) {
+            if (!getInstanceMigratingIn().contains(instance.getUid()) && !getInstanceMigratingOut().contains(instance.getUid())) {
+                getInstanceMigratingOut().add(instance.getUid());
             }
         } else {
-            if (getContainersMigratingOut().contains(container.getUid())) {
-                getContainersMigratingOut().remove(container.getUid());
+            if (getInstanceMigratingOut().contains(instance.getUid())) {
+                getInstanceMigratingOut().remove(instance.getUid());
             }
         }
-        boolean result = allocatePesForContainer(container.getUid(), mipsShareRequested);
+        boolean result = allocatePesForInstance(instance.getUid(), mipsShareRequested);
         updatePeProvisioning();
         return result;
     }
 
-    protected boolean allocatePesForContainer(String containerUid, List<Double> mipsShareRequested) {
+    protected boolean allocatePesForInstance(String instanceUid, List<Double> mipsShareRequested) {
         double totalRequestedMips = 0;
         double peMips = getPeCapacity();
         for (Double mips : mipsShareRequested) {
-            // each virtual PE of a CONTAINER must require not more than the capacity of a physical PE
+            // each virtual PE of a INSTANCE must require not more than the capacity of a physical PE
             if (mips > peMips) {
                 return false;
             }
@@ -64,70 +53,70 @@ public class ContainerSchedulerTimeShared extends ContainerScheduler {
             return false;
         }
 
-        getMipsMapRequested().put(containerUid, mipsShareRequested);
+        getMipsMapRequested().put(instanceUid, mipsShareRequested);
         setPesInUse(getPesInUse() + mipsShareRequested.size());
 
-        if (getContainersMigratingIn().contains(containerUid)) {
-            // the destination host only experience 10% of the migrating CONTAINER's MIPS
+        if (getInstanceMigratingIn().contains(instanceUid)) {
+            // the destination host only experience 10% of the migrating INSTANCE's MIPS
             totalRequestedMips *= 0.1;
         }
 
         List<Double> mipsShareAllocated = new ArrayList<Double>();
         for (Double mipsRequested : mipsShareRequested) {
-            if (getContainersMigratingOut().contains(containerUid)) {
+            if (getInstanceMigratingOut().contains(instanceUid)) {
                 // performance degradation due to migration = 10% MIPS
                 mipsRequested *= 0.9;
-            } else if (getContainersMigratingIn().contains(containerUid)) {
-                // the destination host only experience 10% of the migrating CONTAINER's MIPS
+            } else if (getInstanceMigratingIn().contains(instanceUid)) {
+                // the destination host only experience 10% of the migrating INSTANCE's MIPS
                 mipsRequested *= 0.1;
             }
             mipsShareAllocated.add(mipsRequested);
         }
 
-        getMipsMap().put(containerUid, mipsShareAllocated);
+        getMipsMap().put(instanceUid, mipsShareAllocated);
         setAvailableMips(getAvailableMips() - totalRequestedMips);
 
         return true;
     }
 
     /**
-     * Update allocation of CONTAINERs on PEs.
+     * Update allocation of INSTANCEs on PEs.
      */
     protected void updatePeProvisioning() {
         getPeMap().clear();
         for (NativePe pe : getPeList()) {
-            pe.getNativePeProvisioner().deallocateMipsForAllContainers();
+            pe.getInstancePeProvisioner().deallocateMipsForAllInstances();
         }
 
         Iterator<NativePe> peIterator = (Iterator<NativePe>) getPeList().iterator();
         NativePe pe = peIterator.next();
-        NativePeProvisioner peProvisioner = pe.getNativePeProvisioner();
+        InstancePeProvisioner peProvisioner = pe.getInstancePeProvisioner();
         double availableMips = peProvisioner.getAvailableMips();
 
         for (Map.Entry<String, List<Double>> entry : getMipsMap().entrySet()) {
-            String containerUid = entry.getKey();
-            getPeMap().put(containerUid, new LinkedList<NativePe>());
+            String instanceUid = entry.getKey();
+            getPeMap().put(instanceUid, new LinkedList<NativePe>());
 
             for (double mips : entry.getValue()) {
                 while (mips >= 0.1) {
                     if (availableMips >= mips) {
-                        peProvisioner.allocateMipsForContainer(containerUid, mips);
-                        getPeMap().get(containerUid).add(pe);
+                        peProvisioner.allocateMipsForInstance(instanceUid, mips);
+                        getPeMap().get(instanceUid).add(pe);
                         availableMips -= mips;
                         break;
                     } else {
-                        peProvisioner.allocateMipsForContainer(containerUid, availableMips);
-                        getPeMap().get(containerUid).add(pe);
+                        peProvisioner.allocateMipsForInstance(instanceUid, availableMips);
+                        getPeMap().get(instanceUid).add(pe);
                         mips -= availableMips;
                         if (mips <= 0.1) {
                             break;
                         }
                         if (!peIterator.hasNext()) {
-                            Log.printLine("There is no enough MIPS (" + mips + ") to accommodate CONTAINER " + containerUid);
+                            Log.printLine("There is no enough MIPS (" + mips + ") to accommodate INSTANCE " + instanceUid);
                             // System.exit(0);
                         }
                         pe = peIterator.next();
-                        peProvisioner = pe.getNativePeProvisioner();
+                        peProvisioner = pe.getInstancePeProvisioner();
                         availableMips = peProvisioner.getAvailableMips();
                     }
                 }
@@ -137,32 +126,27 @@ public class ContainerSchedulerTimeShared extends ContainerScheduler {
 
 
     @Override
-    public void deallocatePesForContainer(Container container) {
-        getMipsMapRequested().remove(container.getUid());
+    public void deallocatePesForInstance(Instance instance) {
+        getMipsMapRequested().remove(instance.getUid());
         setPesInUse(0);
         getMipsMap().clear();
         setAvailableMips(PeList.getTotalMips(getPeList()));
 
         for (NativePe pe : getPeList()) {
-            pe.getNativePeProvisioner().deallocateMipsForContainer(container);
+            pe.getInstancePeProvisioner().deallocateMipsForInstance(instance);
         }
 
         for (Map.Entry<String, List<Double>> entry : getMipsMapRequested().entrySet()) {
-            allocatePesForContainer(entry.getKey(), entry.getValue());
+            allocatePesForInstance(entry.getKey(), entry.getValue());
         }
 
         updatePeProvisioning();
     }
 
-    /**
-     * Releases PEs allocated to all the CONTAINERs.
-     *
-     * @pre $none
-     * @post $none
-     */
+
     @Override
-    public void deallocatePesForAllContainers() {
-        super.deallocatePesForAllContainers();
+    public void deallocatePesForAllInstances() {
+        super.deallocatePesForAllInstances();
         getMipsMapRequested().clear();
         setPesInUse(0);
     }

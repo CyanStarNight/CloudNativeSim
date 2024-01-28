@@ -128,18 +128,9 @@ public class Controller {
     }
 
     @AssertTrue
-    public static boolean checkMapping(Service service, Pod pod){
-        return service.getLabels().stream().anyMatch(u -> pod.getLabels().contains(u));
+    public static boolean checkMapping(Service service, Instance instance){
+        return service.getLabels().stream().anyMatch(u -> instance.getLabels().contains(u));
     }
-    //TODO: 2023/12/7 check container mapping
-//    @AssertTrue
-//    public static boolean checkMapping(Service service,NativeContainer container){
-//        return service.getLabels().stream().anyMatch(u -> container.getLabel().equals(u));
-//    }
-//    @AssertTrue
-//    public static boolean checkMapping(Pod pod,NativeContainer container){
-//        return pod.getLabels().stream().anyMatch(u -> u.contains(container.getLabel()));
-//    }
     @AssertTrue
     public static boolean checkMapping(Service service,Communication communication){
         return (communication.getOrigin().equals(service)) || (communication.getDest().equals(service));

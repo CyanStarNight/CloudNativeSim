@@ -9,7 +9,7 @@ import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
-import org.cloudbus.nativesim.policy.allocation.ContainerAllocationPolicy;
+import org.cloudbus.nativesim.policy.allocation.ServiceAllocationPolicy;
 
 import java.util.List;
 
@@ -18,9 +18,12 @@ import java.util.List;
 public class NativeDatacenter extends Datacenter{
 
     private List<? extends Service> serviceList;
-    ContainerAllocationPolicy serviceAllocationPolicy;
+    private List<? extends Instance> instanceList;
+    ServiceAllocationPolicy serviceAllocationPolicy;
 
-    public NativeDatacenter(String name, DatacenterCharacteristics characteristics, VmAllocationPolicy vmAllocationPolicy, ContainerAllocationPolicy serviceAllocationPolicy, List<Storage> storageList, double schedulingInterval) throws Exception {
+    public NativeDatacenter(String name, DatacenterCharacteristics characteristics,
+                            VmAllocationPolicy vmAllocationPolicy, ServiceAllocationPolicy serviceAllocationPolicy,
+                            List<Storage> storageList, double schedulingInterval) throws Exception {
         super(name, characteristics, vmAllocationPolicy, storageList, schedulingInterval);
         this.serviceAllocationPolicy = serviceAllocationPolicy;
     }

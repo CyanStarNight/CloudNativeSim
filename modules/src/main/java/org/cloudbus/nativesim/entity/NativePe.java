@@ -7,15 +7,18 @@ package org.cloudbus.nativesim.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.Pe;
-import org.cloudbus.nativesim.provisioner.NativePeProvisioner;
+import org.cloudbus.cloudsim.provisioners.PeProvisioner;
+import org.cloudbus.nativesim.provisioner.InstancePeProvisioner;
+
 @Getter
 @Setter
 public class NativePe extends Pe {
 
-    private NativePeProvisioner nativePeProvisioner;
+    private InstancePeProvisioner instancePeProvisioner;
 
-    public NativePe(int id, NativePeProvisioner peProvisioner) {
+    public NativePe(int id, PeProvisioner peProvisioner,InstancePeProvisioner instancePeProvisioner) {
         super(id, peProvisioner);
+        this.instancePeProvisioner = instancePeProvisioner;
     }
 
 }

@@ -4,13 +4,15 @@
 package org.cloudbus.nativesim;
 
 import org.cloudbus.cloudsim.*;
+import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
+import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
+import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.cloudbus.nativesim.entity.*;
-import org.cloudbus.nativesim.policy.allocation.ContainerAllocationPolicy;
-import org.cloudbus.nativesim.policy.scaling.ServiceScalingPolicy;
-import org.cloudbus.nativesim.provisioner.NativeBwProvisionerSimple;
-import org.cloudbus.nativesim.provisioner.NativePeProvisionerSimple;
-import org.cloudbus.nativesim.provisioner.NativeRamProvisionerSimple;
 import org.cloudbus.nativesim.network.Request;
+import org.cloudbus.nativesim.policy.allocation.PodServiceAllocationPolicySimple;
+import org.cloudbus.nativesim.policy.allocation.ServiceAllocationPolicy;
+import org.cloudbus.nativesim.policy.scaling.ServiceScalingPolicy;
+import org.cloudbus.nativesim.provisioner.*;
 import org.cloudbus.nativesim.scheduler.NativeCloudletSchedulerTimeShared;
 import org.cloudbus.nativesim.util.NativeLog;
 
@@ -26,18 +28,16 @@ import java.util.List;
 public class SockShopExample{
     private static Controller controller;
 
-    private static String deploymentFile = "examples/src/main/resource/sockshop/deployment.yaml";
+    private static String instancesFile = "examples/src/main/resource/sockshop/instances.yaml";
     private static List<NativeVm> vmList;
     private static List<NativeCloudlet> cloudletList;
-    private static List<Container> podList;
+    private static List<Pod> podList;
 
     private static String dependencyFile = "examples/src/main/resource/sockshop/dependency.json";
     private static ServiceGraph serviceGraph;
 
     private static String requestsFile = "examples/src/main/resource/sockshop/requests.json";
     private static List<Request> requests;
-
-
 
     public static void main(String[] args) {
         NativeLog.printLine("Starting SockShopExample...");
@@ -52,14 +52,14 @@ public class SockShopExample{
             controller = new Controller(userId, calendar);
 
             // 1.1: Create some machines to act as a datacenter.
-            NativeDatacenter datacenter = createDatacenter("sockshop-DataCenter");
-            DatacenterBroker broker = createBroker(userId);
+            NativeDatacenterBroker broker = createBroker(userId);
             int brokerId = broker.getId(); // brokerId = userId
             vmList = createVms(2,brokerId);
+            NativeDatacenter datacenter = createDatacenter("sockshop-DataCenter");
 
             // 1.2: Create the service chains
             Register register = new Register(userId,controller);
-            podList = register.registerDeployment(deploymentFile);
+            podList = register.registerPods(instancesFile);
             serviceGraph = register.registerDependencies("sockshop",dependencyFile);
             requests = register.registerRequests(requestsFile);
 
@@ -74,7 +74,7 @@ public class SockShopExample{
             broker.submitCloudletList(cloudletList); //CloudletList.subList(0, num_cloudlets)
 
             // 2.2 init the policies
-            ContainerAllocationPolicy placementPolicy;
+            ServiceAllocationPolicy placementPolicy;
             ServiceScalingPolicy scalingPolicy;
 
             // 3: Start the simulation.
@@ -112,7 +112,9 @@ public class SockShopExample{
 
         //create two VMs: the first one belongs to user1
         for (int i = 0; i < num; i++) {
-            vms.add(new NativeVm(i, brokerId, mips, pesNumber, ram, bw, size, vmm, new NativeCloudletSchedulerTimeShared()));
+            vms.add(new NativeVm(i, brokerId, mips, pesNumber, ram, bw, size, vmm,
+                    new PodBwProvisionerSimple(bw), new PodRamProvisionerSimple(ram), new PodPeProvisionerSimple(mips),
+                    new NativeCloudletSchedulerTimeShared()));
         }
         return vms;
     }
@@ -125,13 +127,13 @@ public class SockShopExample{
 
         // 2. A Machine contains one or more PEs or CPUs/Cores.
         // In this example, it will have only one core.
-        List<NativePe> peList = new ArrayList<NativePe>();
+        List<Pe> peList = new ArrayList<Pe>();
 
         double mips=1000;
 
         // 3. Create PEs and add these into a list.
-        peList.add(new NativePe(0, new NativePeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
-        peList.add(new NativePe(1, new NativePeProvisionerSimple(mips)));
+        peList.add(new Pe(0, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
+        peList.add(new Pe(1, new PeProvisionerSimple(mips)));
         //4. Create Host with its id and list of PEs and add them to the list of machines
         int ram = 2048; //host memory (MB)
         long storage = 1000000; //host storage
@@ -143,9 +145,9 @@ public class SockShopExample{
         hostList.add(
                 new Host(
                         0,
-                        new NativeRamProvisionerSimple(ram) {
+                        new RamProvisionerSimple(ram) {
                         },
-                        new NativeBwProvisionerSimple(bw),
+                        new BwProvisionerSimple(bw),
                         storage,
                         peList,
                         new VmSchedulerSpaceShared(peList)
@@ -154,8 +156,8 @@ public class SockShopExample{
         hostList.add(
                 new Host(
                         1,
-                        new NativeRamProvisionerSimple(ram),
-                        new NativeBwProvisionerSimple(bw),
+                        new RamProvisionerSimple(ram),
+                        new BwProvisionerSimple(bw),
                         storage,
                         peList,
                         new VmSchedulerSpaceShared(peList)
@@ -180,7 +182,9 @@ public class SockShopExample{
         // 6. Finally, we need to create a PowerDatacenter object.
         NativeDatacenter datacenter = null;
         try {
-            datacenter = new NativeDatacenter(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 0);
+            datacenter = new NativeDatacenter(name, characteristics,
+                    new VmAllocationPolicySimple(hostList),new PodServiceAllocationPolicySimple(vmList),
+                    storageList, 0);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -188,11 +192,11 @@ public class SockShopExample{
         return datacenter;
     }
 
-    private static DatacenterBroker createBroker(int id){
+    private static NativeDatacenterBroker createBroker(int id){
 
-        DatacenterBroker broker = null;
+        NativeDatacenterBroker broker = null;
         try {
-            broker = new DatacenterBroker("Broker"+id);
+            broker = new NativeDatacenterBroker("Broker"+id);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
