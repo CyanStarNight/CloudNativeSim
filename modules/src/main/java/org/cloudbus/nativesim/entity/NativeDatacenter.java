@@ -27,6 +27,9 @@ public class NativeDatacenter extends Datacenter{
         super(name, characteristics, vmAllocationPolicy, storageList, schedulingInterval);
         this.serviceAllocationPolicy = serviceAllocationPolicy;
     }
+
+
+    @Override
     protected void processCloudletResume(int cloudletId, int userId, int vmId, boolean ack) {
         double eventTime = getVmAllocationPolicy().getHost(vmId, userId).getVm(vmId,userId)
                 .getCloudletScheduler().cloudletResume(cloudletId);
@@ -52,6 +55,7 @@ public class NativeDatacenter extends Datacenter{
         }
     }
 
+    @Override
     protected void processCloudletPause(int cloudletId, int userId, int vmId, boolean ack) {
         boolean status = getVmAllocationPolicy().getHost(vmId, userId).getVm(vmId,userId)
                 .getCloudletScheduler().cloudletPause(cloudletId);
@@ -69,11 +73,14 @@ public class NativeDatacenter extends Datacenter{
         }
     }
 
+    @Override
     protected void processCloudletCancel(int cloudletId, int userId, int vmId) {
         Cloudlet cl = getVmAllocationPolicy().getHost(vmId, userId).getVm(vmId,userId)
                 .getCloudletScheduler().cloudletCancel(cloudletId);
         sendNow(userId, CloudSimTags.CLOUDLET_CANCEL, cl);
     }
+
+    @Override
     protected void updateCloudletProcessing() {
         // if some time passed since last processing
         // R: for term is to allow loop at simulation start. Otherwise, one initial
@@ -101,7 +108,7 @@ public class NativeDatacenter extends Datacenter{
             setLastProcessTime(CloudSim.clock());
         }
     }
-
+    @Override
     protected void processCloudlet(SimEvent ev, int type) {
         int cloudletId = 0;
         int userId = 0;
@@ -159,6 +166,7 @@ public class NativeDatacenter extends Datacenter{
 
     }
 
+    @Override
     protected void processCloudletMove(int[] receivedData, int type) {
         updateCloudletProcessing();
 
@@ -220,6 +228,7 @@ public class NativeDatacenter extends Datacenter{
         }
     }
 
+    @Override
     protected void processCloudletSubmit(SimEvent ev, boolean ack) {
         updateCloudletProcessing();
 

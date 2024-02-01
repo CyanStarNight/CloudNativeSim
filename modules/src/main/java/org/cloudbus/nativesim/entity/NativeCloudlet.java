@@ -7,10 +7,11 @@ import org.cloudbus.cloudsim.UtilizationModel;
 import java.util.Random;
 import java.util.List;
 import java.util.UUID;
-
+@Getter @Setter
 public class NativeCloudlet extends Cloudlet {
-    @Getter @Setter private String uid;
-    @Getter @Setter public int id;
+    private String uid;
+    public int id;
+    protected int instanceId;
 
     public NativeCloudlet(int cloudletId, long cloudletLength, int pesNumber, long cloudletFileSize, long cloudletOutputSize, UtilizationModel utilizationModelCpu, UtilizationModel utilizationModelRam, UtilizationModel utilizationModelBw) {
         super(cloudletId, cloudletLength, pesNumber, cloudletFileSize, cloudletOutputSize, utilizationModelCpu, utilizationModelRam, utilizationModelBw);
@@ -33,11 +34,9 @@ public class NativeCloudlet extends Cloudlet {
     }
 
     public long generateCloudletLength() {
-        // 平均 Cloudlet 长度
-        long meanCloudletLength = 10000; // 可根据实际情况调整
-
-        // 标准差
-        long stdDev = 2000; // 可根据实际情况调整
+        // 可根据实际情况调整
+        long meanCloudletLength = 10000; // 平均 Cloudlet 长度
+        long stdDev = 2000; // 标准差
 
         // 创建 Random 实例
         Random random = new Random();

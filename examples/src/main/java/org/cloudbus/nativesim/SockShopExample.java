@@ -65,7 +65,6 @@ public class SockShopExample{
 
             controller.initialize();
 
-            cloudletList = controller.getLocalCloudlets();
             cloudletList.forEach(c -> c.setUserId(brokerId));
 
             // 2: Init the parameters and policies,and then submit to the brokers.
@@ -83,7 +82,7 @@ public class SockShopExample{
             // 4: Pause
             // 5: Update the status
             // 6. Print the logs
-            List<Cloudlet> newList = broker.getCloudletReceivedList();
+            List<NativeCloudlet> newList = broker.getCloudletReceivedList();
             double total_time = NativeSim.clock();
             NativeLog.printCloudletList(newList);
             NativeLog.printRequestStatistics(requests,total_time);

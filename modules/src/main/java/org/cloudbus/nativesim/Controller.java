@@ -5,6 +5,10 @@
 package org.cloudbus.nativesim;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.cloudbus.cloudsim.core.SimEntity;
+import org.cloudbus.cloudsim.core.SimEvent;
 import org.cloudbus.nativesim.entity.*;
 import org.cloudbus.nativesim.network.Communication;
 import org.cloudbus.nativesim.network.EndPoint;
@@ -19,175 +23,91 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Data
-public class Controller {
+@Getter @Setter
+public class Controller extends SimEntity {
     private int userId; // every user match only one controller
     private Calendar cal; //
     private Status status; //
 
-    private ServiceGraph serviceGraph;
-    private List<Request> localRequests =new ArrayList<>();
-    private List<EndPoint> localEndpoints =new ArrayList<>();
-    private List<Service> localServices=new ArrayList<>();
-    private List<Pod> localPods=new ArrayList<>();
-    private List<Communication> localCommunications=new ArrayList<>();
-    private List<Container> localContainers=new ArrayList<>();
-    private List<NativeCloudlet> localCloudlets=new ArrayList<>();
+    private static List<Request> localRequests =new ArrayList<>();
 
-    public Controller(int userId, Calendar calendar){//TODO: 2023/12/7 the same user can't create two controllers
+    private static ServiceGraph serviceGraph;
+    private static List<EndPoint> localEndpoints =new ArrayList<>();
+    private static List<Service> localServices=new ArrayList<>();
+    private static List<Communication> localCommunications=new ArrayList<>();
+
+    private static List<NativeCloudlet> localCloudlets=new ArrayList<>();
+    private static List<Instance> localInstances=new ArrayList<>();
+    private static List<Pod> localPods = new ArrayList<>();
+    private static List<Container> localContainers=new ArrayList<>();
+
+    public Controller(int userId, Calendar calendar){
+        super("controller"+userId);
         this.userId = userId;
         this.cal = calendar;
         this.status = Status.Idle;
         NativeSim.controllers.add(this);
     }
 
-    public <T> void submit(T entity) {
-        try {
-            // 获取实体类型
-            Class<?> entityType = entity.getClass();
-            // 添加到相应的集合中
-            switch (entityType.getSimpleName()) {// 获取类名
-                case "Service" -> getLocalServices().add((Service) entity);
-                case "Pod" -> getLocalPods().add((Pod) entity);
-                case "Container" -> getLocalContainers().add((Container) entity);
-                case "ServiceGraph" -> setServiceGraph((ServiceGraph) entity);
-                case "Communication" -> getLocalCommunications().add((Communication) entity);
-                case "NativeCloudlet" -> getLocalCloudlets().add((NativeCloudlet) entity);
-                case "Request" -> getLocalRequests().add((Request) entity);
-                case "EndPoint" -> getLocalEndpoints().add((EndPoint) entity);
-                default -> throw new IllegalArgumentException("Unsupported entity type: " + entityType.getSimpleName());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void startEntity() {
+
     }
 
-    public <T> void submitAll(List<T> entities) {
-        assert !entities.isEmpty();
-        try {
-            // 获取实体类型
-            Class<?> entityType = entities.get(0).getClass();
-            // 添加到相应的集合中
-            switch (entityType.getSimpleName()) {// 获取类名
-                case "Service" -> getLocalServices().addAll((List<Service>) entities);
-                case "Pod" -> getLocalPods().addAll((List<Pod>) entities);
-                case "Container" -> getLocalContainers().addAll((List<Container>) entities);
-                case "Communication" -> getLocalCommunications().addAll((List<Communication>)entities);
-                case "NativeCloudlet" -> getLocalCloudlets().addAll((List<NativeCloudlet>) entities);
-                case "Request" -> getLocalRequests().addAll((List<Request>) entities);
-                case "EndPoint" -> getLocalEndpoints().addAll((List<EndPoint>) entities);
-                default -> throw new IllegalArgumentException("Unsupported entity type: List<" + entityType.getSimpleName() + ">");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void processEvent(SimEvent simEvent) {
+
     }
+
+    @Override
+    public void shutdownEntity() {
+
+    }
+
 
     public void initialize() {
 
     }
 
-    public <T> int index(T entity) {
-        int id;
-        Class<?> entityType = entity.getClass();
-        switch (entityType.getSimpleName()) {// 获取类名
-            case "Service" -> id = localServices.indexOf(entity);
-            case "Pod" -> id = localPods.indexOf(entity);
-            case "Communication" -> id = localCommunications.indexOf(entity);
-            case "Container" -> id = localContainers.indexOf(entity);
-            case "ServiceGraph" -> id = userId;
-            case "NativeCloudlet" -> id = localCloudlets.indexOf(entity);
-            case "Request" -> id = localRequests.indexOf(entity);
-            case "EndPoint" -> id = localEndpoints.indexOf(entity);
-            default -> throw new IllegalArgumentException("Unsupported entity type: " + entityType.getSimpleName());
-        }
-        return id;
-    }
-
-    public <T> void order(T entity) {
-        int id;
-        Class<?> entityType = entity.getClass();
-        switch (entityType.getSimpleName()) {// 获取类名
-            case "Service" -> id = localServices.size();
-            case "Pod" -> id = localPods.size();
-            case "Communication" -> id = localCommunications.size();
-            case "Container" -> id = localContainers.size();
-            case "ServiceGraph" -> id = userId;
-            case "NativeCloudlet" -> id = localCloudlets.size();
-            case "Request" -> id = localRequests.size();
-            case "EndPoint" -> id = localEndpoints.size();
-            default -> throw new IllegalArgumentException("Unsupported entity type: " + entityType.getSimpleName());
-        }
-        try {
-            Method method = entity.getClass().getMethod("setId", int.class);
-            method.invoke(entity, id);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    @AssertTrue
-    public static boolean checkMapping(Service service, Instance instance){
-        return service.getLabels().stream().anyMatch(u -> instance.getLabels().contains(u));
-    }
-    @AssertTrue
-    public static boolean checkMapping(Service service,Communication communication){
-        return (communication.getOrigin().equals(service)) || (communication.getDest().equals(service));
-    }
-
-    public Service selectServiceByUID(String uid){
-        return localServices.stream().
-                filter(u -> u.getUid().equals(uid))
-                .findFirst()
-                .orElse(null);
-    }
-    public Pod selectPodByUID(String uid){
-        return localPods.stream().
-                filter(u -> u.getUid().equals(uid))
-                .findFirst()
-                .orElse(null);
-    }
-    public Communication selectCommunicationByUID(String uid){
-        return localCommunications.stream().
-                filter(c -> c.getUid().equals(uid))
-                .findFirst()
-                .orElse(null);
-    }
-    public Container selectContainerByUID(String uid){
-        return localContainers.stream().filter(c -> c.getUid().equals(uid))
-                .findFirst()
-                .orElse(null);
-    }
-    public NativeCloudlet selectCloudletByUID(String uid){
-        return localCloudlets.stream().filter(c -> c.getUid().equals(uid))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public List<Service> selectServicesByLabel(String label){
-        return localServices.stream().
-                filter(u -> u.getLabels().contains(label)).collect(Collectors.toList());
-    }
-    public List<Pod> selectPodsByLabel(String label){
-        return localPods.stream().
-                filter(p -> p.getLabels().contains(label)).collect(Collectors.toList());
-    }
-    //TODO: 2023/12/7 select Containers
-//    public List<NativeContainer> selectContainersByLabel(String label){
-//        return localContainers.stream().
-//                filter(c -> c.getLabel().equals(label)).collect(Collectors.toList());
+//    public <T> int index(T entity) {
+//        int id;
+//        Class<?> entityType = entity.getClass();
+//        switch (entityType.getSimpleName()) {// 获取类名
+//            case "Service" -> id = localServices.indexOf(entity);
+//            case "Pod" -> id = localPods.indexOf(entity);
+//            case "Communication" -> id = localCommunications.indexOf(entity);
+//            case "Container" -> id = localContainers.indexOf(entity);
+//            case "ServiceGraph" -> id = userId;
+//            case "NativeCloudlet" -> id = localCloudlets.indexOf(entity);
+//            case "Request" -> id = localRequests.indexOf(entity);
+//            case "EndPoint" -> id = localEndpoints.indexOf(entity);
+//            default -> throw new IllegalArgumentException("Unsupported entity type: " + entityType.getSimpleName());
+//        }
+//        return id;
 //    }
-    public List<Pod> selectPodsByPrefix(String prefix){
-        return localPods.stream().
-                filter(p -> p.getPrefix().equals(prefix)).collect(Collectors.toList());
-    }
-
-    public Service selectServicesByName(String name){
-        return localServices.stream().filter(u -> u.getName().equals(name))
-                .findFirst()
-                .orElse(null);
-    }
+//
+//    public <T> void order(T entity) {
+//        int id;
+//        Class<?> entityType = entity.getClass();
+//        switch (entityType.getSimpleName()) {// 获取类名
+//            case "Service" -> id = localServices.size();
+//            case "Pod" -> id = localPods.size();
+//            case "Communication" -> id = localCommunications.size();
+//            case "Container" -> id = localContainers.size();
+//            case "ServiceGraph" -> id = userId;
+//            case "NativeCloudlet" -> id = localCloudlets.size();
+//            case "Request" -> id = localRequests.size();
+//            case "EndPoint" -> id = localEndpoints.size();
+//            default -> throw new IllegalArgumentException("Unsupported entity type: " + entityType.getSimpleName());
+//        }
+//        try {
+//            Method method = entity.getClass().getMethod("setId", int.class);
+//            method.invoke(entity, id);
+//        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
 
     // 计算失败的请求数量
     public static int calculateFailedRequests(List<Request> requestList) {
@@ -228,6 +148,5 @@ public class Controller {
         return (requestList.isEmpty()) ? 0 : ((double) violations / requestList.size()) * 100;
     }
 
-    // ... (其他代码)
 
 }

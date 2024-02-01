@@ -36,7 +36,7 @@ public class NativeLog extends Log {
 
     private static String header_prefix = "============================";
 
-    public static void printCloudletList(List<Cloudlet> list) {
+    public static void printCloudletList(List<? extends Cloudlet> list) {
         printLine();
         AsciiTable at = new AsciiTable();
         at.getRenderer().setCWC((new CWC_LongestLine()));
@@ -94,7 +94,7 @@ public class NativeLog extends Log {
         // For VM utilization, you can create another AsciiTable instance and print it similarly.
     }
 
-    public void printAllCommunications(List<Communication> communications){
+    public void printAllCommunications(List<? extends Communication> communications){
         System.out.println("Communications:"+ communications.toArray().length);
         for (Communication Communication:communications){
             System.out.println(" "+Communication.toString());
@@ -113,7 +113,7 @@ public class NativeLog extends Log {
         System.out.println(header_prefix+"Service Dependencies"+header_prefix);
     }
 
-    public static void printCriticalPath(LinkedList<Communication> criticalPath, double totalCriticalCost) {
+    public static void printCriticalPath(LinkedList<? extends Communication> criticalPath, double totalCriticalCost) {
         printLine();
         AsciiTable at = new AsciiTable();
         at.getContext().setGridTheme(TA_GridThemes.HORIZONTAL);
