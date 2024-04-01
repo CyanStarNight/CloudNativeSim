@@ -23,6 +23,9 @@ import java.io.IOException;
  * @author JingFeng Wu
  */
 public class Tools {
+    public static boolean MatchWithLabels(List<String> labels1,List<String> labels2){
+        return labels1.stream().anyMatch(labels2::contains);
+    }
     public static List< Map<String,Object> > ReadMultilineYaml(String filePath) {
         InputStream inputStream = null;
         List<Map<String, Object>> maps = new ArrayList<>();
@@ -101,50 +104,60 @@ public class Tools {
      * 从Map中获取配置的值
      * 传的key支持两种形式, 一种是单独的,如user.path.key
      * 一种是获取数组中的某一个,如 user.path.key[0]
-     * 参考自https://blog.51cto.com/u_15082395/2645155
+     * 取不到配置时返回0或者null
      */
-    public static <T>  T getValue(Map map , String key){ // obtain the specific parameter
-        String separator = ".";
-        String[] separatorKeys = null;
-        if (key.contains(separator)) {
-            // 取下面配置项的情况, user.path.keys 这种
-            separatorKeys = key.split("\\.");
-        } else {
-            // 直接取一个配置项的情况, user
-            Object res = map.get(key);
-            return res == null ? null : (T) res;
+    @SuppressWarnings("unchecked")
+    public static <T> T getValue(Map<String, Object> configMap, String key) {
+        if (configMap == null || key == null || key.isEmpty()) {
+            return null;
         }
-        // 下面是取多个的情况
-        String finalValue = null;
-        Object tempObject = map;
-        for (int i = 0; i < separatorKeys.length; i++) {
-            //如果是user[0].path这种情况,则按list处理
-            String innerKey = separatorKeys[i];
-            Integer index = null;
-            if (innerKey.contains("[")) {//innerKey = user[0]
-                index = Integer.valueOf(GetSubString(innerKey, "[", "]"));//index = 0
-                innerKey = innerKey.substring(0, innerKey.indexOf("["));//innerKey = user
+
+        String[] keyParts = key.split("\\.");
+
+        // 遍历配置Map，逐级查找
+        Object value = configMap;
+        for (String part : keyParts) {
+            if (part.contains("[")) {
+                // 处理数组形式的key
+                String arrayKey = part.substring(0, part.indexOf("["));
+                int index = Integer.parseInt(part.replaceAll("[^0-9]", ""));
+                if (value instanceof Map) {
+                    value = ((Map<?, ?>) value).get(arrayKey);
+                    if (value instanceof Object[]) {
+                        value = ((Object[]) value)[index];
+                    } else if (value instanceof Iterable) {
+                        for (Object item : (Iterable<?>) value) {
+                            if (index == 0) {
+                                value = item;
+                                break;
+                            }
+                            index--;
+                        }
+                    }
+                } else {
+                    return null;
+                }
+            } else {
+                // 处理普通形式的key
+                if (value instanceof Map) {
+                    value = ((Map<?, ?>) value).get(part);
+                } else {
+                    return null;
+                }
             }
-            Map mapTempObj = (Map) tempObject;
-            Object object = mapTempObj.get(innerKey);
-            // 如果没有对应的配置项,则返回设置的默认值
-            if (object == null) {
+
+            if (value == null) {
                 return null;
             }
-            Object targetObj = object;
-            if (index != null) {
-                // 如果是取的数组中的值,在这里取值
-                targetObj = ((ArrayList) object).get(index);
-            }
-            // 一次获取结束,继续获取后面的
-            tempObject = targetObj;
-            if (i == separatorKeys.length - 1) {
-                //循环结束
-                return (T) targetObj;
-            }
-
         }
 
-        return null;
+        // 返回泛型值
+        try {
+            @SuppressWarnings("unchecked")
+            T result = (T) value;
+            return result;
+        } catch (ClassCastException e) {
+            return null;
+        }
     }
 }

@@ -1,10 +1,13 @@
 package org.cloudbus.nativesim.policy.scaling;
 
-// TODO: 2023/7/2
+import org.cloudbus.nativesim.service.Service;
 
-/**
- * 默认实现best-fit
- */
 public abstract class ServiceScalingPolicy {
 
+    public boolean needScaling(Service service) {
+        return false;
+    }
+
+    public void scalingService(Service serviceToScaling) {
+    }
 }

@@ -1,0 +1,210 @@
+pods:
+  - name: carts
+    labels:
+      - carts
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 100
+    requests:
+      share: 1024
+      ram: 200
+    limits:
+      share: 300
+      ram: 500
+
+  - name: carts-db
+    labels:
+      - carts-db
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 100
+#     requests:
+#       share: 100
+#       ram: 200
+#     limits:
+#       share: 300
+#       ram: 500
+
+  - name: front-end
+    labels:
+      - front-end
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 5000
+    requests:
+      share: 100
+      ram: 300
+    limits:
+      share: 300
+      ram: 1000
+
+  - name: catalogue
+    labels:
+      - catalogue
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 500
+    requests:
+      share: 100
+      ram: 100
+    limits:
+      share: 200
+      ram: 200
+
+  - name: catalogue-db
+    labels:
+      - catalogue-db
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 100
+#     requests:
+#       share: 100
+#       ram: 100
+#     limits:
+#       share: 200
+#       ram: 200
+
+  - name: orders
+    labels:
+      - orders
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 100
+    requests:
+      share: 100
+      ram: 300
+    limits:
+      share: 500
+      ram: 500
+
+  - name: orders-db
+    labels:
+      - orders-db
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 100
+#     requests:
+#       share: 100
+#       ram: 300
+#     limits:
+#       share: 500
+#       ram: 500
+
+  - name: payment
+    labels:
+      - payment
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 500
+    requests:
+      share: 99
+      ram: 100
+    limits:
+      share: 200
+      ram: 200
+
+  - name: queue-master
+    labels:
+      - queue-master
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 100
+    requests:
+      share: 100
+      ram: 300
+    limits:
+      share: 300
+      ram: 500
+
+  - name: rabbitmq
+    labels:
+      - rabbitmq
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 100
+#     requests:
+#       share: 100
+#       ram: 100
+#     limits:
+#       share: 200
+#       ram: 200
+
+  - name: session-db
+    labels:
+      - session-db
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 100
+#     requests:
+#       share: 100
+#       ram: 100
+#     limits:
+#       share: 200
+#       ram: 200
+
+  - name: shipping
+    labels:
+      - shipping
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 100
+    requests:
+      share: 100
+      ram: 300
+    limits:
+      share: 300
+      ram: 500
+
+  - name: user
+    labels:
+      - user
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 500
+    trans_bw: 1000
+    requests:
+      share: 100
+      ram: 100
+    limits:
+      share: 300
+      ram: 200
+
+  - name: user-db
+    labels:
+      - user-db
+    replicas: 1
+    prefix: carts
+    size: 500
+    rec_bw: 100
+    trans_bw: 100
+#     requests:
+#       share: 100
+#       ram: 100
+#     limits:
+#       share: 300
+#       ram: 200
