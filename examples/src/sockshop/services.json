@@ -1,0 +1,90 @@
+{
+  "services": [
+    {
+      "name": "front-end",
+      "labels": ["front-end"],
+      "calls": ["carts", "orders", "catalogue", "user", "payment", "session-db"],
+      "apis": ["GetCatalogue", "GeLogin", "GeRegister", "GetCarts", "PostCarts","PostCards", "PostAddresses", "GetOrders"],
+      "endpoints": [1,1,1,1,1,1,1,5]
+    },
+    {
+      "name": "orders",
+      "labels": ["orders"],
+      "calls": ["orders-db","queue-master","carts","payment","shipping"],
+      "apis": ["GetOrders"]
+    },
+    {
+      "name": "carts",
+      "labels": ["carts"],
+      "calls": ["carts-db"],
+      "apis": ["GetCarts", "PostCarts","GetOrders"]
+    },
+    {
+      "name": "carts-db",
+      "labels": ["carts-db", "mongo"],
+      "calls": ["shipping"],
+      "apis": ["GetCarts", "PostCarts","GetOrders"]
+    },
+    {
+      "name": "catalogue",
+      "labels": ["catalogue"],
+      "calls": ["catalogue-db"],
+      "apis": ["GetCatalogue"]
+    },
+    {
+      "name": "catalogue-db",
+      "labels": ["catalogue-db", "mysql"],
+      "calls": [],
+      "apis": ["GetCatalogue"]
+    },
+    {
+      "name": "payment",
+      "labels": ["payment"],
+      "calls": [],
+      "apis": ["PostCards","GetOrders"]
+    },
+    {
+      "name": "user",
+      "labels": ["user"],
+      "calls": ["user-db"],
+      "apis": ["GeLogin", "GeRegister"]
+    },
+    {
+      "name": "user-db",
+      "labels": ["user-db", "mongo"],
+      "calls": [],
+      "apis": ["GeLogin", "GeRegister"]
+    },
+
+    {
+      "name": "orders-db",
+      "labels": ["orders-db", "mongo"],
+      "calls": [],
+      "apis": ["GetOrders"]
+    },
+    {
+      "name": "shipping",
+      "labels": ["shipping"],
+      "calls": ["rabbitmq"],
+      "apis": ["PostAddresses","GetOrders"]
+    },
+    {
+      "name": "rabbitmq",
+      "labels": ["rabbitmq"],
+      "calls": [],
+      "apis": ["GetOrders"]
+    },
+    {
+      "name": "queue-master",
+      "labels": ["queue-master"],
+      "calls": ["rabbitmq"],
+      "apis": ["GetOrders"]
+    },
+    {
+      "name": "session-db",
+      "labels": ["session-db", "redis"],
+      "calls": [],
+      "apis": []
+    }
+  ]
+}

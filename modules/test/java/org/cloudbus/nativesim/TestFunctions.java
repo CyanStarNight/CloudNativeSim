@@ -1,14 +1,12 @@
 package org.cloudbus.nativesim;
 
 
-import org.cloudbus.nativesim.core.Register;
-import org.cloudbus.nativesim.request.Request;
-import org.cloudbus.nativesim.service.ServiceGraph;
+import core.Register;
+import request.Request;
+import service.ServiceGraph;
 import org.junit.Test;
 
 import java.util.List;
-
-import static org.cloudbus.nativesim.core.Reporter.printChains;
 
 public class TestFunctions {
 
