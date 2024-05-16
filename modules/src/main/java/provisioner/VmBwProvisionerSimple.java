@@ -6,7 +6,7 @@ package provisioner;
 
 import lombok.Getter;
 import lombok.Setter;
-import service.Instance;
+import entity.Instance;
 
 import java.util.HashMap;
 import java.util.Map;

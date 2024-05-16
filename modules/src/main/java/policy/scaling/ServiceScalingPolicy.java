@@ -4,7 +4,7 @@
 
 package policy.scaling;
 
-import service.Service;
+import entity.Service;
 
 public abstract class ServiceScalingPolicy {
 

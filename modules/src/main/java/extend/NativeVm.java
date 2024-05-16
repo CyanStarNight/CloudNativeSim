@@ -12,7 +12,7 @@ import policy.cloudletScheduler.NativeCloudletSchedulerTimeShared;
 import provisioner.VmBwProvisioner;
 import provisioner.NativePeProvisioner;
 import provisioner.NativeRamProvisioner;
-import service.Instance;
+import entity.Instance;
 
 import java.util.ArrayList;
 import java.util.List;

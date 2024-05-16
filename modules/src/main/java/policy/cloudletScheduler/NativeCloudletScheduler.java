@@ -6,7 +6,7 @@ package policy.cloudletScheduler;
 
 import lombok.Getter;
 import lombok.Setter;
-import service.NativeCloudlet;
+import entity.NativeCloudlet;
 
 import java.util.*;
 

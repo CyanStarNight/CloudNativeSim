@@ -8,14 +8,14 @@ import lombok.Getter;
 import lombok.Setter;
 import core.Reporter;
 import extend.NativePe;
-import service.Instance;
+import entity.Instance;
 import extend.NativeVm;
-import service.Service;
+import entity.Service;
 import core.Status;
 
 import java.util.*;
 
-import static service.Instance.InstanceUidMap;
+import static entity.Instance.InstanceUidMap;
 
 
 @Getter
@@ -170,6 +170,8 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
                 instance.setVm(vm);
 
                 vm.getInstanceList().add(instance);
+
+                createdInstanceList.add(instance);
 
                 Reporter.printEvent(instance.getType()+" #"+instance.getId()+" has been allocated in Vm #"+vm.getId());
 

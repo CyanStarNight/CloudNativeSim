@@ -7,7 +7,7 @@ package provisioner;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import service.Instance;
+import entity.Instance;
 import extend.NativePe;
 
 import java.util.*;

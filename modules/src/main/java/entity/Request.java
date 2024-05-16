@@ -2,12 +2,11 @@
  * Copyright ©2024. Jingfeng Wu.
  */
 
-package request;
+package entity;
 
 import core.Status;
 import lombok.Getter;
 import lombok.Setter;
-import service.Service;
 
 import java.util.List;
 
@@ -16,26 +15,24 @@ import java.util.List;
 public class Request {
 
     private int id;
-    // 请求的api
-    public String API;
+    // 请求的描述
+    public String method;
+    public String url;
     // 请求的接口
-    public AppInterface port;
+    public API api;
     // 请求的状态
     public Status status;
     // 请求的开始时间
     private double startTime;
     // 请求的响应时间
     private double responseTime;
+    // 请求计数
+    private static int count = 0;
 
 
-    public Request(String API) {
-        this.API = API;
-        this.status = Status.Ready;
-    }
-
-    public Request(int i, String API, long currentTime) {
-        this.id = i;
-        this.API = API;
+    public Request(API api, double currentTime) {
+        this.id = ++count;
+        this.api = api;
         this.startTime = currentTime;
     }
 
@@ -49,14 +46,16 @@ public class Request {
     public String toString() {
         return "Request{" +
                 "id=" + id +
-                ", API='" + API + '\'' +
+                ", API='" + method + '\'' +
                 ", status=" + status +
                 '}';
     }
 
     public List<Service> getChain() {
-        return port.chain;
+        return api.chain;
     }
 
-
+    public String getAPI(){
+        return method+" "+url;
+    }
 }

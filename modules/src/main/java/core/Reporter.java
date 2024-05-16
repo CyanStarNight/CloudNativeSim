@@ -9,8 +9,8 @@ import de.vandermeer.asciithemes.TA_GridThemes;
 import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.Cloudlet;
-import service.Service;
-import service.ChainNode;
+import entity.Service;
+import entity.ChainNode;
 
 import java.text.DecimalFormat;
 import java.util.List;

@@ -5,7 +5,7 @@
 package policy.cloudletScheduler;
 
 import core.Status;
-import service.NativeCloudlet;
+import entity.NativeCloudlet;
 
 import java.util.ArrayList;
 import java.util.List;

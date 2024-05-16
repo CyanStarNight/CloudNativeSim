@@ -6,9 +6,8 @@ package core;
 
 import lombok.*;
 import org.cloudbus.cloudsim.*;
-import request.AppInterface;
-import request.Request;
-import service.*;
+import entity.API;
+import entity.*;
 import util.Tools;
 
 import java.util.*;
@@ -31,19 +30,17 @@ public class Register {
 
     private String instancesFile;
     private String servicesFile;
-    private String requestsFile;
 
     public Register(int appId, String instanceType) {
         this.appId = appId;
         this.instanceType = instanceType;
     }
 
-    public Register(int appId, String instanceType, String servicesFile, String instancesFile, String requestsFile){
+    public Register(int appId, String instanceType, String servicesFile, String instancesFile){
         this.appId = appId;
         this.instanceType = instanceType;
         setServicesFile(servicesFile);
         setInstancesFile(instancesFile);
-        setRequestsFile(requestsFile);
     }
 
     @SuppressWarnings("unchecked")
@@ -81,29 +78,32 @@ public class Register {
     }
 
 
+//    @SuppressWarnings("unchecked")
+//    public Generator registerGenerator(){
+//        Map<String,Object> map =  Tools.readJson(requestsFile);
+//        int clients = Tools.getValue(map,"clients");
+//        int spawnRate = Tools.getValue(map,"spawnRate");
+//        List<Integer> waitTimeList = Tools.getValue(map,"waitTime");
+//        int[] waitTime = new int[2];
+//        waitTime[0] = waitTimeList.get(0);
+//        waitTime[1] = waitTimeList.get(1);
+//        int timeLimit = Tools.getValue(map,"timeLimit");
+//        List<API> APIs = registerAPIs();
+//        return new Generator(clients,spawnRate,waitTime,timeLimit,APIs);
+//    }
+
+
     @SuppressWarnings("unchecked")
-    public List<Request> registerRequests(){
-        Map<String,Object> map =  Tools.readJson(requestsFile);
-        List<Request> requests = new ArrayList<>();
-        for (Map<String, Object> m : (List<Map<String,Object>>)map.get("requests")){
-            // 注册请求接口
-            String API = Tools.getValue(m, "API");
-            int num = Tools.getValue(m, "num");
-            String type = Tools.getValue(m, "method");
-            AppInterface port = new AppInterface(API, num, type);
-            AppInterface.map.put(API, port);
-            // 注册请求体
-            for (int i = 0;i<num;i++) {
-                Request r = new Request(API);
-                r.setPort(port);
-                requests.add(r);
-            }
+    public List<API> registerAPIs(){
+        List<API> APIs = new ArrayList<>();
+        Map<String,Object> map =  Tools.readJson(servicesFile);
+        for (Map<String, Object> m : (List<Map<String,Object>>)map.get("APIs")){
+            String method = Tools.getValue(m, "method");
+            String url = Tools.getValue(m, "url");
+            double weight = Tools.getValue(m, "weight");
+            APIs.add(new API(method,url,weight));
         }
-        // 因为请求是顺序输入的，需要打乱其发送顺序
-        Collections.shuffle(requests);
-        // 分配id
-        for (int i = 0; i < requests.size(); i++) requests.get(i).setId(i);
-        return requests;
+        return APIs;
     }
 
     public Service registerService(Map<String,Object> map){

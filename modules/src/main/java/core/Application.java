@@ -13,12 +13,12 @@ import org.cloudbus.cloudsim.core.SimEvent;
 import policy.allocation.ServiceAllocationPolicy;
 import policy.migration.InstanceMigrationPolicy;
 import policy.scaling.ServiceScalingPolicy;
-import request.Request;
-import request.AppInterface;
-import service.Instance;
-import service.NativeCloudlet;
-import service.Service;
-import service.ServiceGraph;
+import entity.Request;
+import entity.API;
+import entity.Instance;
+import entity.NativeCloudlet;
+import entity.Service;
+import entity.ServiceGraph;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,21 +38,27 @@ public class Application extends SimEntity {
     /** The last process time. */
     private double lastProcessTime;
     /** The scheduling interval. */
-    private double schedulingInterval;
+    private double schedulingInterval = 5;
     /** The checking interval. */
     private double checkingInterval;
+    /** The generator. */
+    protected Generator generator;
+    /** The exporter. */
+    protected Exporter exporter;
+
 
     /** The service graph. */
     protected ServiceGraph serviceGraph;
     /** The requests list. */
     protected List<Request> requestList = new ArrayList<>();
 
-    protected List<AppInterface> ports = new ArrayList<>();
+    protected List<API> ports = new ArrayList<>();
     /** The services list. */
     protected List<Service> serviceList = new ArrayList<>();
     /** The instances list. */
     protected List<Instance> instanceList = new ArrayList<>();
-    /** The vm list. */
+    protected List<Instance> createdInstanceList = new ArrayList<>();
+    /** The created vm list. */
     protected List<NativeVm> vmList = new ArrayList<>();
     /** The cloudlet list. */
     protected List<NativeCloudlet> nativeCloudletList = new ArrayList<>();
@@ -65,6 +71,8 @@ public class Application extends SimEntity {
     private ServiceScalingPolicy serviceScalingPolicy;
 
     private static Logger logger =  LoggerFactory.getLogger(Application.class);
+
+
 
     public Application(String appName, int brokerId,
                        ServiceAllocationPolicy serviceAllocationPolicy,
@@ -115,7 +123,7 @@ public class Application extends SimEntity {
 
                 // Request
                 case NativeSimTag.REQUEST_DISPATCH:
-                    processRequestsDistribution(ev);
+                    processRequestsDispatch(ev);
                     break;
 
 
@@ -152,6 +160,8 @@ public class Application extends SimEntity {
         sendToExporter();
     }
 
+
+
     /* 资源画像：1.通过文件将资源进行注册，定义资源的初始配置。2.根据初始配置提交。 */
     private void processAppCharacteristics(SimEvent ev) throws Exception {
         // register对象非空检查
@@ -177,35 +187,11 @@ public class Application extends SimEntity {
         System.out.println(NativeSim.clock() + ": " + "Services have been registered.");
         System.out.println(NativeSim.clock() + ": " + "ServiceGraph_" + serviceGraph.getId()+" has been registered.");
 
-        // 提交请求
-        submitRequestList(register.registerRequests());
-        // 提交接口并映射到调用链
-        submitPorts(AppInterface.getPorts());
-        for (AppInterface i : getPorts()) {
-            // 查找请求对应的service chain
-            i.setChain(serviceGraph.getServiceChains().get(i.API));
-        }
+
         // 画像完成后打印输出
         System.out.println(NativeSim.clock() + ": " + "The resource characteristics of the application has been completed.\n");
-
-        // 启动服务部署和请求分发，落实资源画像
+        // 启动服务部署，落实资源画像
         send(getId(),0.1, NativeSimTag.SERVICE_ALLOCATE,serviceList);
-        send(getId(),0.2, NativeSimTag.REQUEST_DISPATCH, getRequestList());
-    }
-
-    private void processStateCheck() {
-        // 检查service需不需要扩展
-        for (Service service : serviceList) {
-            if (serviceScalingPolicy.needScaling(service)) //检查SLO
-                sendNow(getId(), NativeSimTag.SERVICE_SCALING, service);
-        }
-
-        // 检查instance需不需要迁移
-        for (Instance instance : instanceList){
-            if (InstanceMigrationPolicy.needMigrate(instance))//检查load balance
-                 sendNow(getId(),NativeSimTag.INSTANCE_MIGRATE, instance);
-        }
-
     }
 
 
@@ -219,29 +205,25 @@ public class Application extends SimEntity {
             serviceAllocationPolicy.instantiateService(service); // 实例化
             serviceAllocationPolicy.allocateService(service); // 部署
         }
+        // 提交已部署的实例
+        setCreatedInstanceList(serviceAllocationPolicy.getCreatedInstanceList());
+
         // 部署完成后，启动周期检查，触发服务迁移和扩展
         schedule(getId(),5.0, NativeSimTag.STATE_CHECK);
+
+        // 请求开始分发到成功创建的实例上
+        send(getId(),0.2, NativeSimTag.REQUEST_DISPATCH, getCreatedInstanceList());
     }
+
 
 /* 请求分发的目标：1.唤醒服务调用链。2.选择请求处理的实例。3.一批批地发送处理请求的事件。 4.更新RequestPort对象的统计指标和队列 */
     @SuppressWarnings("unchecked")
-    private void processRequestsDistribution(SimEvent ev) {
-        List<Request> requests = (List<Request>) ev.getData();
+    private void processRequestsDispatch(SimEvent ev) {
+        List<Instance> instanceList = (List<Instance>) ev.getData();
+        // generate requests
+
         // 遍历请求列表
-        int num = 1;
-        for (int i = 0; i < num; i++) { //TODO: 请求的批大小不对
-            Request request = requests.get(i);
-            String API = request.API;
-            // 获取请求映射的源服务
-            Service source = request.getChain().get(0);
-            // 源服务创建属于这个request的cloudlets,数量为服务的端点数
-            int endpoints = source.getApiMap().get(API);
-            List<NativeCloudlet> source_Native_cloudlets = source.createCloudlets(request,endpoints);
-            // 提交cloudlets
-            submitCloudlets(source_Native_cloudlets);
-            // 发送处理任务的事件
-            sendNow(getId(), NativeSimTag.CLOUDLET_PROCESS, source_Native_cloudlets);
-        }
+
         // 请求分发完成，但还没开始执行
         Reporter.printEvent("\nRequests have been dispatched.");
         printLine();
@@ -317,6 +299,20 @@ public class Application extends SimEntity {
     }
 
 
+    private void processStateCheck() {
+        // 检查service需不需要扩展
+        for (Service service : serviceList) {
+            if (serviceScalingPolicy.needScaling(service)) //检查SLO
+                sendNow(getId(), NativeSimTag.SERVICE_SCALING, service);
+        }
+
+        // 检查instance需不需要迁移
+        for (Instance instance : instanceList){
+            if (InstanceMigrationPolicy.needMigrate(instance))//检查load balance
+                sendNow(getId(),NativeSimTag.INSTANCE_MIGRATE, instance);
+        }
+
+    }
 
     private void sendToExporter(){
         Exporter.serviceGraph = getServiceGraph();
@@ -345,7 +341,7 @@ public class Application extends SimEntity {
     public void submitRequestList(List<Request> list){
         getRequestList().addAll(list);
     }
-    public void submitPorts(List<AppInterface> list){
+    public void submitPorts(List<API> list){
         getPorts().addAll(list);
     }
     public void submitServiceGraph(ServiceGraph serviceGraph){
@@ -366,9 +362,6 @@ public class Application extends SimEntity {
     public void submitCloudlets(List<NativeCloudlet> nativeCloudlets) {
         getNativeCloudletList().addAll(nativeCloudlets);
     }
-    public void submitSLA(int meanLen, int stdDev){
-        NativeCloudlet.meanLength = meanLen;
-        NativeCloudlet.stdDev = stdDev;
-    }
+
 
 }

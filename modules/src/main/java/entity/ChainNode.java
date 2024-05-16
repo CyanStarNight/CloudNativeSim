@@ -2,7 +2,7 @@
  * Copyright ©2024. Jingfeng Wu.
  */
 
-package service;
+package entity;
 
 import lombok.Data;
 

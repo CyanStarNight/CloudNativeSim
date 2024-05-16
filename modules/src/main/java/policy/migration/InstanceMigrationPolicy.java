@@ -6,7 +6,7 @@ package policy.migration;
 
 import lombok.Getter;
 import lombok.Setter;
-import service.Instance;
+import entity.Instance;
 
 import java.util.ArrayList;
 import java.util.List;

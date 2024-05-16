@@ -1,90 +1,138 @@
 {
+  "APIs": [
+    {
+      "method": "GET",
+      "url": "/catalogue",
+      "weight": 1.0
+    },
+
+    {
+      "method": "GET",
+      "url": "/login",
+      "weight": 2.0
+    },
+
+    {
+      "method": "GET",
+      "url": "/register",
+      "weight": 1.0
+    },
+
+    {
+      "method": "GET",
+      "url": "/cart",
+      "weight": 1.0
+    },
+
+    {
+      "method": "POST",
+      "url": "/cart",
+      "weight": 1.0
+    },
+
+    {
+      "method": "POST",
+      "url": "/cards",
+      "weight": 1.0
+    },
+
+    {
+      "method": "POST",
+      "url": "/addresses",
+      "weight": 1.0
+    },
+
+    {
+      "method": "GET",
+      "url": "/orders",
+      "weight": 2.0
+    }
+  ],
   "services": [
     {
       "name": "front-end",
       "labels": ["front-end"],
       "calls": ["carts", "orders", "catalogue", "user", "payment", "session-db"],
-      "apis": ["GetCatalogue", "GeLogin", "GeRegister", "GetCarts", "PostCarts","PostCards", "PostAddresses", "GetOrders"],
-      "endpoints": [1,1,1,1,1,1,1,5]
+      "API": ["GET /catalogue", "GET /login", "GET /register", "GET /cart", "POST /cart","POST /cards", "POST /addresses", "POST /orders"]
     },
     {
       "name": "orders",
       "labels": ["orders"],
       "calls": ["orders-db","queue-master","carts","payment","shipping"],
-      "apis": ["GetOrders"]
+      "API": ["POST /orders"]
     },
     {
       "name": "carts",
       "labels": ["carts"],
       "calls": ["carts-db"],
-      "apis": ["GetCarts", "PostCarts","GetOrders"]
+      "API": ["GET /cart", "POST /cart","POST /orders"]
     },
     {
       "name": "carts-db",
       "labels": ["carts-db", "mongo"],
       "calls": ["shipping"],
-      "apis": ["GetCarts", "PostCarts","GetOrders"]
+      "API": ["GET /cart", "POST /cart","POST /orders"]
     },
     {
       "name": "catalogue",
       "labels": ["catalogue"],
       "calls": ["catalogue-db"],
-      "apis": ["GetCatalogue"]
+      "API": ["GET /catalogue"]
     },
     {
       "name": "catalogue-db",
       "labels": ["catalogue-db", "mysql"],
       "calls": [],
-      "apis": ["GetCatalogue"]
+      "API": ["GET /catalogue"]
     },
     {
       "name": "payment",
       "labels": ["payment"],
       "calls": [],
-      "apis": ["PostCards","GetOrders"]
+      "API": ["POST /cards","POST /orders"]
     },
     {
       "name": "user",
       "labels": ["user"],
       "calls": ["user-db"],
-      "apis": ["GeLogin", "GeRegister"]
+      "API": ["GET /login", "GET /register"]
     },
     {
       "name": "user-db",
       "labels": ["user-db", "mongo"],
       "calls": [],
-      "apis": ["GeLogin", "GeRegister"]
+      "API": ["GET /login", "GET /register"]
     },
 
     {
       "name": "orders-db",
       "labels": ["orders-db", "mongo"],
       "calls": [],
-      "apis": ["GetOrders"]
+      "API": ["POST /orders"]
     },
     {
       "name": "shipping",
       "labels": ["shipping"],
       "calls": ["rabbitmq"],
-      "apis": ["PostAddresses","GetOrders"]
+      "API": ["POST /addresses","POST /orders"]
     },
     {
       "name": "rabbitmq",
       "labels": ["rabbitmq"],
       "calls": [],
-      "apis": ["GetOrders"]
+      "API": ["POST /orders"]
     },
     {
       "name": "queue-master",
       "labels": ["queue-master"],
       "calls": ["rabbitmq"],
-      "apis": ["GetOrders"]
+      "API": ["POST /orders"]
     },
     {
       "name": "session-db",
       "labels": ["session-db", "redis"],
       "calls": [],
-      "apis": []
+      "API": []
     }
   ]
 }

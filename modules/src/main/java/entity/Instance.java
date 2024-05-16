@@ -2,7 +2,7 @@
  * Copyright ©2024. Jingfeng Wu.
  */
 
-package service;
+package entity;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -17,54 +17,72 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class Instance{
-
+    // id & uid
     private String uid;
     private int id;
     private int appId;
     private String name;
-
+    // type of instance
     public final String type = "Instance";
-
+    // status of instance
     public Status status = Status.Ready;
-    private List<String> labels; // one service n pods
+    // one service n pods
+    private List<String> labels;
+    // services which mapped
     private List<Service> serviceList;
-
+    // vm which located
     private NativeVm vm;
-
-    private int requests_ram;
-    private int requests_share;
-    private double requests_mips;
-
-    private int limits_ram;
-    private int limits_share;
-    private double limits_mips;
-
-    private double receive_bw;
-    private double transmit_bw;
-
+    // size of instance
     private long size;
-
+    // num of requests
+    public int num_requests;
+    // num of cloudlets
+    public int num_cloudlets;
+    // ram needs
+    private int requests_ram;
+    // share needs
+    private int requests_share;
+    // mips needs
+    private double requests_mips;
+    // receive bw needs
+    private double receive_bw;
+    // transmit bw needs
+    private double transmit_bw;
+    // ram limits
+    private int limits_ram;
+    // share limits
+    private int limits_share;
+    // mips limits
+    private double limits_mips;
+    // ram usages
     private int currentAllocatedRam;
+    // receive bw usages
     private double currentAllocatedReceiveBw;
+    // transmit bw usages
     private double currentAllocatedTransmitBw;
+    // pe usages
     private NativePe currentAllocatedPe;
+    // mips usages
     private double currentAllocatedMips;
+    // cpu share usages
     private int currentAllocatedCpuShare;
-
-    private NativeCloudletScheduler cloudletScheduler;
-    private int previousTime;
-
-    private double schedulingInterval = 1.0; //TODO: interval待定
-
+    // migration status
     private List<String> MigratingIn;
     private List<String> MigratingOut;
     private boolean inMigration;
-
+    // utilization history
     public static final int HISTORY_LENGTH = 30;
     private final List<Double> utilizationHistory = new LinkedList<Double>();
-
+    // previous time used to update utilizationHistory
+    private int previousTime;
+    // cloudlets scheduler
+    private NativeCloudletScheduler cloudletScheduler;
+    // scheduling Interval 5s
+    private double schedulingInterval = 5.0;
     // uid -> instance
     public static Map<String, Instance> InstanceUidMap = new HashMap<>();
+
+
     public static String getInstanceUid(int userId, int id) {
         return userId + "-Instance-" + id;
     }

@@ -3,15 +3,13 @@
  */
 package sockshop;
 
-import core.Application;
-import core.Register;
-import core.Reporter;
+import core.*;
+import core.Generator;
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import extend.NativeBroker;
-import core.NativeSim;
 import extend.NativeVm;
 import policy.allocation.ServiceAllocationPolicySimple;
 import policy.migration.InstanceMigrationPolicySimple;
@@ -20,10 +18,7 @@ import provisioner.NativePeProvisionerTimeShared;
 import provisioner.NativeRamProvisionerSimple;
 import provisioner.VmBwProvisionerSimple;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static org.cloudbus.cloudsim.Log.printLine;
 
@@ -32,44 +27,55 @@ import static org.cloudbus.cloudsim.Log.printLine;
  * @Data 2023/11/20
  */
 public class SockShopExample{
-
+    // vm configuration
     private static List<NativeVm> vmList;
     private static int mips = 250; // MIPS
-    //Cloudlets全局参数, 可根据实际情况调整
-    private static final int meanLength = 1000; // 平均 Cloudlet 长度，代表指令数量
-    private static final int stdDev = 200; // 标准差
     static String podsFile = "examples/src/sockshop/instances.yaml";
     static String servicesFile = "examples/src/sockshop/services.json";
-    static String requestsFile = "examples/src/sockshop/requests.json";
+
+    // generator configuration for requests and cloudlets
+    public static void generator_params(){
+        Generator.finalClients = 500;
+        Generator.spawnRate = 100;
+        Generator.waitTimeSpan = new int[]{5, 15};
+        Generator.timeLimit = 600;
+        Generator.meanLength = 1000;
+        Generator.stdDev = 200;
+    }
+
 
     public static void main(String[] args) {
         printLine("Starting SockShopExample...");
         try {
             // 1: initialized
+            // data centers' users
             int num_user = 1;
             int userId = 1;
             Calendar calendar = Calendar.getInstance();
             boolean trace_flag = false;
             NativeSim.init(num_user, calendar, trace_flag);
 
-            // create
+            // create datacenters and brokers
             int numHosts = 1;
             Datacenter datacenter = createDatacenter("Datacenter#0",numHosts);
             NativeBroker broker = createBroker(userId);
-            int brokerId = broker.getId(); // SimEntity ID
+            // get SimEntity ID
+            int brokerId = broker.getId();
+            vmList = createVms(3,brokerId);
+            broker.submitVmList(vmList);
+            // create application & define policies
             Application app = new Application("sockshop", brokerId,
                     new ServiceAllocationPolicySimple(),
                     new InstanceMigrationPolicySimple(),
                     new HorizontalScalingPolicy()); // horizontalScaling
+            // submit parameters for cloudlets generate
 
-            app.submitSLA(meanLength,stdDev);
-            // 2: submit
+            // 2: register
             String instanceType = "Pod";
-            Register register = new Register(userId,instanceType,servicesFile,podsFile,requestsFile);
+            // define the instance type and some files
+            Register register = new Register(userId,instanceType,servicesFile,podsFile);
             broker.submitRegister(register);
-
-            vmList = createVms(3,brokerId);
-            broker.submitVmList(vmList);
+            generator_params();
 
             // 3: Start
             NativeSim.startSimulation();

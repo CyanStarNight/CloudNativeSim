@@ -8,9 +8,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import extend.NativeVm;
-import service.Instance;
-import service.Service;
+import entity.Instance;
+import entity.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,8 @@ import java.util.Map;
 public abstract class ServiceAllocationPolicy {
 
     private List<? extends NativeVm> vmList;
+
+    protected List<Instance> createdInstanceList = new ArrayList<Instance>();
 
     public void init(List<? extends NativeVm> vmList){
         setVmList(vmList);

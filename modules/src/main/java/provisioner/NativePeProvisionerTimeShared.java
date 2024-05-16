@@ -9,7 +9,7 @@ import lombok.Setter;
 
 
 import org.apache.commons.lang3.tuple.Pair;
-import service.Instance;
+import entity.Instance;
 import extend.NativePe;
 
 import java.util.HashMap;

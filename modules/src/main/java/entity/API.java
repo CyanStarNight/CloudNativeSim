@@ -2,29 +2,29 @@
  * Copyright ©2024. Jingfeng Wu.
  */
 
-package request;
+package entity;
 
+import core.Generator;
 import lombok.Data;
-import service.Service;
 
 import java.util.*;
 
 @Data
-public class AppInterface {
-    // api
-    public String API;
+public class API {
+    public String name;
     // 类型
-    public String type;
-    // 权重
-    public double weight;
-    // api -> port
-    public static Map<String, AppInterface> map = new HashMap<>();
+    public String method;
+    // api
+    public String url;
+    // 权重初始为1
+    public double weight = 1;
+    // 服务调用链
+    protected List<Service> chain = new ArrayList<>();
+
     // 请求
     protected List<Request> requests = new ArrayList<>();
     // 被请求数
     public int num;
-    // 服务调用链
-    protected List<Service> chain = new ArrayList<>();
     // QPS
     public float qps;
     // Failures
@@ -49,32 +49,37 @@ public class AppInterface {
     public float responseTime_max;
 
 
-    public AppInterface(String API) {
-        this.API = API;
+    public API(String name) {
+        this.name = name;
+        Generator.APIs.add(this);
     }
 
-    public AppInterface(String API,double weight) {
-        this.API = API;
+    public API(String name, double weight) {
+        this.name = name;
         this.weight = weight;
+        Generator.APIs.add(this);
     }
 
-    public AppInterface(String API, int num, String type){
-        this.API = API;
-        this.num = num;
-        this.type = type;
+
+    public API(String method, String url) {
+        this.method = method;
+        this.url = url;
+        this.name = method+" "+url;
+        Generator.APIs.add(this);
     }
 
-    public static List<AppInterface> getPorts() {
-        return map.values().stream().toList();
+    public API(String method, String url, double weight) {
+        this.method = method;
+        this.url = url;
+        this.name = method+" "+url;
+        this.weight = weight;
+        Generator.APIs.add(this);
     }
 
-    public AppInterface getPort(String name){
-        return map.get(name);
-    }
 
     @Override
     public String toString() {
-        return "API #" + API;
+        return name;
     }
 
 }

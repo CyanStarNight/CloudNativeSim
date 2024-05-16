@@ -2,16 +2,17 @@
  * Copyright ©2024. Jingfeng Wu.
  */
 
-package service;
+package entity;
 
 import core.Status;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.cloudbus.cloudsim.UtilizationModel;
-import request.Request;
 
 import java.util.Random;
+
+import static core.Generator.generateCloudletLength;
 
 @Getter @Setter @ToString
 public class NativeCloudlet {
@@ -30,9 +31,6 @@ public class NativeCloudlet {
     // cloudlet的处理时间和等待时间
     private double execTime;
     private double waitTime;
-    // Cloudlet的全局参数定义，单位为KB
-    public static int meanLength;
-    public static int stdDev;
 
     // The cost per bw
     protected double costPerBw;
@@ -72,12 +70,6 @@ public class NativeCloudlet {
         this.status = Status.Ready;
     }
 
-    public static int generateCloudletLength() {
-        // 创建 Random 实例
-        Random random = new Random();
-        // 生成正态分布的 Cloudlet 长度
-        return (int) (meanLength + random.nextGaussian() * stdDev);
-    }
 
     public Instance getInstance(){
         return Instance.getInstance(getInstanceUid());
@@ -86,7 +78,7 @@ public class NativeCloudlet {
         return Service.getService(getServiceName());
     }
     public String getAPI(){
-        return getRequest().getAPI();
+        return getRequest().getMethod();
     }
 
 

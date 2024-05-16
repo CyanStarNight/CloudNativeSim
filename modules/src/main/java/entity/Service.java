@@ -2,14 +2,13 @@
  * Copyright ©2024. Jingfeng Wu.
  */
 
-package service;
+package entity;
 
 import java.util.*;
 
 import lombok.*;
 import core.Status;
 import org.cloudbus.cloudsim.UtilizationModelStochastic;
-import request.Request;
 
 
 /**
@@ -96,13 +95,14 @@ public class Service{
                     new UtilizationModelStochastic(),
                     new UtilizationModelStochastic());
             nativeCloudlets.add(nativeCloudlet);
-            distributeCloudlets(nativeCloudlet);
+            distributeCloudlet(nativeCloudlet);
         }
 
         return nativeCloudlets;
     }
 
-    public void distributeCloudlets(NativeCloudlet nativeCloudlet) {
+
+    public void distributeCloudlet(NativeCloudlet nativeCloudlet) {
         // 分发cloudlets到该服务的实例上
         List<Instance> instanceList = getInstanceList();
         // 按cloudlet数量重新从小到大排序
@@ -110,7 +110,6 @@ public class Service{
         Instance selectedInstance = instanceList.get(0);
         nativeCloudlet.setInstanceUid(selectedInstance.getUid());
         selectedInstance.getCloudletScheduler().receiveCloudlet(nativeCloudlet);
-
     }
 
     @Override
