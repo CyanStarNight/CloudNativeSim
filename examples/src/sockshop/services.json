@@ -1,50 +1,47 @@
 {
   "APIs": [
     {
-      "method": "GET",
-      "url": "/catalogue",
-      "weight": 1.0
-    },
-
-    {
-      "method": "GET",
-      "url": "/login",
+      "name": "GET /catalogue",
       "weight": 2.0
     },
 
     {
-      "method": "GET",
-      "url": "/register",
+      "name": "GET /login",
+      "weight": 2.0
+    },
+
+    {
+      "name": "POST /register",
       "weight": 1.0
     },
 
     {
-      "method": "GET",
-      "url": "/cart",
+      "name": "GET /cart",
       "weight": 1.0
     },
 
     {
-      "method": "POST",
-      "url": "/cart",
+      "name": "POST /cart",
       "weight": 1.0
     },
 
     {
-      "method": "POST",
-      "url": "/cards",
+      "name": "POST /cards",
       "weight": 1.0
     },
 
     {
-      "method": "POST",
-      "url": "/addresses",
+      "name": "POST /addresses",
+      "weight": 1.0
+    },
+    
+    {
+      "name": "POST /orders",
       "weight": 1.0
     },
 
     {
-      "method": "GET",
-      "url": "/orders",
+      "name": "GET /tags",
       "weight": 2.0
     }
   ],
@@ -53,86 +50,86 @@
       "name": "front-end",
       "labels": ["front-end"],
       "calls": ["carts", "orders", "catalogue", "user", "payment", "session-db"],
-      "API": ["GET /catalogue", "GET /login", "GET /register", "GET /cart", "POST /cart","POST /cards", "POST /addresses", "POST /orders"]
+      "APIs": ["GET /catalogue", "GET /login", "POST /register", "GET /cart", "POST /cart","POST /cards", "POST /addresses", "POST /orders","GET /tags"]
     },
     {
       "name": "orders",
       "labels": ["orders"],
       "calls": ["orders-db","queue-master","carts","payment","shipping"],
-      "API": ["POST /orders"]
+      "APIs": ["POST /orders"]
     },
     {
       "name": "carts",
       "labels": ["carts"],
       "calls": ["carts-db"],
-      "API": ["GET /cart", "POST /cart","POST /orders"]
+      "APIs": ["GET /cart", "POST /cart","POST /orders"]
     },
     {
       "name": "carts-db",
       "labels": ["carts-db", "mongo"],
       "calls": ["shipping"],
-      "API": ["GET /cart", "POST /cart","POST /orders"]
+      "APIs": ["GET /cart", "POST /cart","POST /orders"]
     },
     {
       "name": "catalogue",
       "labels": ["catalogue"],
       "calls": ["catalogue-db"],
-      "API": ["GET /catalogue"]
+      "APIs": ["GET /catalogue"]
     },
     {
       "name": "catalogue-db",
       "labels": ["catalogue-db", "mysql"],
       "calls": [],
-      "API": ["GET /catalogue"]
+      "APIs": ["GET /catalogue"]
     },
     {
       "name": "payment",
       "labels": ["payment"],
       "calls": [],
-      "API": ["POST /cards","POST /orders"]
+      "APIs": ["POST /cards","POST /orders"]
     },
     {
       "name": "user",
       "labels": ["user"],
       "calls": ["user-db"],
-      "API": ["GET /login", "GET /register"]
+      "APIs": ["GET /login", "POST /register"]
     },
     {
       "name": "user-db",
       "labels": ["user-db", "mongo"],
       "calls": [],
-      "API": ["GET /login", "GET /register"]
+      "APIs": ["GET /login", "POST /register"]
     },
 
     {
       "name": "orders-db",
       "labels": ["orders-db", "mongo"],
       "calls": [],
-      "API": ["POST /orders"]
+      "APIs": ["POST /orders"]
     },
     {
       "name": "shipping",
       "labels": ["shipping"],
       "calls": ["rabbitmq"],
-      "API": ["POST /addresses","POST /orders"]
+      "APIs": ["POST /addresses","POST /orders"]
     },
     {
       "name": "rabbitmq",
       "labels": ["rabbitmq"],
       "calls": [],
-      "API": ["POST /orders"]
+      "APIs": ["POST /orders"]
     },
     {
       "name": "queue-master",
       "labels": ["queue-master"],
       "calls": ["rabbitmq"],
-      "API": ["POST /orders"]
+      "APIs": ["POST /orders"]
     },
     {
       "name": "session-db",
       "labels": ["session-db", "redis"],
       "calls": [],
-      "API": []
+      "APIs": []
     }
   ]
 }

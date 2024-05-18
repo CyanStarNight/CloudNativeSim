@@ -43,6 +43,29 @@ public class Register {
         setInstancesFile(instancesFile);
     }
 
+
+    @SuppressWarnings("unchecked")
+    public List<API> registerAPIs(){
+        List<API> APIs = new ArrayList<>();
+        Map<String,Object> map =  Tools.readJson(servicesFile);
+        for (Map<String, Object> m : (List<Map<String,Object>>)map.get("APIs")){
+            String name = Tools.getValue(m, "name");
+            double weight = Tools.getValue(m, "weight");
+            APIs.add(new API(name,weight));
+        }
+        return APIs;
+    }
+
+    public Service registerService(Map<String,Object> map){
+        String service_name = Tools.getValue(map,"name");
+        Service service = new Service(appId,service_name);
+        service.setLabels(Tools.getValue(map,"labels"));
+        service.setApiList(Tools.getValue(map, "APIs"));
+//        System.out.println("Register: Service " + service.getName()+" has been registered.");
+        return service;
+    }
+
+
     @SuppressWarnings("unchecked")
     public ServiceGraph registerServiceGraph() {
         Map<String, Object> map = Tools.readJson(servicesFile); // Assumes a method to read JSON into a Map
@@ -73,60 +96,10 @@ public class Register {
         }
 
         serviceGraph.setRoots(roots); // Only root nodes remain in the roots list
-        serviceGraph.buildServiceChains(); // Build the chains
+//        serviceGraph.buildServiceChains(); // Build the chains
         return serviceGraph;
     }
 
-
-//    @SuppressWarnings("unchecked")
-//    public Generator registerGenerator(){
-//        Map<String,Object> map =  Tools.readJson(requestsFile);
-//        int clients = Tools.getValue(map,"clients");
-//        int spawnRate = Tools.getValue(map,"spawnRate");
-//        List<Integer> waitTimeList = Tools.getValue(map,"waitTime");
-//        int[] waitTime = new int[2];
-//        waitTime[0] = waitTimeList.get(0);
-//        waitTime[1] = waitTimeList.get(1);
-//        int timeLimit = Tools.getValue(map,"timeLimit");
-//        List<API> APIs = registerAPIs();
-//        return new Generator(clients,spawnRate,waitTime,timeLimit,APIs);
-//    }
-
-
-    @SuppressWarnings("unchecked")
-    public List<API> registerAPIs(){
-        List<API> APIs = new ArrayList<>();
-        Map<String,Object> map =  Tools.readJson(servicesFile);
-        for (Map<String, Object> m : (List<Map<String,Object>>)map.get("APIs")){
-            String method = Tools.getValue(m, "method");
-            String url = Tools.getValue(m, "url");
-            double weight = Tools.getValue(m, "weight");
-            APIs.add(new API(method,url,weight));
-        }
-        return APIs;
-    }
-
-    public Service registerService(Map<String,Object> map){
-
-        String service_name = Tools.getValue(map,"name");
-        Service service = new Service(appId,service_name);
-
-        service.setLabels(Tools.getValue(map,"labels"));
-
-        List<String> apis = Tools.getValue(map, "apis");
-        List<Integer> endpointsList = Tools.getValue(map, "endpoints");
-
-        if (apis != null){
-            for(int i=0; i<apis.size();i++){
-                String api = apis.get(i);
-                if (endpointsList != null)
-                    service.getApiMap().put(api, endpointsList.get(i));
-                else service.getApiMap().put(api, 1);
-            }
-        }
-//        System.out.println("Register: Service " + service.getName()+" has been registered.");
-        return service;
-    }
 
 
     public Instance registerInstance(Map<String,Object> map){

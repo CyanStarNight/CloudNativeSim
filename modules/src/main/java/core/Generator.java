@@ -75,6 +75,7 @@ public class Generator {
             if (waitStatus - gap <= 0) {
                 // 根据API权重随机选择一个API
                 API selectedAPI = getRandomAPI();
+                assert selectedAPI != null;
                 // 创建新的请求
                 Request newRequest = new Request(selectedAPI, clock);
                 generateList.add(newRequest);
@@ -96,23 +97,13 @@ public class Generator {
     private static API getRandomAPI() {
         // 生成一个随机数 randomWeight，范围是 [0, totalWeight)
         double randomWeight = random.nextDouble() * cumulativeWeights[cumulativeWeights.length - 1];
-        // 使用二分查找来选择API
-        int apiIndex = binarySearch(randomWeight);
-        return APIs.get(apiIndex);
-    }
-
-    private static int binarySearch(double value) {
-        int low = 0;
-        int high = cumulativeWeights.length - 1;
-        while (low < high) {
-            int mid = (low + high) / 2;
-            if (cumulativeWeights[mid] < value) {
-                low = mid + 1;
-            } else {
-                high = mid;
+        // 使用线性查找来选择API
+        for (int i = 0; i < cumulativeWeights.length; i++) {
+            if (randomWeight < cumulativeWeights[i]) {
+                return APIs.get(i);
             }
         }
-        return low;
+        return APIs.get(APIs.size() - 1); // fallback, should not reach here
     }
 
 

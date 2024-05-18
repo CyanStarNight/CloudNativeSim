@@ -6,9 +6,12 @@ package entity;
 
 import java.util.*;
 
+import extend.UtilizationModelStepwise;
 import lombok.*;
 import core.Status;
+import org.cloudbus.cloudsim.UtilizationModelFull;
 import org.cloudbus.cloudsim.UtilizationModelStochastic;
+import policy.cloudletScheduler.NativeCloudletScheduler;
 
 
 /**
@@ -23,8 +26,8 @@ public class Service{
     public String name;
     // 服务label，用于映射
     private List<String> labels = new ArrayList<>();
-    // api -> endpoints
-    private Map<String,Integer> apiMap = new HashMap<>();
+    // apis
+    private List<String> apiList = new ArrayList<>();
     // 服务的状态
     public Status status = Status.Ready;
     private boolean beingInstantiated = false;
@@ -34,7 +37,9 @@ public class Service{
     private List<Instance> instanceList = new ArrayList<>();
     // 会分配到哪个服务图谱
     protected ServiceGraph serviceGraph;
-
+    // cloudlets scheduler
+    private NativeCloudletScheduler cloudletScheduler;
+    // name map
     public static Map<String, Service> serviceNameMap = new HashMap<>();
     public static Service getService(String name){
         return serviceNameMap.get(name);
@@ -42,7 +47,6 @@ public class Service{
     public static List<Service> getAllServices(){
         return (List<Service>)serviceNameMap.values();
     }
-
 
     public void setName(String name){
         serviceNameMap.remove(this.name);
@@ -72,45 +76,54 @@ public class Service{
         return Instance.matchInstancesWithLabels(service);
     }
 
-    // 返回api列表
-    public List<String> getApiList() {
-        return apiMap.keySet().stream().toList();
+    public ChainNode getChainNode(){
+        return ChainNode.serviceNodeMap.get(getName());
     }
 
     // 获取入度和出度
     public int getInDegree(){
-        return ChainNode.serviceNodeMap.get(getName()).getInDegree();
+        return getChainNode().getInDegree();
     }
     public int getOutDegree(){
-        return ChainNode.serviceNodeMap.get(getName()).getOutDegree();
+        return getChainNode().getOutDegree();
+    }
+
+    // 获取source服务在这条chain上的端点数量(出度)
+    public int getEndpoints(Request request) {
+        int endpoints = 0;
+        // 遍历服务链
+        for (Service service : request.getServiceChain()) {
+            ChainNode node = service.getChainNode();
+            // 判定是不是子服务节点
+            if(getChainNode().getChildren().contains(node))
+                endpoints++;
+        }
+
+        // 返回子服务节点的数量
+        return endpoints;
     }
 
     // 创建cloudlets
-    public List<NativeCloudlet> createCloudlets(Request request, int num) {
-
+    public List<NativeCloudlet> createCloudlets(Request request) {
         List<NativeCloudlet> nativeCloudlets = new ArrayList<>();
-        for (int i =0 ;i < num; i++){
-            NativeCloudlet nativeCloudlet = new NativeCloudlet(i, request, getName(),
-                    new UtilizationModelStochastic(),
-                    new UtilizationModelStochastic(),
-                    new UtilizationModelStochastic());
+        // 获取source服务在这条chain上的端点数量(出度+本身)
+        int endpoints = getEndpoints(request) + 1;
+        // 创建cloudlets
+        for (int i =0 ;i < endpoints; i++){
+            NativeCloudlet nativeCloudlet = new NativeCloudlet(request, getName(),
+                    new UtilizationModelFull(),
+                    new UtilizationModelFull(),
+                    new UtilizationModelFull());
             nativeCloudlets.add(nativeCloudlet);
-            distributeCloudlet(nativeCloudlet);
         }
 
         return nativeCloudlets;
     }
 
-
-    public void distributeCloudlet(NativeCloudlet nativeCloudlet) {
-        // 分发cloudlets到该服务的实例上
-        List<Instance> instanceList = getInstanceList();
-        // 按cloudlet数量重新从小到大排序
-        instanceList.sort(Comparator.comparingInt(i -> i.getCloudletScheduler().getWaitingQueue().size()));
-        Instance selectedInstance = instanceList.get(0);
-        nativeCloudlet.setInstanceUid(selectedInstance.getUid());
-        selectedInstance.getCloudletScheduler().receiveCloudlet(nativeCloudlet);
+    public double getTotalUtilizationOfCpu(double time) {
+        return getCloudletScheduler().getTotalUtilizationOfCpu(time);
     }
+
 
     @Override
     public String toString() {

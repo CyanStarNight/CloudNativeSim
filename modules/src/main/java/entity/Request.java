@@ -10,14 +10,13 @@ import lombok.Setter;
 
 import java.util.List;
 
+import static core.Status.Created;
+
 @Getter
 @Setter
 public class Request {
 
     private int id;
-    // 请求的描述
-    public String method;
-    public String url;
     // 请求的接口
     public API api;
     // 请求的状态
@@ -26,6 +25,8 @@ public class Request {
     private double startTime;
     // 请求的响应时间
     private double responseTime;
+    // 服务链路
+    private List<Service> serviceChain;
     // 请求计数
     private static int count = 0;
 
@@ -34,6 +35,7 @@ public class Request {
         this.id = ++count;
         this.api = api;
         this.startTime = currentTime;
+        this.status = Created;
     }
 
 
@@ -46,7 +48,7 @@ public class Request {
     public String toString() {
         return "Request{" +
                 "id=" + id +
-                ", API='" + method + '\'' +
+                ", API='" + api + '\'' +
                 ", status=" + status +
                 '}';
     }
@@ -55,7 +57,7 @@ public class Request {
         return api.chain;
     }
 
-    public String getAPI(){
-        return method+" "+url;
+    public String getApiName(){
+        return api.name;
     }
 }

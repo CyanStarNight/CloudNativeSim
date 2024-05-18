@@ -4,13 +4,14 @@
 
 package core;
 
-import extend.NativeSimTag;
+import extend.CloudNativeSimTag;
 import extend.NativeVm;
 import lombok.Getter;
 import lombok.Setter;
 import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 import policy.allocation.ServiceAllocationPolicy;
+import policy.cloudletScheduler.NativeCloudletScheduler;
 import policy.migration.InstanceMigrationPolicy;
 import policy.scaling.ServiceScalingPolicy;
 import entity.Request;
@@ -20,58 +21,87 @@ import entity.NativeCloudlet;
 import entity.Service;
 import entity.ServiceGraph;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static core.Reporter.printEvent;
 import static org.cloudbus.cloudsim.Log.printLine;
 
 
-@Setter @Getter
+@Setter
+@Getter
 public class Application extends SimEntity {
-
+    /**
+     * The id of datacenter broker.
+     */
     private int brokerId;
-    /** The regional cis name. */
+    /**
+     * The regional cis name.
+     */
     private String regionalCisName;
-    /** The last process time. */
+    /**
+     * The last process time.
+     */
     private double lastProcessTime;
-    /** The scheduling interval. */
-    private double schedulingInterval = 5;
-    /** The checking interval. */
-    private double checkingInterval;
-    /** The generator. */
+    /**
+     * The scheduling interval.
+     * 会影响利用率模型的更新,迁移和扩展的操作
+     */
+    private int schedulingInterval = 10;
+    /**
+     * The generator.
+     */
     protected Generator generator;
-    /** The exporter. */
+    /**
+     * The exporter.
+     */
     protected Exporter exporter;
 
-
-    /** The service graph. */
+    /**
+     * The service graph.
+     */
     protected ServiceGraph serviceGraph;
-    /** The requests list. */
+    protected Map<String, List<Service>> serviceChains = new HashMap<>();
+    /**
+     * The requests list.
+     */
     protected List<Request> requestList = new ArrayList<>();
 
-    protected List<API> ports = new ArrayList<>();
-    /** The services list. */
+    protected List<API> apis = new ArrayList<>();
+    /**
+     * The services list.
+     */
     protected List<Service> serviceList = new ArrayList<>();
-    /** The instances list. */
+    /**
+     * The instances list.
+     */
     protected List<Instance> instanceList = new ArrayList<>();
     protected List<Instance> createdInstanceList = new ArrayList<>();
-    /** The created vm list. */
+    /**
+     * The created vm list.
+     */
     protected List<NativeVm> vmList = new ArrayList<>();
-    /** The cloudlet list. */
+    /**
+     * The cloudlet list.
+     */
     protected List<NativeCloudlet> nativeCloudletList = new ArrayList<>();
-
-    /** The allocation policy. */
+    protected int finishedCloudletNum;
+    /**
+     * The allocation policy.
+     */
     private ServiceAllocationPolicy serviceAllocationPolicy;
-    /** The migration policy. */
+    /**
+     * The migration policy.
+     */
     private InstanceMigrationPolicy instanceMigrationPolicy;
-    /** The scaling policy. */
+    /**
+     * The scaling policy.
+     */
     private ServiceScalingPolicy serviceScalingPolicy;
 
-    private static Logger logger =  LoggerFactory.getLogger(Application.class);
-
+    private static Logger logger = LoggerFactory.getLogger(Application.class);
 
 
     public Application(String appName, int brokerId,
@@ -92,47 +122,51 @@ public class Application extends SimEntity {
         try {
             switch (ev.getTag()) {
 
-                case NativeSimTag.APP_CHARACTERISTICS:
+                case CloudNativeSimTag.APP_CHARACTERISTICS:
                     processAppCharacteristics(ev);
-
                     break;
 
-                case NativeSimTag.STATE_CHECK:
+                case CloudNativeSimTag.STATE_CHECK:
                     processStateCheck();
                     break;
 
-                case NativeSimTag.GET_NODES:
+                case CloudNativeSimTag.GET_NODES:
                     submitVmList((List<NativeVm>) ev.getData());
                     break;
-
+                case CloudNativeSimTag.START_CLIENTS:
+                    startClients();
+                    break;
                 // Service
-                case NativeSimTag.SERVICE_ALLOCATE:
+                case CloudNativeSimTag.SERVICE_ALLOCATE:
                     processServiceAllocate(ev);
                     break;
 
-                case NativeSimTag.SERVICE_SCALING:
+                case CloudNativeSimTag.SERVICE_SCALING:
                     processServiceScaling(ev);
                     break;
 
-                case NativeSimTag.SERVICE_UPDATE: //TODO: update需要细化，是改什么资源？怎么改？
+                case CloudNativeSimTag.SERVICE_UPDATE: //TODO: update需要细化，是改什么资源？怎么改？
                     break;
 
-                case NativeSimTag.SERVICE_DESTROY:
+                case CloudNativeSimTag.SERVICE_DESTROY:
                     processServiceDestroy(ev);
                     break;
 
                 // Request
-                case NativeSimTag.REQUEST_DISPATCH:
+                case CloudNativeSimTag.REQUEST_GENERATE:
+                    processRequestGenerate(ev);
+                    break;
+
+                case CloudNativeSimTag.REQUEST_DISPATCH:
                     processRequestsDispatch(ev);
                     break;
 
-
                 // Cloudlet
-                case NativeSimTag.CLOUDLET_PROCESS:
+                case CloudNativeSimTag.CLOUDLET_PROCESS:
                     processCloudlets(ev);
                     break;
 
-                case NativeSimTag.INSTANCE_MIGRATE:
+                case CloudNativeSimTag.INSTANCE_MIGRATE:
                     processServiceMigrate(ev);
                     break;
 
@@ -148,18 +182,34 @@ public class Application extends SimEntity {
 
 
     @Override
-    public void startEntity() { // 从注册开始，然后部署，接着循环检查monitor，满足某个条件开始scaling
+    public void startEntity() {
         printLine(getName() + " app is starting...");
-        // check the datacenter allocated;
-        schedule(brokerId, 0.2, NativeSimTag.CHECK_DC_ALLOCATED);
+        // check if datacenter are deployed
+        schedule(brokerId, 0.2, CloudNativeSimTag.CHECK_DC_ALLOCATED);
+        // check if services are deployed
     }
-
 
     @Override
     public void shutdownEntity() {
-        sendToExporter();
+        printEvent(getFinishedCloudletNum()+ " cloudlets have been finished");
+        Exporter.totalTime = CloudNativeSim.clock();
+        Exporter.calculateAverageQPS();
     }
 
+    /**
+     * The print interval.
+     * 会影响打印的步长,
+     */
+    private int printInterval = 10;
+    private double lastPrintTime = 0;
+
+    public void printByInterval(String msg) {
+        double currentTime = CloudNativeSim.clock();
+        if (currentTime - lastPrintTime >= printInterval) {
+            printEvent(msg);
+            lastPrintTime = currentTime;
+        }
+    }
 
 
     /* 资源画像：1.通过文件将资源进行注册，定义资源的初始配置。2.根据初始配置提交。 */
@@ -169,112 +219,139 @@ public class Application extends SimEntity {
             throw new Exception("Error: register object is null.");
         Register register = (Register) ev.getData();
 
-        // 自底向上地提交资源并完善画像
-        assert !getRequestList().isEmpty();
-        System.out.println(NativeSim.clock() + ": " + "Requests have been registered.");
+        // 提交APIs
+        submitAPIs(register.registerAPIs());
+        assert !getApis().isEmpty();
+        printEvent("APIs have been registered.");
 
         //提交实例
         submitInstanceList(register.registerInstanceList());
         assert !getInstanceList().isEmpty();
-        System.out.println(NativeSim.clock() + ": " + "Instances have been registered.");
+        printEvent("Instances have been registered.");
 
         // 提交服务和调用图
         submitServiceGraph(register.registerServiceGraph());
         assert getServiceGraph() != null;
+        submitServiceChains(serviceGraph.buildServiceChains());
+        assert getServiceChains() != null;
         List<Service> serviceList = getServiceGraph().getAllServices();
         submitServiceList(serviceList);
         assert !getServiceList().isEmpty();
-        System.out.println(NativeSim.clock() + ": " + "Services have been registered.");
-        System.out.println(NativeSim.clock() + ": " + "ServiceGraph_" + serviceGraph.getId()+" has been registered.");
+        printEvent("Services have been registered.");
+        printEvent("ServiceGraph_" + serviceGraph.getId() + " has been registered.");
 
-
+        printEvent("APIs have been registered.");
         // 画像完成后打印输出
-        System.out.println(NativeSim.clock() + ": " + "The resource characteristics of the application has been completed.\n");
+        printEvent("The resource characteristics of the application has been completed.");
+        Reporter.printChains(getServiceGraph(), getApis());
         // 启动服务部署，落实资源画像
-        send(getId(),0.1, NativeSimTag.SERVICE_ALLOCATE,serviceList);
+        send(getId(), 0.1, CloudNativeSimTag.SERVICE_ALLOCATE, serviceList);
     }
 
+    private static volatile boolean servicesDeployed = false;
 
     @SuppressWarnings("unchecked")
     private void processServiceAllocate(SimEvent ev) {
         // 初始化部署协议和待部署的服务列表
         serviceAllocationPolicy.init(getVmList());
-        List<Service> servicesToAllocate = (List<Service>)ev.getData();
+        List<Service> servicesToAllocate = (List<Service>) ev.getData();
         // 遍历并部署服务
-        for (Service service : servicesToAllocate){
+        for (Service service : servicesToAllocate) {
             serviceAllocationPolicy.instantiateService(service); // 实例化
             serviceAllocationPolicy.allocateService(service); // 部署
         }
+
         // 提交已部署的实例
         setCreatedInstanceList(serviceAllocationPolicy.getCreatedInstanceList());
-
         // 部署完成后，启动周期检查，触发服务迁移和扩展
-        schedule(getId(),5.0, NativeSimTag.STATE_CHECK);
-
-        // 请求开始分发到成功创建的实例上
-        send(getId(),0.2, NativeSimTag.REQUEST_DISPATCH, getCreatedInstanceList());
-    }
-
-
-/* 请求分发的目标：1.唤醒服务调用链。2.选择请求处理的实例。3.一批批地发送处理请求的事件。 4.更新RequestPort对象的统计指标和队列 */
-    @SuppressWarnings("unchecked")
-    private void processRequestsDispatch(SimEvent ev) {
-        List<Instance> instanceList = (List<Instance>) ev.getData();
-        // generate requests
-
-        // 遍历请求列表
-
-        // 请求分发完成，但还没开始执行
-        Reporter.printEvent("\nRequests have been dispatched.");
-        printLine();
-    }
-
-
-/* 批量处理某些请求的cloudlets */
-    @SuppressWarnings("unchecked")
-    private void processCloudlets(SimEvent ev){
-//        获取变量
-        List<NativeCloudlet> nativeCloudlets = (List<NativeCloudlet>) ev.getData();
-        String serviceName = nativeCloudlets.get(0).getServiceName();
-        Service service = Service.getService(serviceName);
-        String API = nativeCloudlets.get(0).getAPI();
-        Request request = nativeCloudlets.get(0).getRequest();
-        List<Service> calledService = serviceGraph.getCalls(serviceName,API);
-//        service处理cloudlets：
-        for (Instance instance: service.getInstanceList()) {
-//        遍历实例，让每个实例处理cloudlets
-            instance.getCloudletScheduler().processCloudlets();
-            // 返回已完成的cloudlets
-            List<NativeCloudlet> finishedNativeCloudlets = instance.getCloudletScheduler().getFinishedQueue().stream().toList();
-            double delay = finishedNativeCloudlets.stream().mapToDouble(NativeCloudlet::getTotalTime) // 获取每个cloudlet的执行时间
-                    .max() // 找出最大的执行时间
-                    .orElse(0.0); // 如果没有cloudlets，返回0.0作为默认值;
-
-            if (!finishedNativeCloudlets.isEmpty()) {// 被调用服务创建并发送cloudlets
-                int finishedNum = finishedNativeCloudlets.size();
-                calledService.forEach(s -> send(getId(), delay, NativeSimTag.CLOUDLET_PROCESS, s.createCloudlets(request, finishedNum)));
-                Reporter.printEvent(finishedNum+" cloudlets have been finished");
-            }
-        }
+        schedule(getId(), 5.0, CloudNativeSimTag.STATE_CHECK);
+        servicesDeployed = true;
+        send(0.1, CloudNativeSimTag.START_CLIENTS);
     }
 
 
     /**
-     * 计算已完成的原生云任务的最大延迟时间。
-     *
-     * @param finishedNativeCloudlets 完成的原生云任务列表，不应为空。
-     * @return 返回已完成的原生云任务中的最大延迟时间，如果列表为空，则返回0.0。
+     * The requests arrival interval.
+     * 请求每隔一段时间一次性到达,设置为1,即每秒到达.
      */
-    private double calculateMaxDelay(List<NativeCloudlet> finishedNativeCloudlets) {
-        // 使用Stream API来计算列表中云任务的最长总时间
-        return finishedNativeCloudlets.stream()
-                .mapToDouble(NativeCloudlet::getTotalTime) // 将云任务映射到其总时间，并以双精度浮点数处理
-                .max() // 查找最大的总时间
-                .orElse(0.0); // 如果列表为空，返回0.0
+    private int requestInterval = 5;
+
+    private void startClients() {
+        double startTime = Generator.previousTime = CloudNativeSim.clock();
+        double session = Generator.timeLimit;
+        Generator.initializeCumulativeWeights();
+        printLine();
+        printEvent("clients are starting...");
+        // 每生成请求
+        for (int tick = 1; tick <= session; tick += requestInterval) {
+            schedule(tick, CloudNativeSimTag.REQUEST_GENERATE);
+        }
     }
 
 
-    /** Migrate */
+    private void processRequestGenerate(SimEvent ev) {
+        // generate requests
+        List<Request> currentRequests = Generator.generateRequests(CloudNativeSim.clock());
+        submitRequestList(currentRequests);
+        // 请求开始分发到成功创建的实例上
+        send(0.2, CloudNativeSimTag.REQUEST_DISPATCH, currentRequests);
+        // 更新QPS
+        Exporter.updateQPSHistory(CloudNativeSim.clock(), currentRequests.size(), requestInterval);
+        // 打印输出
+        printByInterval(String.format("%d requests have arrived. (%d clients)", currentRequests.size(), Generator.currentClients));
+    }
+
+
+    /* 请求分发到对应服务 */
+    @SuppressWarnings("unchecked")
+    private void processRequestsDispatch(SimEvent ev) {
+        List<Request> requestsToDispatch = (List<Request>) ev.getData();
+        for (Request request : requestsToDispatch) {
+            String apiName = request.getApiName();
+            // 查找service chain
+            List<Service> chain = serviceGraph.getServiceChains().get(apiName);
+            request.setServiceChain(chain);
+            // 选择chain的源服务
+            Service source = chain.get(0);
+            // 源服务创建cloudlets
+            List<NativeCloudlet> sourceCloudlets = source.createCloudlets(request);
+            // 启动cloudlets schedule, 这些cloudlets都来源于同一个请求,同一个服务
+            sendNow(getId(), CloudNativeSimTag.CLOUDLET_PROCESS, sourceCloudlets);
+        }
+        // printByInterval("requests have been dispatched, start cloudlets.");
+    }
+
+
+    // 处理来源于相同请求且相同服务的cloudlets
+    @SuppressWarnings("unchecked")
+    private void processCloudlets(SimEvent ev) {
+        List<NativeCloudlet> cloudlets = (List<NativeCloudlet>) ev.getData();
+        assert !cloudlets.isEmpty();
+        submitCloudlets(cloudlets);
+        // 选一个代表
+        NativeCloudlet behavior = cloudlets.get(0);
+        // 获取变量
+        String serviceName = behavior.getServiceName();
+        Service service = Service.getService(serviceName);
+        Request request = behavior.getRequest();
+        String apiName = request.getApiName();
+        NativeCloudletScheduler scheduler = service.getCloudletScheduler();
+        // 执行cloudlet schedule
+        // 由于事件发送的异步性，其实是一边distribute，一边execute
+        scheduler.distributeCloudlets(cloudlets);
+        List<Service> next = serviceGraph.getCalls(serviceName, apiName);
+        // instance处理cloudlets,返回总共的执行时间
+        double execTime = scheduler.processCloudlets();
+        finishedCloudletNum += cloudlets.size();
+        // 链路中下级服务非空,则创建并发送cloudlets
+        if (!next.isEmpty()) {
+            next.forEach(s ->
+                    schedule(execTime, CloudNativeSimTag.CLOUDLET_PROCESS,
+                            s.createCloudlets(request)));
+        }
+    }
+
+
     private void processServiceMigrate(SimEvent ev) {
 
         serviceAllocationPolicy.init(getVmList());
@@ -303,28 +380,17 @@ public class Application extends SimEntity {
         // 检查service需不需要扩展
         for (Service service : serviceList) {
             if (serviceScalingPolicy.needScaling(service)) //检查SLO
-                sendNow(getId(), NativeSimTag.SERVICE_SCALING, service);
+                sendNow(getId(), CloudNativeSimTag.SERVICE_SCALING, service);
         }
 
         // 检查instance需不需要迁移
-        for (Instance instance : instanceList){
+        for (Instance instance : instanceList) {
             if (InstanceMigrationPolicy.needMigrate(instance))//检查load balance
-                sendNow(getId(),NativeSimTag.INSTANCE_MIGRATE, instance);
+                sendNow(getId(), CloudNativeSimTag.INSTANCE_MIGRATE, instance);
         }
 
     }
 
-    private void sendToExporter(){
-        Exporter.serviceGraph = getServiceGraph();
-        Exporter.requestList = getRequestList();
-        Exporter.vmList = getVmList();
-        Exporter.instanceList = getInstanceList();
-        Exporter.serviceList = getServiceList();
-        Exporter.nativeCloudletList = getNativeCloudletList();
-
-        Exporter.totalTime = NativeSim.clock();
-        Exporter.calculateRequestStatistics();
-    }
 
     protected void processOtherEvent(SimEvent ev) {
         if (ev == null) {
@@ -332,36 +398,78 @@ public class Application extends SimEntity {
         }
     }
 
-    public void submitServiceList(List<Service> list){
+    public void submitServiceList(List<Service> list) {
         getServiceList().addAll(list);
+        Exporter.serviceList = getServiceList();
     }
+
     public void submitService(Service service) {
         getServiceList().add(service);
     }
-    public void submitRequestList(List<Request> list){
+
+    public void submitRequestList(List<Request> list) {
         getRequestList().addAll(list);
-    }
-    public void submitPorts(List<API> list){
-        getPorts().addAll(list);
-    }
-    public void submitServiceGraph(ServiceGraph serviceGraph){
-        setServiceGraph(serviceGraph);
-    }
-    public void submitInstanceList(List<? extends Instance> list){
-        getInstanceList().addAll(list);
-    }
-    public void submitInstance(Instance instance){
-        getInstanceList().add(instance);
-    }
-    public void submitVmList(List<NativeVm> vmList){
-        getVmList().addAll(vmList);
-    }
-    public void submitVm(NativeVm vm){
-        getVmList().add(vm);
-    }
-    public void submitCloudlets(List<NativeCloudlet> nativeCloudlets) {
-        getNativeCloudletList().addAll(nativeCloudlets);
+        Exporter.requestList = getRequestList();
     }
 
+    public void submitServiceGraph(ServiceGraph serviceGraph) {
+        setServiceGraph(serviceGraph);
+        Exporter.serviceGraph = getServiceGraph();
+    }
+
+    public void submitServiceChains(Map<String, List<Service>> serviceChains) {
+        setServiceChains(serviceChains);
+    }
+
+    public void submitInstanceList(List<? extends Instance> list) {
+        getInstanceList().addAll(list);
+        Exporter.instanceList = getInstanceList();
+    }
+
+    public void submitInstance(Instance instance) {
+        getInstanceList().add(instance);
+    }
+
+    public void submitVmList(List<NativeVm> vmList) {
+        getVmList().addAll(vmList);
+        Exporter.vmList = getVmList();
+    }
+
+    public void submitVm(NativeVm vm) {
+        getVmList().add(vm);
+    }
+
+    public void submitCloudlets(List<NativeCloudlet> nativeCloudlets) {
+        getNativeCloudletList().addAll(nativeCloudlets);
+        Exporter.nativeCloudletList = getNativeCloudletList();
+    }
+
+    public void submitAPIs(List<API> apis) {
+        getApis().addAll(apis);
+    }
+
+    private void send(double delay, int cloudSimTag, Object data) {
+        send(getId(), delay, cloudSimTag, data);
+    }
+
+    private void send(double delay, int cloudSimTag) {
+        send(getId(), delay, cloudSimTag);
+    }
+
+    private void sendNow(int cloudSimTag, Object data) {
+        sendNow(getId(), cloudSimTag, data);
+    }
+
+    private void sendNow(int cloudSimTag) {
+        sendNow(getId(), cloudSimTag);
+    }
+
+    private void schedule(double delay, int cloudSimTag, Object data) {
+        schedule(getId(), delay, cloudSimTag, data);
+    }
+
+    private void schedule(double delay, int cloudSimTag) {
+        schedule(getId(), delay, cloudSimTag);
+    }
 
 }

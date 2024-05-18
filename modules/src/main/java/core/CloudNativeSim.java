@@ -16,7 +16,7 @@ import static org.cloudbus.cloudsim.Log.printLine;
  */
 @Getter
 @Setter
-public class NativeSim extends CloudSim {
+public class CloudNativeSim extends CloudSim {
     private static final String NativeSim_VERSION_STRING  = "1.0";
     private static int cisId = -1;
     private static int shutdownId = -1;
@@ -42,7 +42,15 @@ public class NativeSim extends CloudSim {
             throw new NullPointerException("NativeSim.startSimulation() : Error - you haven't initialized NativeSim.");
         }
     }
-
+//    public static double clock;
+//    public static double clock() {
+//        return clock;
+//    }
+//
+//    public static double addClock(double time){
+//        clock+=time;
+//        return clock;
+//    }
 
     public static void stopSimulation() throws NullPointerException {
         try {

@@ -36,11 +36,11 @@ public class SockShopExample{
     // generator configuration for requests and cloudlets
     public static void generator_params(){
         Generator.finalClients = 500;
-        Generator.spawnRate = 100;
-        Generator.waitTimeSpan = new int[]{5, 15};
+        Generator.spawnRate = 10;
+        Generator.waitTimeSpan = new int[]{3, 10};
         Generator.timeLimit = 600;
-        Generator.meanLength = 1000;
-        Generator.stdDev = 200;
+        Generator.meanLength = 100;
+        Generator.stdDev = 20;
     }
 
 
@@ -53,7 +53,7 @@ public class SockShopExample{
             int userId = 1;
             Calendar calendar = Calendar.getInstance();
             boolean trace_flag = false;
-            NativeSim.init(num_user, calendar, trace_flag);
+            CloudNativeSim.init(num_user, calendar, trace_flag);
 
             // create datacenters and brokers
             int numHosts = 1;
@@ -78,14 +78,13 @@ public class SockShopExample{
             generator_params();
 
             // 3: Start
-            NativeSim.startSimulation();
+            CloudNativeSim.startSimulation();
 
             // 4: Pause
 
             // x: End the simulation
-            NativeSim.stopSimulation();
+            CloudNativeSim.stopSimulation();
 
-            Reporter.printServiceGraph();
             Reporter.printRequestStatistics();
             Reporter.printResourceUsage();
 

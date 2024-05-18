@@ -11,7 +11,10 @@ import java.util.*;
 
 @Data
 public class API {
+    // name
     public String name;
+    // name map
+    public static Map<String,API> apiMap = new HashMap<>();
     // 类型
     public String method;
     // api
@@ -76,6 +79,9 @@ public class API {
         Generator.APIs.add(this);
     }
 
+    public API getAPI(String name){
+        return apiMap.get(name);
+    }
 
     @Override
     public String toString() {

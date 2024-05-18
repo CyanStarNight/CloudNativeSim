@@ -102,7 +102,6 @@ public class NativeVm extends Vm {
         // 根据allocated资源去完善instance的属性
         instance.setStatus(Status.Created);
         instance.setVm(this);
-        instance.setCloudletScheduler(new NativeCloudletSchedulerTimeShared(instance.getCurrentAllocatedMips(),instance.getCurrentAllocatedCpuShare()));
 
         setFreeStorage(getFreeStorage() - instance.getSize());
 

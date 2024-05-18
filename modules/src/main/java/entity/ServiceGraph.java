@@ -163,23 +163,28 @@ public class ServiceGraph{
     }
 
     // Method to collect all services into chains based on API
-    public void buildServiceChains() {
-        serviceChains = new HashMap<>();
+    public Map<String,List<Service>> buildServiceChains() {
+        setServiceChains(new HashMap<>());
         Map<String, List<Service>> tempChains = new HashMap<>();
 
+        // 将同一个API的服务放入一个新的 ArrayList 中,key 为 api。
         for (Service s : getAllServices()) {
             for (String api : s.getApiList()) {
+                // 如果 tempChains 中不存在 key 为 api 的条目,则创建一个新的
                 tempChains.computeIfAbsent(api, k -> new ArrayList<>()).add(s);
             }
         }
-
         // Now sort each list in tempChains by in-degree and put it in serviceChains
         for (Map.Entry<String, List<Service>> entry : tempChains.entrySet()) {
             List<Service> sortedList = entry.getValue();
             // Sorting based on in-degree
             sortedList.sort(Comparator.comparingInt(Service::getInDegree));
-            serviceChains.put(entry.getKey(), sortedList);
+            tempChains.replace(entry.getKey(), sortedList);
         }
+        setServiceChains(tempChains);
+
+        assert !getServiceChains().isEmpty():"Service Chains are empty.";
+        return tempChains;
     }
 
 

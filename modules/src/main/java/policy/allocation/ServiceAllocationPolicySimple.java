@@ -12,6 +12,7 @@ import entity.Instance;
 import extend.NativeVm;
 import entity.Service;
 import core.Status;
+import policy.cloudletScheduler.NativeCloudletSchedulerTimeShared;
 
 import java.util.*;
 
@@ -118,7 +119,8 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
             Reporter.printEvent("Service #"+service.getName()+" has been successfully allocated.");
 
             service.setBeingAllocated(true);
-
+            // 创建cloudlet scheduler
+            service.setCloudletScheduler(new NativeCloudletSchedulerTimeShared(instanceList));
             return true;
         }else {
 

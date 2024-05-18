@@ -4,43 +4,48 @@
 
 package policy.cloudletScheduler;
 
+import entity.Instance;
 import lombok.Getter;
 import lombok.Setter;
 import entity.NativeCloudlet;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
 public abstract class NativeCloudletScheduler{
-
-    /** The mips of instance. */
-    private double mips;
+    // instance uid -> cloudlet id list
+    private Map<String ,Set<Integer>> cloudletsMap = new HashMap<>();
+    private List<Instance> instanceList;
     /** The free share of instance. */
-    private int freeShare;
+    private List<Integer> freeShareList;
     /** The previous time. */
     private double previousTime;
     /** The previous time. */
     private double totalExecTime;
 
-    // TODO: 提交的cloudlets先进入waitingQueue，FIFO式进入execQueue，瓶颈是实例的处理上限
-
     /** The cloudlet waiting list. */
-    private Queue<NativeCloudlet> waitingQueue = new LinkedList<>();
+    private List<NativeCloudlet> waitingQueue = new LinkedList<>();
 
     /** The cloudlet exec list. */
-    private Queue<NativeCloudlet> execQueue = new LinkedList<>();
+    private List<NativeCloudlet> execQueue = new LinkedList<>();
 
     /** The cloudlet paused list. */
-    private Queue<NativeCloudlet> pausedQueue = new LinkedList<>();
+    private List<NativeCloudlet> pausedQueue = new LinkedList<>();
 
     /** The cloudlet finished list. */
-    private Queue<NativeCloudlet> finishedQueue = new LinkedList<>();
+    private List<NativeCloudlet> finishedList = new ArrayList<>();
 
-    public NativeCloudletScheduler(double mips, int totalShare) {
+
+    public NativeCloudletScheduler(List<Instance> instanceList) {
+        setInstanceList(instanceList);
+        this.cloudletsMap = new HashMap<>();
+        for (Instance instance : instanceList) {
+            cloudletsMap.put(instance.getUid(), new HashSet<>());
+        }
         setPreviousTime(0.0);
-        setMips(mips);
-        setFreeShare(totalShare);
+        setFreeShareList(instanceList.stream().map(Instance::getCurrentAllocatedCpuShare).collect(Collectors.toList()));
     }
 
 
@@ -50,11 +55,21 @@ public abstract class NativeCloudletScheduler{
 
     public abstract double getTotalUtilizationOfBw(double time);
 
+    public void  distributeCloudlets(List<NativeCloudlet> cloudlets){
+        cloudlets.forEach(c -> distributeCloudlet(c,getInstanceList()));
+    }
+
+    public abstract void distributeCloudlet(NativeCloudlet nativeCloudlet, List<Instance> instanceList);
+
     public void receiveCloudlet(NativeCloudlet nativeCloudlet){
         waitingQueue.add(nativeCloudlet);
     }
 
-    public abstract void processCloudlets();
+    public void receiveCloudlets(List<NativeCloudlet> cloudlets){
+        waitingQueue.addAll(cloudlets);
+    }
+
+    public abstract double processCloudlets();
 
     public abstract void pauseCloudlets();
 

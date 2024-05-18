@@ -10,15 +10,15 @@ import lombok.Setter;
 import lombok.ToString;
 import org.cloudbus.cloudsim.UtilizationModel;
 
-import java.util.Random;
-
 import static core.Generator.generateCloudletLength;
 
 @Getter @Setter @ToString
 public class NativeCloudlet {
-
+    // ID
     public int id;
-    // Cloudlet本质上是request处理的一部分
+    // 计数
+    private static int count = 0;
+    // 绑定request
     private Request request;
     // 目前部署cloudlets的instance
     protected String instanceUid;
@@ -48,11 +48,11 @@ public class NativeCloudlet {
     private UtilizationModel utilizationModelBw;
 
 
-    public NativeCloudlet(int id, Request request, String serviceName,
+    public NativeCloudlet( Request request, String serviceName,
                           UtilizationModel utilizationModelCpu,
                           UtilizationModel utilizationModelRam,
                           UtilizationModel utilizationModelBw) {
-        this.id = id;
+        this.id = count++;
         this.request = request;
         this.serviceName = serviceName;
         this.len = generateCloudletLength();
@@ -77,14 +77,10 @@ public class NativeCloudlet {
     public Service getService(){
         return Service.getService(getServiceName());
     }
-    public String getAPI(){
-        return getRequest().getMethod();
+    public String getApiName(){
+        return getRequest().getApiName();
     }
 
-
-    public double getTotalTime(){
-        return execTime+waitTime;
-    }
 
     public double getUtilizationOfCpu(final double time) {
         return getUtilizationModelCpu().getUtilization(time);

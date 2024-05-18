@@ -75,8 +75,6 @@ public class Instance{
     private final List<Double> utilizationHistory = new LinkedList<Double>();
     // previous time used to update utilizationHistory
     private int previousTime;
-    // cloudlets scheduler
-    private NativeCloudletScheduler cloudletScheduler;
     // scheduling Interval 5s
     private double schedulingInterval = 5.0;
     // uid -> instance
@@ -129,11 +127,6 @@ public class Instance{
         InstanceUidMap.put(uid,this);
     }
 
-
-    public double getTotalUtilizationOfCpu(double time) {
-        //Log.printLine("Container: get Current getTotalUtilizationOfCpu"+ getNativeCloudletScheduler().getTotalUtilizationOfCpu(time));
-        return getCloudletScheduler().getTotalUtilizationOfCpu(time);
-    }
 
 
     public double getUtilizationMean() {

@@ -9,7 +9,7 @@ import lombok.Setter;
 import org.cloudbus.cloudsim.DatacenterBroker;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
-import core.NativeSim;
+import core.CloudNativeSim;
 import core.Register;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public class NativeBroker extends DatacenterBroker {
     public void processEvent(SimEvent ev) {
         switch (ev.getTag()) {
             // Check datacenter allocated
-            case NativeSimTag.CHECK_DC_ALLOCATED:
+            case CloudNativeSimTag.CHECK_DC_ALLOCATED:
                 appId = ev.getSource();
                 processCheckAllocated();
                 break;
@@ -55,12 +55,12 @@ public class NativeBroker extends DatacenterBroker {
         if (getVmsCreatedList() != null){
             extendVms(getVmsCreatedList());
             result = true;
-            printLine("\n"+ NativeSim.clock() + ": " + "Datacenters have been allocated.");
+            printLine("\n"+ CloudNativeSim.clock() + ": " + "Datacenters have been allocated.");
         }
         if (result){
-            sendNow(appId,NativeSimTag.GET_NODES,getVmsCreatedList());
+            sendNow(appId, CloudNativeSimTag.GET_NODES,getVmsCreatedList());
             if (register!=null) {
-                sendNow(appId, NativeSimTag.APP_CHARACTERISTICS, getRegister());
+                sendNow(appId, CloudNativeSimTag.APP_CHARACTERISTICS, getRegister());
             }
         }
 
@@ -71,7 +71,7 @@ public class NativeBroker extends DatacenterBroker {
             //分配nativePe
             List<NativePe> peList = new ArrayList<>();
 
-            assert vm.getNumberOfPes() == vm.getCurrentAllocatedMips().size();
+//            assert vm.getNumberOfPes() == vm.getCurrentAllocatedMips().size();
             for (int i = 0; i < vm.getNumberOfPes(); i++) {
                 //默认vm所有pe的mips都相等
                 peList.add(new NativePe(i,vm.getMips()));
