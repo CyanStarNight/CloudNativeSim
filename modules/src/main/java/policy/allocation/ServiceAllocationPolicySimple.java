@@ -11,12 +11,8 @@ import extend.NativePe;
 import entity.Instance;
 import extend.NativeVm;
 import entity.Service;
-import core.Status;
-import policy.cloudletScheduler.NativeCloudletSchedulerTimeShared;
 
 import java.util.*;
-
-import static entity.Instance.InstanceUidMap;
 
 
 @Getter
@@ -54,35 +50,9 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
 
     }
 
-    @Override
-    public boolean instantiateService(Service service){
-        boolean result = false;
 
-        List<String> s_labels = service.getLabels();
-        // 多对多的映射labels
-        for (Instance instance: InstanceUidMap.values()){
-
-            for (String i_label:instance.getLabels()){
-
-                if (s_labels.contains(i_label)) {
-
-                    service.setBeingInstantiated(true);
-
-                    service.getInstanceList().add(instance);
-
-                    service.setStatus(Status.Created);
-
-                    return true;
-                }
-            }
-        }
-        if (!result)
-            System.out.println("[ServiceAllocation.instantiateService] Service #"+service.getName()+" can not be instantiated.");
-        return result;
-    }
-
-    // 使用优先级队列实现基于MARF策略排序VM列表的方法
-    protected List<? extends NativeVm> sortVmListByMARF(List<? extends NativeVm> vmList) {
+    // 使用优先级队列实现基于MinimumUtilization排序VM列表的方法
+    protected List<? extends NativeVm> sortVmListByMinimumUtilization(List<? extends NativeVm> vmList) {
 
         // 定义一个优先级队列，根据PE的availableShare从大到小排序
         PriorityQueue<NativeVm> priorityQueue = new PriorityQueue<>(Comparator.comparingDouble(vm -> {
@@ -119,8 +89,7 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
             Reporter.printEvent("Service #"+service.getName()+" has been successfully allocated.");
 
             service.setBeingAllocated(true);
-            // 创建cloudlet scheduler
-            service.setCloudletScheduler(new NativeCloudletSchedulerTimeShared(instanceList));
+
             return true;
         }else {
 
@@ -189,7 +158,7 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
 
         if (!getInstanceVmTable().containsKey(instance.getUid())) {
 
-            for (NativeVm vm : sortVmListByMARF(getVmList())){
+            for (NativeVm vm : sortVmListByMinimumUtilization(getVmList())){
 
                 if (allocateVmForInstance(instance, vm)) {
                     result = true;

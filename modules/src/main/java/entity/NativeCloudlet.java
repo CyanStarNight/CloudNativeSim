@@ -10,7 +10,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.cloudbus.cloudsim.UtilizationModel;
 
-import static core.Generator.generateCloudletLength;
 
 @Getter @Setter @ToString
 public class NativeCloudlet {
@@ -26,50 +25,40 @@ public class NativeCloudlet {
     protected String serviceName;
     // cloudlet的长度，单位是B
     private int len;
+    // cloudlet的大小
+    private float size;
+
+    private double share;
     // cloudlet的状态分为Processing, Waiting和Finished
     public Status status;
-    // cloudlet的处理时间和等待时间
+    // cloudlet的处理时间和
     private double execTime;
+    // 等待时间
     private double waitTime;
 
     // The cost per bw
     protected double costPerBw;
 
-    // The accumulated bw cost
-    protected double accumulatedBwCost;
 
-    // The utilization of cpu model.
-    private UtilizationModel utilizationModelCpu;
-
-    //The utilization of memory model.
-    private UtilizationModel utilizationModelRam;
-
-    // The utilization of bw model.
-    private UtilizationModel utilizationModelBw;
-
-
-    public NativeCloudlet( Request request, String serviceName,
-                          UtilizationModel utilizationModelCpu,
-                          UtilizationModel utilizationModelRam,
-                          UtilizationModel utilizationModelBw) {
+    public NativeCloudlet(Request request, String serviceName, int len) {
         this.id = count++;
         this.request = request;
         this.serviceName = serviceName;
-        this.len = generateCloudletLength();
+        this.len = len;
         this.status = Status.Ready;
-        this.utilizationModelCpu = utilizationModelCpu;
-        this.utilizationModelRam = utilizationModelRam;
-        this.utilizationModelBw = utilizationModelBw;
-
-        accumulatedBwCost = 0.0;
-        costPerBw = 0.0;
+        this.size = (float) len*4;
     }
 
-    public NativeCloudlet() {
-        this.len = generateCloudletLength();
+    // 游走cloudlet
+    public NativeCloudlet(int len) {
+        this.len = len;
         this.status = Status.Ready;
+        this.size = (float) len*4;
     }
 
+    public void addWitTime(double waitTime) {
+        setWaitTime(getWaitTime() + waitTime);
+    }
 
     public Instance getInstance(){
         return Instance.getInstance(getInstanceUid());
@@ -81,18 +70,4 @@ public class NativeCloudlet {
         return getRequest().getApiName();
     }
 
-
-    public double getUtilizationOfCpu(final double time) {
-        return getUtilizationModelCpu().getUtilization(time);
-    }
-
-
-    public double getUtilizationOfRam(final double time) {
-        return getUtilizationModelRam().getUtilization(time);
-    }
-
-
-    public double getUtilizationOfBw(final double time) {
-        return getUtilizationModelBw().getUtilization(time);
-    }
 }

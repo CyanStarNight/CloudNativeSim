@@ -1,0 +1,15 @@
+instances:
+  - prefix: user
+    type: pod
+    labels:
+      - user
+    replicas: 1
+    size: 500
+    rec_bw: 500
+    trans_bw: 1000
+    requests:
+      share: 100
+      ram: 100
+    limits:
+      share: 300
+      ram: 200

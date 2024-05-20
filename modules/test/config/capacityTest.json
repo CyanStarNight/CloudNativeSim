@@ -1,0 +1,16 @@
+{
+  "APIs": [
+    {
+      "name": "GET /login",
+      "weight": 1.0
+    }
+  ],
+  "services": [
+    {
+      "name": "user",
+      "labels": ["user"],
+      "calls": [],
+      "APIs": ["GET /login"]
+    }
+  ]
+}

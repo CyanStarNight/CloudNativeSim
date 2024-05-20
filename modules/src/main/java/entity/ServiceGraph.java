@@ -22,8 +22,6 @@ public class ServiceGraph{
     private List<ChainNode> roots = new ArrayList<>();
     // api -> chain
     private Map<String,List<Service>> serviceChains = new HashMap<>();
-    // api -> cp
-    private Map<String, LinkedList<Service>> criticalPaths = new HashMap<>(); // The main path of a chain
 
     public ServiceGraph(int userId) {
         this.userId = userId;

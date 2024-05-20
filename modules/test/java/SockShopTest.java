@@ -1,20 +1,18 @@
 /*
  * Copyright ©2024. Jingfeng Wu.
  */
-package sockshop;
 
 import core.*;
-import core.Generator;
-import core.Reporter;
 import entity.API;
 import entity.Service;
 import entity.ServiceGraph;
+import extend.NativeBroker;
+import extend.NativeVm;
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
-import extend.NativeBroker;
-import extend.NativeVm;
+import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
 import policy.cloudletScheduler.NativeCloudletSchedulerTimeShared;
 import policy.migration.InstanceMigrationPolicySimple;
@@ -23,35 +21,40 @@ import provisioner.NativePeProvisionerTimeShared;
 import provisioner.NativeRamProvisionerSimple;
 import provisioner.VmBwProvisionerSimple;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
 
+import static core.Reporter.writeResourceUsageToCSV;
 import static org.cloudbus.cloudsim.Log.printLine;
 
 /**
  * @Author JingFeng Wu
  * @Data 2023/11/20
  */
-public class SockShopExample{
+public class SockShopTest {
     // vm configuration
     private static List<NativeVm> vmList;
     private static int mips = 250; // MIPS
     private static String arch = "x86"; // system architecture, 标志着指令平均长度4B
-    static String podsFile = "examples/src/sockshop/instances.yaml";
-    static String servicesFile = "examples/src/sockshop/services.json";
+    static String podsFile = "modules/test/config/instances.yaml";
+    static String servicesFile = "modules/test/config/services.json";
     static String outputPath = "modules/test/resource/";
     // generator configuration for requests and cloudlets
     static int finalClients = 500;
-    static int spawnRate = 100;
+    static int spawnRate = 10;
     static int[] waitTimeSpan = new int[]{3, 10};
-    static int timeLimit = 60;
+    static int timeLimit = 600;
     static int initializedClients = 100;
     static int numLimit = 20000;
     // 设定任务平均大小,下面两种表述是等价的:
-    static int meanLength = 10; // 单位是百万条指令(M)
+    static int meanLength = 1000; // 单位是百万条指令(M), 对应为40MB
     static int stdDevLength = 5;
-    
 
-    public static void main(String[] args) {
+
+    @Test
+    public void test() {
         printLine("Starting SockShopExample...");
         try {
             // initialized
@@ -75,11 +78,12 @@ public class SockShopExample{
                     new ServiceAllocationPolicySimple(),
                     new InstanceMigrationPolicySimple(),
                     new HorizontalScalingPolicy());
-            int schedulingInterval = 10;
-            app.submitSchedulingInterval(schedulingInterval);
             // register
             Register register = new Register(userId,"Pod",servicesFile,podsFile);
             broker.submitRegister(register);
+            // interval
+            int schedulingInterval = 10;
+            app.submitSchedulingInterval(schedulingInterval);
             // apis
             List<API> apis = register.registerAPIs();
             app.submitAPIs(apis);
@@ -102,10 +106,10 @@ public class SockShopExample{
             CloudNativeSim.stopSimulation();
 
             // report
-            Reporter.outputPath = outputPath;
 //            apis.forEach(Reporter::printApiStatistics);
-            Reporter.printApiStatistics(apis);
+//            Reporter.writeStatisticsToCsv(apis,outputPath);
             Reporter.printResourceUsage();
+            writeResourceUsageToCSV(outputPath);
 
             Reporter.printPhase("SockShopExample finished!");
 

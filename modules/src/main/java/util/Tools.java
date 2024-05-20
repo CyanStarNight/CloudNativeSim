@@ -65,8 +65,7 @@ public class Tools {
         File jsonFile = new File(filePath);
         Map<String, Object> map = null;
         try {
-            map = mapper.readValue(jsonFile, new TypeReference<Map<String, Object>>() {
-            });
+            map = mapper.readValue(jsonFile, new TypeReference<Map<String, Object>>() {});
         } catch (IOException e){
             e.printStackTrace();
         }

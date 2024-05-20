@@ -27,8 +27,6 @@ public abstract class ServiceAllocationPolicy {
     public void init(List<? extends NativeVm> vmList){
         setVmList(vmList);
     }
-
-    public abstract boolean instantiateService(Service service);
     
     public abstract boolean allocateService(Service service);
 

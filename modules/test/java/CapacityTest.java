@@ -1,20 +1,19 @@
 /*
  * Copyright ©2024. Jingfeng Wu.
  */
-package sockshop;
 
 import core.*;
-import core.Generator;
-import core.Reporter;
 import entity.API;
+import entity.Instance;
 import entity.Service;
 import entity.ServiceGraph;
+import extend.NativeBroker;
+import extend.NativeVm;
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
-import extend.NativeBroker;
-import extend.NativeVm;
+import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
 import policy.cloudletScheduler.NativeCloudletSchedulerTimeShared;
 import policy.migration.InstanceMigrationPolicySimple;
@@ -23,36 +22,44 @@ import provisioner.NativePeProvisionerTimeShared;
 import provisioner.NativeRamProvisionerSimple;
 import provisioner.VmBwProvisionerSimple;
 
-import java.util.*;
+import java.io.*;
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.cloudbus.cloudsim.Log.printLine;
 
-/**
- * @Author JingFeng Wu
- * @Data 2023/11/20
- */
-public class SockShopExample{
-    // vm configuration
+public class CapacityTest {
     private static List<NativeVm> vmList;
     private static int mips = 250; // MIPS
     private static String arch = "x86"; // system architecture, 标志着指令平均长度4B
-    static String podsFile = "examples/src/sockshop/instances.yaml";
-    static String servicesFile = "examples/src/sockshop/services.json";
+    static String podsFile = "modules/test/config/capacityTest.yaml";
+    static String servicesFile = "modules/test/config/capacityTest.json";
     static String outputPath = "modules/test/resource/";
     // generator configuration for requests and cloudlets
-    static int finalClients = 500;
+    static int finalClients = 10;
+    static int requestCount = 1000;
     static int spawnRate = 100;
     static int[] waitTimeSpan = new int[]{3, 10};
-    static int timeLimit = 60;
-    static int initializedClients = 100;
-    static int numLimit = 20000;
-    // 设定任务平均大小,下面两种表述是等价的:
-    static int meanLength = 10; // 单位是百万条指令(M)
-    static int stdDevLength = 5;
-    
 
-    public static void main(String[] args) {
-        printLine("Starting SockShopExample...");
+    // 设定任务平均大小,下面两种表述是等价的:
+    static int meanLength = 100; // 单位是百万条指令(M)
+    static int stdDevLength = 20;
+    static int timeLimit = 1000000;
+
+    private static String csvFilePath = "modules/test/resource/capacityTests.csv";
+
+
+
+    @Test
+    public void test() {
+        printLine("Starting CapacityTests...");
         try {
             // initialized
             // data centers' users
@@ -71,12 +78,10 @@ public class SockShopExample{
             vmList = createVms(3,brokerId);
             broker.submitVmList(vmList);
             // create application & define policies
-            Application app = new Application("sockshop", brokerId,
+            Application app = new Application("capacity", brokerId,
                     new ServiceAllocationPolicySimple(),
                     new InstanceMigrationPolicySimple(),
                     new HorizontalScalingPolicy());
-            int schedulingInterval = 10;
-            app.submitSchedulingInterval(schedulingInterval);
             // register
             Register register = new Register(userId,"Pod",servicesFile,podsFile);
             broker.submitRegister(register);
@@ -84,15 +89,26 @@ public class SockShopExample{
             List<API> apis = register.registerAPIs();
             app.submitAPIs(apis);
             // services
-            ServiceGraph graph = register.registerServiceGraph();
+
+            int serviceCount = 50000;
+            ServiceGraph graph = register.registerServiceGraphTest(serviceCount);
             app.submitServiceGraph(graph);
             List<Service> services = graph.getAllServices();
+
             app.submitServiceList(services);
+
+
+
             // generator
             Generator generator = new Generator(apis,finalClients, spawnRate, waitTimeSpan, timeLimit,meanLength,stdDevLength);
+            generator.setNumLimit(requestCount);
             app.submitGenerator(generator);
+
             // instance
-            app.submitInstanceList(register.registerAllInstances());
+            List<Instance> instances = register.registerAllInstances();
+            app.submitInstanceList(instances);
+
+
             // cloudlet scheduler
             services.forEach(service -> service.setCloudletScheduler(new NativeCloudletSchedulerTimeShared()));
 
@@ -101,11 +117,11 @@ public class SockShopExample{
             // x: End the simulation
             CloudNativeSim.stopSimulation();
 
-            // report
-            Reporter.outputPath = outputPath;
-//            apis.forEach(Reporter::printApiStatistics);
-            Reporter.printApiStatistics(apis);
-            Reporter.printResourceUsage();
+            // test 1:
+            int instanceCount = instances.size(); // 调整yaml文件中的replica数量
+            serviceCount = services.size();
+            requestCount = app.getRequestList().size();
+            appendToCsv(serviceCount, (double) instanceCount /serviceCount, instanceCount, requestCount, requestCount*serviceCount);
 
             Reporter.printPhase("SockShopExample finished!");
 
@@ -115,6 +131,35 @@ public class SockShopExample{
         }
 
     }
+
+    private static long startTime = System.nanoTime();  // 记录开始时间
+
+    public static void appendToCsv(int serviceCount, double ips, int instanceCount, int requestCount, int cloudletsCount) {
+        // 创建File对象
+        File file = new File(csvFilePath);
+        boolean isNewFile = !file.exists();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
+            if (isNewFile) {
+                writer.write("Service Count,IPS,Instance Count,Request Count,Cloudlets Count,Elapsed Time (seconds),Max Memory (MB)\n"); // 如果是新文件则写入头部信息
+            }
+            // 计算运行时间（秒）
+            long endTime = System.nanoTime();
+            double elapsedTime = (endTime - startTime) / 1.0e9;  // 转换为秒
+
+            // 获取运行时最大内存使用量
+            long maxMemory = Runtime.getRuntime().maxMemory() / 1024 / 1024; // 转换为兆字节
+
+            // 构造要写入的数据行
+            String line = String.format("%d,%.2f,%d,%d,%d,%.3f,%d\n",
+                    serviceCount, ips, instanceCount, requestCount, cloudletsCount, elapsedTime, maxMemory);
+            writer.write(line); // 写入测试数据
+        } catch (IOException e) {
+            System.err.println("Error writing to CSV file: " + e.getMessage());
+        }
+    }
+
+
 
 
     private static List<NativeVm> createVms(int num, int brokerId){
@@ -200,5 +245,4 @@ public class SockShopExample{
         }
         return broker;
     }
-
 }

@@ -6,11 +6,10 @@ package entity;
 
 import java.util.*;
 
-import extend.UtilizationModelStepwise;
+import core.Generator;
 import lombok.*;
 import core.Status;
 import org.cloudbus.cloudsim.UtilizationModelFull;
-import org.cloudbus.cloudsim.UtilizationModelStochastic;
 import policy.cloudletScheduler.NativeCloudletScheduler;
 
 
@@ -19,7 +18,7 @@ import policy.cloudletScheduler.NativeCloudletScheduler;
  */
 @Getter
 @Setter
-public class Service{
+public class Service implements Cloneable{
 
     private int userId;
     // 服务名，用于映射和标识
@@ -67,6 +66,7 @@ public class Service{
     }
 
 
+
     public int getNum_instance() {
         return getInstanceList().size();
     }
@@ -103,25 +103,31 @@ public class Service{
         return endpoints;
     }
 
+
     // 创建cloudlets
-    public List<NativeCloudlet> createCloudlets(Request request) {
+    public List<NativeCloudlet> createCloudlets(Request request, Generator generator) {
         List<NativeCloudlet> nativeCloudlets = new ArrayList<>();
         // 获取source服务在这条chain上的端点数量(出度+本身)
         int endpoints = getEndpoints(request) + 1;
         // 创建cloudlets
         for (int i =0 ;i < endpoints; i++){
-            NativeCloudlet nativeCloudlet = new NativeCloudlet(request, getName(),
-                    new UtilizationModelFull(),
-                    new UtilizationModelFull(),
-                    new UtilizationModelFull());
+            NativeCloudlet nativeCloudlet = new NativeCloudlet(request, getName(), generator.generateCloudletLength());
             nativeCloudlets.add(nativeCloudlet);
         }
 
         return nativeCloudlets;
     }
 
-    public double getTotalUtilizationOfCpu(double time) {
-        return getCloudletScheduler().getTotalUtilizationOfCpu(time);
+
+    @Override
+    public Service clone() {
+        Service service = null;
+        try{
+            service = (Service) super.clone();
+        }catch(CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return service;
     }
 
 

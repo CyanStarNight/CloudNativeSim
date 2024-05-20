@@ -21,10 +21,12 @@ public class Request {
     public API api;
     // 请求的状态
     public Status status;
-    // 请求的开始时间
+    // 请求的开始时间节点
     private double startTime;
-    // 请求的响应时间
-    private double responseTime;
+    // 延迟
+    private double delay;
+    // 请求的响应时间节点, 默认-1代表没完成
+    private double responseTime = -1;
     // 服务链路
     private List<Service> serviceChain;
     // 请求计数
@@ -40,7 +42,7 @@ public class Request {
 
 
     public void addDelay(double delay){
-        responseTime += delay;
+        this.delay += delay;
     }
 
 

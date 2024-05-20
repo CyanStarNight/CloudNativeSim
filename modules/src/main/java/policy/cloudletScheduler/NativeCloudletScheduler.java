@@ -4,72 +4,62 @@
 
 package policy.cloudletScheduler;
 
+import core.Status;
 import entity.Instance;
 import lombok.Getter;
 import lombok.Setter;
 import entity.NativeCloudlet;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
 public abstract class NativeCloudletScheduler{
-    // instance uid -> cloudlet id list
-    private Map<String ,Set<Integer>> cloudletsMap = new HashMap<>();
-    private List<Instance> instanceList;
-    /** The free share of instance. */
-    private List<Integer> freeShareList;
+
     /** The previous time. */
-    private double previousTime;
-    /** The previous time. */
-    private double totalExecTime;
+    protected double previousTime;
+    // instance uid -> cloudlets
+    protected Map<String, Integer> usedShareNumMap = new HashMap<>();
+    /** The list of instance. */
+    List<Instance> instanceList;
+
+    private int schedulingInterval = 10;
 
     /** The cloudlet waiting list. */
-    private List<NativeCloudlet> waitingQueue = new LinkedList<>();
+    protected Queue<NativeCloudlet> waitingQueue = new LinkedList<>();
 
     /** The cloudlet exec list. */
-    private List<NativeCloudlet> execQueue = new LinkedList<>();
+    protected Queue<NativeCloudlet> execQueue = new LinkedList<>();
+
+    // 这里是默认值,可以在子类中覆盖
+    double waitStep = 0.5;
 
     /** The cloudlet paused list. */
-    private List<NativeCloudlet> pausedQueue = new LinkedList<>();
+    protected Queue<NativeCloudlet> pausedQueue = new LinkedList<>();
 
     /** The cloudlet finished list. */
-    private List<NativeCloudlet> finishedList = new ArrayList<>();
+    protected List<NativeCloudlet> finishedList = new ArrayList<>();
 
 
-    public NativeCloudletScheduler(List<Instance> instanceList) {
-        setInstanceList(instanceList);
-        this.cloudletsMap = new HashMap<>();
-        for (Instance instance : instanceList) {
-            cloudletsMap.put(instance.getUid(), new HashSet<>());
-        }
+    public NativeCloudletScheduler() {
         setPreviousTime(0.0);
-        setFreeShareList(instanceList.stream().map(Instance::getCurrentAllocatedCpuShare).collect(Collectors.toList()));
     }
 
+    public abstract void distributeCloudlets(List<NativeCloudlet> nativeCloudlets, List<Instance> instanceList);
 
-    public abstract double getTotalUtilizationOfCpu(double time);
-
-    public abstract double getTotalUtilizationOfRam(double time);
-
-    public abstract double getTotalUtilizationOfBw(double time);
-
-    public void  distributeCloudlets(List<NativeCloudlet> cloudlets){
-        cloudlets.forEach(c -> distributeCloudlet(c,getInstanceList()));
-    }
-
-    public abstract void distributeCloudlet(NativeCloudlet nativeCloudlet, List<Instance> instanceList);
-
-    public void receiveCloudlet(NativeCloudlet nativeCloudlet){
+    public void receiveCloudlets(NativeCloudlet nativeCloudlet){
         waitingQueue.add(nativeCloudlet);
+        nativeCloudlet.setStatus(Status.Waiting);
     }
 
     public void receiveCloudlets(List<NativeCloudlet> cloudlets){
         waitingQueue.addAll(cloudlets);
+        cloudlets.forEach(c -> c.setStatus(Status.Waiting));
     }
 
-    public abstract double processCloudlets();
+    public abstract void addToProcessingQueue();
+
+    public abstract void processCloudlets();
 
     public abstract void pauseCloudlets();
 

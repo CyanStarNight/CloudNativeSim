@@ -1,93 +1,93 @@
-/*
- * Copyright ©2024. Jingfeng Wu.
- */
-
 package entity;
 
-import core.Generator;
+import core.Status;
 import lombok.Data;
-
 import java.util.*;
 
+/**
+ * API类，用于管理API及其统计数据。
+ */
 @Data
 public class API {
-    // name
     public String name;
-    // name map
-    public static Map<String,API> apiMap = new HashMap<>();
-    // 类型
+    public List<Request> requests = new ArrayList<>();
+    public static Map<String, API> apiMap = new HashMap<>();
     public String method;
-    // api
     public String url;
-    // 权重初始为1
-    public double weight = 1;
-    // 服务调用链
+    public double weight = 1.0;
     protected List<Service> chain = new ArrayList<>();
-
-    // 请求
-    protected List<Request> requests = new ArrayList<>();
-    // 被请求数
-    public int num;
-    // QPS
-    public float qps;
-    // Failures
-    public float failedNum;
-    // SLO
-    public float slo;
-    // SLO violations
-    public float violations;
-    // Average response time
-    public float responseTime_avg;
-    // 99% response time
-    public float responseTime_99;
-    // 95% response time
-    public float responseTime_95;
-    // 50% response time
-    public float responseTime_50;
-    // Min response time
-    public float responseTime_min;
-    // Median response time
-    public float responseTime_median;
-    // Max response time
-    public float responseTime_max;
-
+    public double failedNum;
+    public double sloThreshold = 3.0;
+    // qps history
+    public List<Double> qpsHistory = new ArrayList<>();
 
     public API(String name) {
+        validateName(name);
         this.name = name;
-        Generator.APIs.add(this);
+        apiMap.put(name, this);
     }
 
     public API(String name, double weight) {
-        this.name = name;
+        this(name);
         this.weight = weight;
-        Generator.APIs.add(this);
+        apiMap.put(name, this);
     }
 
-
     public API(String method, String url) {
+        validateMethodAndUrl(method, url);
         this.method = method;
         this.url = url;
-        this.name = method+" "+url;
-        Generator.APIs.add(this);
+        this.name = method + " " + url;
+        apiMap.put(name, this);
     }
 
     public API(String method, String url, double weight) {
-        this.method = method;
-        this.url = url;
-        this.name = method+" "+url;
+        this(method, url);
         this.weight = weight;
-        Generator.APIs.add(this);
+        apiMap.put(name, this);
     }
 
-    public API getAPI(String name){
-        return apiMap.get(name);
+    public void updateQPSHistory(double clock, int requestCount, int requestInterval) {
+        double qps = (double) requestCount / requestInterval;
+        qpsHistory.add(qps);
     }
 
-    @Override
-    public String toString() {
-        return name;
+    public double getAvgQps() {
+        return qpsHistory.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(0.0);
     }
 
+    public double getAverageDelay() {
+        return getRequests().stream()
+                .mapToDouble(Request::getDelay)
+                .average()
+                .orElse(0.0);
+    }
+
+    // Method to calculate the SLO violation rate
+    public int getSloViolations() {
+        return (int)getRequests().stream()
+                .filter(request -> request.getDelay() >= sloThreshold)
+                .count();
+    }
+
+    public int getFailedNum() {
+        return (int)getRequests().stream()
+                .filter(request -> request.getStatus() == Status.Failed)
+                .count();
+    }
+
+    private void validateName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("API name cannot be null or empty");
+        }
+    }
+
+    private void validateMethodAndUrl(String method, String url) {
+        if (method == null || url == null || method.trim().isEmpty() || url.trim().isEmpty()) {
+            throw new IllegalArgumentException("Method and URL cannot be null or empty");
+        }
+    }
 }
-
-

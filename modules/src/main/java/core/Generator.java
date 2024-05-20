@@ -1,7 +1,3 @@
-/*
- * Copyright ©2024. Jingfeng Wu.
- */
-
 package core;
 
 import entity.API;
@@ -12,32 +8,90 @@ import java.util.*;
 
 @Data
 public class Generator {
-    public static double previousTime;
+    public double previousTime;
     // final user number
-    public static int finalClients;
+    public int finalClients = 1000;
     // current user number
-    public static int currentClients;
+    public int currentClients = 0;
     // clients waiting to generate requests
-    public static List<Integer> clientsWaitingStatus = new ArrayList<>();
+    public List<Integer> clientsWaitingStatus = new ArrayList<>();
     // 用户增长速率
-    public static int spawnRate;
+    public int spawnRate;
     // 请求间隔
-    public static int[] waitTimeSpan;
-    // 请求生成的时间限制
-    public static int timeLimit;
+    public int[] waitTimeSpan = new int[]{5, 15};
+    // 请求生成的时间限制,默认无限制
+    public int timeLimit = Integer.MAX_VALUE;
+    // 请求生成数量的限制,默认无限制
+    public long numLimit = Long.MAX_VALUE;
     // API列表,每个API对象创建时会自动加入. 每个API有自己的权重
-    public static List<API> APIs = new ArrayList<>();
-    // 随即种子
-    public static Random random = new Random();
-    // Cloudlet的全局参数定义，单位为KB
-    public static int meanLength;
-    public static int stdDev;
-
+    public List<API> APIs = new ArrayList<>();
+    // Cloudlet的全局参数定义，下面两种表述是等价的(4B的倍数关系)
+    // 单位是百万条指令(M)
+    public int meanLength;
+    public int stdDevLength;
+    // 单位是MB
+    public float meanSize;
+    public float stdDevSize;
     // Store cumulative weights for optimized API selection
-    private static double[] cumulativeWeights;
+    public double[] cumulativeWeights;
+    // 随即种子
+    public Random random;
+
+    public Generator(int finalClients, int spawnRate, int[] waitTimeSpan) {
+        this.finalClients = finalClients;
+        this.currentClients = 0;
+        this.spawnRate = spawnRate;
+        this.waitTimeSpan = waitTimeSpan;
+    }
+
+    public Generator(int finalClients, int spawnRate, int[] waitTimeSpan, int timeLimit) {
+        this.finalClients = finalClients;
+        this.currentClients = 0;
+        this.spawnRate = spawnRate;
+        this.waitTimeSpan = waitTimeSpan;
+        this.timeLimit = timeLimit;
+    }
+
+    /* 全参数*/
+    public Generator(List<API> APIs, int finalClients, int spawnRate, int[] waitTimeSpan, int timeLimit,  int meanLength, int stdDevLength) {
+        this.finalClients = finalClients;
+        this.spawnRate = spawnRate;
+        this.waitTimeSpan = waitTimeSpan;
+        this.timeLimit = timeLimit;
+        this.APIs = APIs;
+        this.meanLength = meanLength;
+        this.stdDevLength = stdDevLength;
+        this.meanSize = meanLength*4;
+        this.stdDevSize = stdDevLength*4;
+        random = new Random();
+        initializeCumulativeWeights();
+    }
+
+    public Generator(List<API> APIs, int finalClients, int spawnRate, int[] waitTimeSpan, int timeLimit, float meanSize, float stdDevSize) {
+        this.finalClients = finalClients;
+        this.spawnRate = spawnRate;
+        this.waitTimeSpan = waitTimeSpan;
+        this.timeLimit = timeLimit;
+        this.APIs = APIs;
+        this.meanSize = meanSize;
+        this.stdDevSize = stdDevSize;
+        this.meanLength = (int) meanSize/4;
+        this.stdDevLength = (int) stdDevSize/4;
+        random = new Random();
+        initializeCumulativeWeights();
+    }
+
+    public int generateCloudletLength() {
+        int length;
+        do {
+            length = (int) (meanLength + random.nextGaussian() * stdDevLength);
+        } while (length <= 0);
+        return length;
+    }
+
 
     // Initialize cumulative weights
-    public static void initializeCumulativeWeights() {
+    public void initializeCumulativeWeights() {
         if (APIs.isEmpty()) {
             throw new IllegalStateException("APIs list is empty. Please initialize the APIs list before using the Generator.");
         }
@@ -49,7 +103,7 @@ public class Generator {
         }
     }
 
-    public static List<Request> generateRequests(double clock) {
+    public List<Request> generateRequests(double clock) {
         List<Request> generateList = new ArrayList<>();
         // 整数时间间隔
         int gap = (int) (clock - previousTime);
@@ -79,6 +133,7 @@ public class Generator {
                 // 创建新的请求
                 Request newRequest = new Request(selectedAPI, clock);
                 generateList.add(newRequest);
+                selectedAPI.getRequests().add(newRequest);
 
                 // 进入随机等待,等待时间在waitTime区间内
                 int waitTime = random.nextInt(waitTimeSpan[1] - waitTimeSpan[0]) + waitTimeSpan[0];
@@ -94,7 +149,7 @@ public class Generator {
         return generateList;
     }
 
-    private static API getRandomAPI() {
+    public API getRandomAPI() {
         // 生成一个随机数 randomWeight，范围是 [0, totalWeight)
         double randomWeight = random.nextDouble() * cumulativeWeights[cumulativeWeights.length - 1];
         // 使用线性查找来选择API
@@ -107,32 +162,23 @@ public class Generator {
     }
 
 
-    public static int generateCloudletLength() {
-        // 创建 Random 实例
-        Random random = new Random();
-        // 生成正态分布的 Cloudlet 长度
-        return (int) (meanLength + random.nextGaussian() * stdDev);
-    }
-
-    public static void printGeneratorParameters() {
+    public void printGeneratorParameters() {
         System.out.println("// Final user number");
-        System.out.println("public static int finalClients = " + finalClients + ";");
+        System.out.println("public int finalClients = " + finalClients + ";");
         System.out.println("// Current user number");
-        System.out.println("public static int currentClients = " + currentClients + ";");
+        System.out.println("public int currentClients = " + currentClients + ";");
         System.out.println("// Spawn rate");
-        System.out.println("public static double spawnRate = " + spawnRate + ";");
+        System.out.println("public int spawnRate = " + spawnRate + ";");
         System.out.println("// Request interval");
-        System.out.println("public static int[] waitTime = {" + waitTimeSpan[0] + ", " + waitTimeSpan[1] + "};");
+        System.out.println("public int[] waitTime = {" + waitTimeSpan[0] + ", " + waitTimeSpan[1] + "};");
         System.out.println("// Request generation time limit");
-        System.out.println("public static int timeLimit = " + timeLimit + ";");
+        System.out.println("public int timeLimit = " + timeLimit + ";");
         System.out.println("// API list");
-        System.out.println("public static List<API> APIs = " + APIs + ";");
+        System.out.println("public List<API> APIs = " + APIs + ";");
         System.out.println("// Random seed");
-        System.out.println("public static Random random = new Random();");
+        System.out.println("public Random random = new Random();");
         System.out.println("// Cloudlet global parameters, in KB");
-        System.out.println("public static int meanLength = " + meanLength + ";");
-        System.out.println("public static int stdDev = " + stdDev + ";");
+        System.out.println("public int meanLength = " + meanLength + ";");
+        System.out.println("public int stdDevLength = " + stdDevLength + ";");
     }
-
-
 }

@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.Setter;
 import extend.NativePe;
 import extend.NativeVm;
-import policy.cloudletScheduler.NativeCloudletScheduler;
 import core.Status;
 
 import java.util.*;
@@ -16,12 +15,18 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
-public class Instance{
-    // id & uid
+public class Instance implements Cloneable{
+    // uid = prefix + type + id
     private String uid;
+    // id
     private int id;
+    // prefix
+    private String prefix;
+    // replicas
+    private List<Instance> replicas;
+    private int num_replicas;
+    // app id
     private int appId;
-    private String name;
     // type of instance
     public final String type = "Instance";
     // status of instance
@@ -34,10 +39,10 @@ public class Instance{
     private NativeVm vm;
     // size of instance
     private long size;
-    // num of requests
-    public int num_requests;
     // num of cloudlets
-    public int num_cloudlets;
+    public List<NativeCloudlet> processingCloudlets = new ArrayList<>();
+    public int totalCloudlets;
+
     // ram needs
     private int requests_ram;
     // share needs
@@ -48,42 +53,46 @@ public class Instance{
     private double receive_bw;
     // transmit bw needs
     private double transmit_bw;
+
     // ram limits
     private int limits_ram;
     // share limits
     private int limits_share;
     // mips limits
     private double limits_mips;
-    // ram usages
+
+    // ram allocated
     private int currentAllocatedRam;
-    // receive bw usages
+    // receive bw allocated
     private double currentAllocatedReceiveBw;
-    // transmit bw usages
+    // transmit bw allocated
     private double currentAllocatedTransmitBw;
-    // pe usages
+    // pe allocated
     private NativePe currentAllocatedPe;
-    // mips usages
+    // mips allocated
     private double currentAllocatedMips;
-    // cpu share usages
+    // cpu share allocated
     private int currentAllocatedCpuShare;
+
+    // ram used
+    private int usedRam;
+    // share used
+    private int usedShare;
+    // mips used
+    private double usedMips;
+    // receive bw used
+    private double usedReceiveBw;
+    // transmit bw used
+    private double usedTransmitBw;
+
     // migration status
-    private List<String> MigratingIn;
-    private List<String> MigratingOut;
     private boolean inMigration;
-    // utilization history
-    public static final int HISTORY_LENGTH = 30;
-    private final List<Double> utilizationHistory = new LinkedList<Double>();
-    // previous time used to update utilizationHistory
+
+    // previous  used to update utilizationHistory
     private int previousTime;
-    // scheduling Interval 5s
-    private double schedulingInterval = 5.0;
     // uid -> instance
     public static Map<String, Instance> InstanceUidMap = new HashMap<>();
 
-
-    public static String getInstanceUid(int userId, int id) {
-        return userId + "-Instance-" + id;
-    }
     public static Instance getInstance(String uid){
         return InstanceUidMap.get(uid);
     }
@@ -97,9 +106,24 @@ public class Instance{
                         anyMatch(labels::contains)).collect(Collectors.toList());
     }
 
-    public Instance(int appId) {
+    public Instance(int appId,  String prefix) {
         this.appId = appId;
         this.id = InstanceUidMap.size();
+        setPrefix(prefix);
+        setUid();
+        setInMigration(false);
+        setCurrentAllocatedCpuShare(0);
+        //为没有字段的instance设置默认值
+        setRequests_share(100);
+        setRequests_ram(200);
+        setLimits_share(1024);
+        setLimits_ram(1000);
+    }
+
+    public Instance(int appId, String prefix, List<String> labels) {
+        this.appId = appId;
+        this.id = InstanceUidMap.size();
+        setPrefix(prefix);
         setUid();
         setInMigration(false);
         setCurrentAllocatedCpuShare(0);
@@ -109,62 +133,68 @@ public class Instance{
         setRequests_ram(200);
         setLimits_share(1024);
         setLimits_ram(1000);
-    }
-
-    public Instance(int appId, List<String> labels) {
-        new Instance(appId);
         this.labels = labels;
     }
 
-    public Instance(int appId, String name, List<String> labels) {
-        new Instance(appId,labels);
-        this.name = name;
-    }
-
     public void setUid() {
+        // 删除之前的uid记录
         InstanceUidMap.remove(uid);
-        uid = appId + "-Instance-" + id;
+        // 添加新的
+        uid = getPrefix() +"-"+getType()+"-"+ getId();
         InstanceUidMap.put(uid,this);
     }
 
 
+    public String getName() {
+        return getUid();
+    }
 
-    public double getUtilizationMean() {
-        double mean = 0;
-        if (!getUtilizationHistory().isEmpty()) {
-            int n = Math.min(HISTORY_LENGTH, getUtilizationHistory().size());
-            for (int i = 0; i < n; i++) {
-                mean += getUtilizationHistory().get(i);
-            }
-            mean /= n;
+    // 添加或增加 RAM 使用量的方法
+    public void addUsedRam(int ram) {
+        this.usedRam += ram;
+    }
+
+    // 添加或增加 share 使用量的方法
+    public void addUsedShare(int share) {
+        this.usedShare += share;
+    }
+
+    public void subUsedShare(int share) {
+        this.usedShare -= share;
+    }
+
+
+    // 添加或增加 MIPS 使用量的方法
+    public void addUsedMips(double mips) {
+        this.usedMips += mips;
+    }
+
+    // 添加或增加接收带宽使用量的方法
+    public void addUsedReceiveBw(double bw) {
+        this.usedReceiveBw += bw;
+    }
+
+    // 添加或增加发送带宽使用量的方法
+    public void addUsedTransmitBw(double bw) {
+        this.usedTransmitBw += bw;
+    }
+
+    public String toString() {
+        return "type:"+getType()+", "
+                +"name: "+ getPrefix()
+                +", uid: "+getUid();
+    }
+
+    @Override
+    public Instance clone() {
+        try {
+            Instance clone = (Instance) super.clone();
+            clone.id = InstanceUidMap.size();
+            clone.setUid();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
         }
-        return mean * getCurrentAllocatedMips();
     }
-
-
-    public double getUtilizationVariance() {
-        double mean = getUtilizationMean();
-        double variance = 0;
-        if (!getUtilizationHistory().isEmpty()) {
-            int n = Math.min(HISTORY_LENGTH, getUtilizationHistory().size());
-            for (int i = 0; i < n; i++) {
-                double tmp = getUtilizationHistory().get(i) * getCurrentAllocatedMips() - mean;
-                variance += tmp * tmp;
-            }
-            variance /= n;
-        }
-        return variance;
-    }
-
-    public void addUtilizationHistoryValue(final double utilization) {
-        getUtilizationHistory().add(0, utilization);
-        if (getUtilizationHistory().size() > HISTORY_LENGTH) {
-            getUtilizationHistory().remove(HISTORY_LENGTH);
-        }
-    }
-
-    protected List<Double> getUtilizationHistory() {
-        return utilizationHistory;
-    }
-
+    
 }

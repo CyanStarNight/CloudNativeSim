@@ -22,11 +22,14 @@ import entity.Service;
 import entity.ServiceGraph;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static core.Exporter.*;
 import static core.Reporter.printEvent;
+import static entity.Instance.InstanceUidMap;
 import static org.cloudbus.cloudsim.Log.printLine;
 
 
@@ -57,7 +60,7 @@ public class Application extends SimEntity {
     /**
      * The exporter.
      */
-    protected Exporter exporter;
+//    protected Exporter exporter;
 
     /**
      * The service graph.
@@ -136,6 +139,9 @@ public class Application extends SimEntity {
                 case CloudNativeSimTag.START_CLIENTS:
                     startClients();
                     break;
+                case CloudNativeSimTag.UPDATE_USAGE:
+                    updateUsage();
+                    break;
                 // Service
                 case CloudNativeSimTag.SERVICE_ALLOCATE:
                     processServiceAllocate(ev);
@@ -181,6 +187,7 @@ public class Application extends SimEntity {
     }
 
 
+
     @Override
     public void startEntity() {
         printLine(getName() + " app is starting...");
@@ -192,8 +199,6 @@ public class Application extends SimEntity {
     @Override
     public void shutdownEntity() {
         printEvent(getFinishedCloudletNum()+ " cloudlets have been finished");
-        Exporter.totalTime = CloudNativeSim.clock();
-        Exporter.calculateAverageQPS();
     }
 
     /**
@@ -214,38 +219,61 @@ public class Application extends SimEntity {
 
     /* 资源画像：1.通过文件将资源进行注册，定义资源的初始配置。2.根据初始配置提交。 */
     private void processAppCharacteristics(SimEvent ev) throws Exception {
-        // register对象非空检查
-        if (ev.getData() == null)
-            throw new Exception("Error: register object is null.");
-        Register register = (Register) ev.getData();
-
-        // 提交APIs
-        submitAPIs(register.registerAPIs());
-        assert !getApis().isEmpty();
-        printEvent("APIs have been registered.");
-
-        //提交实例
-        submitInstanceList(register.registerInstanceList());
-        assert !getInstanceList().isEmpty();
-        printEvent("Instances have been registered.");
-
-        // 提交服务和调用图
-        submitServiceGraph(register.registerServiceGraph());
-        assert getServiceGraph() != null;
+        // 检查是否已经注册
+        assert !getApis().isEmpty():"APIs have not been registered.";
+        assert !getInstanceList().isEmpty():"Instances have not been registered.";
+        assert getServiceGraph() != null:"ServiceGraph has not been registered.";
+        assert !getServiceList().isEmpty():"Services have been not registered.";
+        // 构建service chains
         submitServiceChains(serviceGraph.buildServiceChains());
         assert getServiceChains() != null;
-        List<Service> serviceList = getServiceGraph().getAllServices();
-        submitServiceList(serviceList);
-        assert !getServiceList().isEmpty();
-        printEvent("Services have been registered.");
-        printEvent("ServiceGraph_" + serviceGraph.getId() + " has been registered.");
-
-        printEvent("APIs have been registered.");
+        // 匹配实例并处理失败情况
+        List<Service> instantiatedServices = getServiceList().stream()
+                .filter(service -> {
+                    boolean match = matchInstances(service);
+                    if (!match) {
+                        System.out.println("Match failed for service: " + service);
+                    }
+                    return match;
+                }).toList();
+        setServiceList(instantiatedServices);
+        // 注入Policy的参数
+        for (Service service : getServiceList()) {
+            service.getCloudletScheduler().setInstanceList(service.getInstanceList());
+            service.getCloudletScheduler().setSchedulingInterval(schedulingInterval);
+        }
         // 画像完成后打印输出
         printEvent("The resource characteristics of the application has been completed.");
         Reporter.printChains(getServiceGraph(), getApis());
         // 启动服务部署，落实资源画像
         send(getId(), 0.1, CloudNativeSimTag.SERVICE_ALLOCATE, serviceList);
+    }
+
+    public boolean matchInstances(Service service){ //TODO: 未参与实例化的instance应该要删除
+        boolean result = false;
+
+        List<String> s_labels = service.getLabels();
+        // 多对多的映射labels
+        for (Instance instance: InstanceUidMap.values()){
+
+            for (String i_label:instance.getLabels()){
+
+                if (s_labels.contains(i_label)) {
+
+                    result = true;
+
+                    service.setBeingInstantiated(true);
+
+                    service.getInstanceList().add(instance);
+
+                    service.setStatus(Status.Ready);
+                }
+            }
+        }
+
+        if (!result)
+            System.out.println("[ServiceAllocation.instantiateService] Service #"+service.getName()+" can not be instantiated.");
+        return result;
     }
 
     private static volatile boolean servicesDeployed = false;
@@ -257,7 +285,7 @@ public class Application extends SimEntity {
         List<Service> servicesToAllocate = (List<Service>) ev.getData();
         // 遍历并部署服务
         for (Service service : servicesToAllocate) {
-            serviceAllocationPolicy.instantiateService(service); // 实例化
+            assert service.getStatus() == Status.Ready; // 实例化
             serviceAllocationPolicy.allocateService(service); // 部署
         }
 
@@ -274,31 +302,77 @@ public class Application extends SimEntity {
      * The requests arrival interval.
      * 请求每隔一段时间一次性到达,设置为1,即每秒到达.
      */
-    private int requestInterval = 5;
+    private int requestInterval = 1;
 
     private void startClients() {
-        double startTime = Generator.previousTime = CloudNativeSim.clock();
-        double session = Generator.timeLimit;
-        Generator.initializeCumulativeWeights();
+        double startTime = generator.previousTime = CloudNativeSim.clock();
+        double session = generator.timeLimit;
+        generator.initializeCumulativeWeights();
         printLine();
         printEvent("clients are starting...");
         // 每生成请求
-        for (int tick = 1; tick <= session; tick += requestInterval) {
+        for (int tick = 1; tick <= session && getRequestList().size() < generator.numLimit; tick += requestInterval) {
             schedule(tick, CloudNativeSimTag.REQUEST_GENERATE);
+            // 检查利用率, 确定是否需要scaling
+            if (tick % schedulingInterval == 0){
+                schedule(tick, CloudNativeSimTag.UPDATE_USAGE);
+                schedule(tick, CloudNativeSimTag.SERVICE_SCALING);
+            }
         }
     }
 
+    private void updateUsage() {
+        double currentTime = CloudNativeSim.clock();
+        for (Instance instance : getInstanceList()) {
+            String instanceUid = instance.getUid();
+            // 更新CPU使用历史记录
+            addUsageData(usageOfCpuHistory, instanceUid, currentTime, instance.getUsedShare());
+            // 更新RAM使用历史记录
+            addUsageData(usageOfRamHistory, instanceUid, currentTime, instance.getUsedRam());
+            // 更新接收带宽使用历史记录
+            addUsageData(usageOfReceiveBwHistory, instanceUid, currentTime, instance.getUsedReceiveBw());
+            // 更新传输带宽使用历史记录
+            addUsageData(usageOfTransmitBwHistory, instanceUid, currentTime, instance.getUsedTransmitBw());
+        }
+    }
 
     private void processRequestGenerate(SimEvent ev) {
+        // 如果已经超过请求数量限制,不再生成
+        int totalRequests = getRequestList().size();
+        if (totalRequests >= generator.numLimit) return;
         // generate requests
-        List<Request> currentRequests = Generator.generateRequests(CloudNativeSim.clock());
-        submitRequestList(currentRequests);
+        List<Request> requestArrival = generator.generateRequests(CloudNativeSim.clock());
+        int arrivalRequests = requestArrival.size();
+        // 如果生成后超过数量限制, 删除请求
+        totalRequests += arrivalRequests;  // 更新总请求数量
+
+        // 检查是否超出了请求限制
+        if (totalRequests > generator.numLimit) {
+            long excess = totalRequests - generator.numLimit;  // 计算超过的数量
+            if (excess > 0) {
+                // 从当前到达的请求中移除超出的部分
+                int startRemoveIndex = (int) Math.max(0, requestArrival.size() - excess);  // 确保不会有负索引
+                requestArrival.subList(startRemoveIndex, requestArrival.size()).clear();  // 直接在原列表上进行删除
+                totalRequests -= excess;  // 更新总请求数量
+            }
+        }
+
+        submitRequestList(requestArrival);
         // 请求开始分发到成功创建的实例上
-        send(0.2, CloudNativeSimTag.REQUEST_DISPATCH, currentRequests);
+        send(0.2, CloudNativeSimTag.REQUEST_DISPATCH, requestArrival);
         // 更新QPS
-        Exporter.updateQPSHistory(CloudNativeSim.clock(), currentRequests.size(), requestInterval);
+        Exporter.updateQPSHistory(CloudNativeSim.clock(), requestArrival.size(), requestInterval);
+        Map<String, Integer> arrivals = new HashMap<>();
+        for (Request request : requestArrival) {
+            API api = request.getApi();
+            arrivals.merge(api.getName(), 1, Integer::sum);
+        }
+        for (String apiName : arrivals.keySet()) {
+            API api = API.apiMap.get(apiName);
+            api.updateQPSHistory(CloudNativeSim.clock(), arrivals.get(apiName), requestInterval);
+        }
         // 打印输出
-        printByInterval(String.format("%d requests have arrived. (%d clients)", currentRequests.size(), Generator.currentClients));
+        printByInterval(String.format("%d requests have arrived. (%d clients)", requestArrival.size(), generator.currentClients));
     }
 
 
@@ -314,7 +388,7 @@ public class Application extends SimEntity {
             // 选择chain的源服务
             Service source = chain.get(0);
             // 源服务创建cloudlets
-            List<NativeCloudlet> sourceCloudlets = source.createCloudlets(request);
+            List<NativeCloudlet> sourceCloudlets = source.createCloudlets(request,generator);
             // 启动cloudlets schedule, 这些cloudlets都来源于同一个请求,同一个服务
             sendNow(getId(), CloudNativeSimTag.CLOUDLET_PROCESS, sourceCloudlets);
         }
@@ -335,22 +409,47 @@ public class Application extends SimEntity {
         Service service = Service.getService(serviceName);
         Request request = behavior.getRequest();
         String apiName = request.getApiName();
-        NativeCloudletScheduler scheduler = service.getCloudletScheduler();
         // 执行cloudlet schedule
-        // 由于事件发送的异步性，其实是一边distribute，一边execute
-        scheduler.distributeCloudlets(cloudlets);
+        NativeCloudletScheduler scheduler = service.getCloudletScheduler();
+        // 分布到合适的instance
+        scheduler.distributeCloudlets(cloudlets,service.getInstanceList());
+        // 查询子服务
         List<Service> next = serviceGraph.getCalls(serviceName, apiName);
-        // instance处理cloudlets,返回总共的执行时间
-        double execTime = scheduler.processCloudlets();
+        // instance处理当前请求的cloudlets,更新每个cloudlet的等待时间和执行时间
+        scheduler.processCloudlets();
+        // 计算当前请求的cloudlets完成时间
+        double totalTime = cloudlets.stream()
+                .mapToDouble(cloudlet -> cloudlet.getWaitTime() + cloudlet.getExecTime())
+                .sum();
         finishedCloudletNum += cloudlets.size();
         // 链路中下级服务非空,则创建并发送cloudlets
         if (!next.isEmpty()) {
-            next.forEach(s ->
-                    schedule(execTime, CloudNativeSimTag.CLOUDLET_PROCESS,
-                            s.createCloudlets(request)));
+            next.forEach(s -> schedule(totalTime, CloudNativeSimTag.CLOUDLET_PROCESS, s.createCloudlets(request,generator)));
+        }
+        else {
+            // 更新请求的关键路径
+            updateRequestCriticalPath(request, totalTime);
         }
     }
 
+
+
+
+    private void updateRequestCriticalPath(Request request, double totalTime){
+        // 一条链路的完成时间戳
+        double pathTimestamp = CloudNativeSim.clock()+totalTime;
+        // 如果还没设置响应时间
+        if (request.getResponseTime() == -1) {
+            request.setResponseTime(pathTimestamp);
+            request.setStatus(Status.Finished);
+        }
+        // 这里用了关键路径取最大值的思路去更新
+        else if (request.getResponseTime() < pathTimestamp) {
+            request.setResponseTime(pathTimestamp);
+            double criticalDelay = pathTimestamp - request.getStartTime();
+            request.setDelay(criticalDelay);
+        }
+    }
 
     private void processServiceMigrate(SimEvent ev) {
 
@@ -400,7 +499,6 @@ public class Application extends SimEntity {
 
     public void submitServiceList(List<Service> list) {
         getServiceList().addAll(list);
-        Exporter.serviceList = getServiceList();
     }
 
     public void submitService(Service service) {
@@ -409,12 +507,10 @@ public class Application extends SimEntity {
 
     public void submitRequestList(List<Request> list) {
         getRequestList().addAll(list);
-        Exporter.requestList = getRequestList();
     }
 
     public void submitServiceGraph(ServiceGraph serviceGraph) {
         setServiceGraph(serviceGraph);
-        Exporter.serviceGraph = getServiceGraph();
     }
 
     public void submitServiceChains(Map<String, List<Service>> serviceChains) {
@@ -423,7 +519,6 @@ public class Application extends SimEntity {
 
     public void submitInstanceList(List<? extends Instance> list) {
         getInstanceList().addAll(list);
-        Exporter.instanceList = getInstanceList();
     }
 
     public void submitInstance(Instance instance) {
@@ -432,7 +527,6 @@ public class Application extends SimEntity {
 
     public void submitVmList(List<NativeVm> vmList) {
         getVmList().addAll(vmList);
-        Exporter.vmList = getVmList();
     }
 
     public void submitVm(NativeVm vm) {
@@ -441,11 +535,14 @@ public class Application extends SimEntity {
 
     public void submitCloudlets(List<NativeCloudlet> nativeCloudlets) {
         getNativeCloudletList().addAll(nativeCloudlets);
-        Exporter.nativeCloudletList = getNativeCloudletList();
     }
 
     public void submitAPIs(List<API> apis) {
         getApis().addAll(apis);
+    }
+
+    public void submitGenerator(Generator generator) {
+        setGenerator(generator);
     }
 
     private void send(double delay, int cloudSimTag, Object data) {
@@ -472,4 +569,9 @@ public class Application extends SimEntity {
         schedule(getId(), delay, cloudSimTag);
     }
 
+
+    public void submitSchedulingInterval(int schedulingInterval) {
+        Exporter.schedulingInterval = schedulingInterval;
+        serviceScalingPolicy.setSchedulingInterval(schedulingInterval);
+    }
 }
