@@ -16,7 +16,7 @@ import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import extend.NativeBroker;
 import extend.NativeVm;
 import policy.allocation.ServiceAllocationPolicySimple;
-import policy.cloudletScheduler.NativeCloudletSchedulerTimeShared;
+import policy.cloudletScheduler.NativeCloudletSchedulerStepWise;
 import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
@@ -41,14 +41,14 @@ public class SockShopExample{
     static String outputPath = "modules/test/resource/";
     // generator configuration for requests and cloudlets
     static int finalClients = 500;
-    static int spawnRate = 100;
+    static int spawnRate = 200;
     static int[] waitTimeSpan = new int[]{3, 10};
-    static int timeLimit = 60;
+    static int timeLimit = 600;
     static int initializedClients = 100;
-    static int numLimit = 20000;
+    static int numLimit = 1000;
     // 设定任务平均大小,下面两种表述是等价的:
-    static int meanLength = 10; // 单位是百万条指令(M)
-    static int stdDevLength = 5;
+    static int meanLength = 25; // 单位是百万条指令(M),任务规模 = 4*length
+    static int stdDevLength = 10;
     
 
     public static void main(String[] args) {
@@ -90,11 +90,14 @@ public class SockShopExample{
             app.submitServiceList(services);
             // generator
             Generator generator = new Generator(apis,finalClients, spawnRate, waitTimeSpan, timeLimit,meanLength,stdDevLength);
+            generator.setNumLimit(numLimit);
+//            generator.setCurrentClients(initializedClients);
             app.submitGenerator(generator);
             // instance
             app.submitInstanceList(register.registerAllInstances());
             // cloudlet scheduler
-            services.forEach(service -> service.setCloudletScheduler(new NativeCloudletSchedulerTimeShared()));
+            services.forEach(service -> service.setCloudletScheduler(
+                    new NativeCloudletSchedulerStepWise()));
 
             CloudNativeSim.startSimulation();
 

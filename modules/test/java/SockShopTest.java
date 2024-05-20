@@ -14,7 +14,7 @@ import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
-import policy.cloudletScheduler.NativeCloudletSchedulerTimeShared;
+import policy.cloudletScheduler.NativeCloudletSchedulerDynamicWorkload;
 import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
@@ -98,7 +98,7 @@ public class SockShopTest {
             // instance
             app.submitInstanceList(register.registerAllInstances());
             // cloudlet scheduler
-            services.forEach(service -> service.setCloudletScheduler(new NativeCloudletSchedulerTimeShared()));
+            services.forEach(service -> service.setCloudletScheduler(new NativeCloudletSchedulerDynamicWorkload()));
 
             CloudNativeSim.startSimulation();
 

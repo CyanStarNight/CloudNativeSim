@@ -15,7 +15,7 @@ import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
-import policy.cloudletScheduler.NativeCloudletSchedulerTimeShared;
+import policy.cloudletScheduler.NativeCloudletSchedulerDynamicWorkload;
 import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
@@ -24,14 +24,10 @@ import provisioner.VmBwProvisionerSimple;
 
 import java.io.*;
 import java.io.File;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.cloudbus.cloudsim.Log.printLine;
 
@@ -110,7 +106,7 @@ public class CapacityTest {
 
 
             // cloudlet scheduler
-            services.forEach(service -> service.setCloudletScheduler(new NativeCloudletSchedulerTimeShared()));
+            services.forEach(service -> service.setCloudletScheduler(new NativeCloudletSchedulerDynamicWorkload()));
 
             CloudNativeSim.startSimulation();
 

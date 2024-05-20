@@ -14,9 +14,9 @@ import java.util.*;
 /**
  * Created by sareh on 10/07/15.
  */
-public class NativeCloudletSchedulerTimeShared extends NativeCloudletScheduler {
+public class NativeCloudletSchedulerDynamicWorkload extends NativeCloudletScheduler {
 
-    public NativeCloudletSchedulerTimeShared() {
+    public NativeCloudletSchedulerDynamicWorkload() {
         super();
     }
 
