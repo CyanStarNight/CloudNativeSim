@@ -15,6 +15,7 @@ import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
 import policy.cloudletScheduler.NativeCloudletSchedulerDynamicWorkload;
+import policy.cloudletScheduler.NativeCloudletSchedulerSolidShare;
 import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
@@ -42,14 +43,15 @@ public class SockShopTest {
     static String servicesFile = "modules/test/config/services.json";
     static String outputPath = "modules/test/resource/";
     // generator configuration for requests and cloudlets
+    // generator configuration for requests and cloudlets
     static int finalClients = 500;
-    static int spawnRate = 10;
+    static int spawnRate = 200;
     static int[] waitTimeSpan = new int[]{3, 10};
     static int timeLimit = 600;
     static int initializedClients = 100;
-    static int numLimit = 20000;
+    static int numLimit = 1000;
     // 设定任务平均大小,下面两种表述是等价的:
-    static int meanLength = 1000; // 单位是百万条指令(M), 对应为40MB
+    static int meanLength = 25; // 单位是百万条指令(M),任务规模 = 4*length
     static int stdDevLength = 5;
 
 
@@ -78,12 +80,11 @@ public class SockShopTest {
                     new ServiceAllocationPolicySimple(),
                     new InstanceMigrationPolicySimple(),
                     new HorizontalScalingPolicy());
+            int schedulingInterval = 10;
+            app.submitSchedulingInterval(schedulingInterval);
             // register
             Register register = new Register(userId,"Pod",servicesFile,podsFile);
             broker.submitRegister(register);
-            // interval
-            int schedulingInterval = 10;
-            app.submitSchedulingInterval(schedulingInterval);
             // apis
             List<API> apis = register.registerAPIs();
             app.submitAPIs(apis);
@@ -94,11 +95,14 @@ public class SockShopTest {
             app.submitServiceList(services);
             // generator
             Generator generator = new Generator(apis,finalClients, spawnRate, waitTimeSpan, timeLimit,meanLength,stdDevLength);
+            generator.setNumLimit(numLimit);
+//            generator.setCurrentClients(initializedClients);
             app.submitGenerator(generator);
             // instance
             app.submitInstanceList(register.registerAllInstances());
             // cloudlet scheduler
-            services.forEach(service -> service.setCloudletScheduler(new NativeCloudletSchedulerDynamicWorkload()));
+            services.forEach(service -> service.setCloudletScheduler(
+                    new NativeCloudletSchedulerSolidShare()));
 
             CloudNativeSim.startSimulation();
 
@@ -106,10 +110,11 @@ public class SockShopTest {
             CloudNativeSim.stopSimulation();
 
             // report
+            Reporter.outputPath = outputPath;
 //            apis.forEach(Reporter::printApiStatistics);
-//            Reporter.writeStatisticsToCsv(apis,outputPath);
+            Reporter.printApiStatistics(apis);
             Reporter.printResourceUsage();
-            writeResourceUsageToCSV(outputPath);
+//            Reporter.writeResourceUsageToCSV(outputPath);
 
             Reporter.printPhase("SockShopExample finished!");
 

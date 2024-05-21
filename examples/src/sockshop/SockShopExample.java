@@ -16,6 +16,8 @@ import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import extend.NativeBroker;
 import extend.NativeVm;
 import policy.allocation.ServiceAllocationPolicySimple;
+import policy.cloudletScheduler.NativeCloudletSchedulerDynamicWorkload;
+import policy.cloudletScheduler.NativeCloudletSchedulerSolidShare;
 import policy.cloudletScheduler.NativeCloudletSchedulerStepWise;
 import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
@@ -97,7 +99,7 @@ public class SockShopExample{
             app.submitInstanceList(register.registerAllInstances());
             // cloudlet scheduler
             services.forEach(service -> service.setCloudletScheduler(
-                    new NativeCloudletSchedulerStepWise()));
+                    new NativeCloudletSchedulerDynamicWorkload()));
 
             CloudNativeSim.startSimulation();
 

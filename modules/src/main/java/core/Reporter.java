@@ -272,7 +272,7 @@ public class Reporter {
     public static void writeResourceUsageToCSV(String outputPath) throws IOException {
         writeUsage(usageOfCpuHistory, "CPU", outputPath);
         writeUsage(usageOfRamHistory, "RAM", outputPath);
-        writeUsage(usageOfReceiveBwHistory, "ReceiveBW", outputPath);
-        writeUsage(usageOfTransmitBwHistory, "TransmitBW", outputPath);
+//        writeUsage(usageOfReceiveBwHistory, "ReceiveBW", outputPath);
+//        writeUsage(usageOfTransmitBwHistory, "TransmitBW", outputPath);
     }
 }

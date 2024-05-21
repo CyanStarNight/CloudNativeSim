@@ -196,5 +196,9 @@ public class Instance implements Cloneable{
             throw new AssertionError();
         }
     }
-    
+
+    public void incrementTotalCloudlets() {
+        setTotalCloudlets(totalCloudlets+1);
+    }
+
 }
