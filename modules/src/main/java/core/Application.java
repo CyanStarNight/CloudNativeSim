@@ -22,7 +22,6 @@ import entity.Service;
 import entity.ServiceGraph;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,6 +197,7 @@ public class Application extends SimEntity {
 
     @Override
     public void shutdownEntity() {
+
         printEvent(getFinishedCloudletNum()+ " cloudlets have been finished");
     }
 
@@ -327,13 +327,13 @@ public class Application extends SimEntity {
         for (Instance instance : getInstanceList()) {
             String instanceUid = instance.getUid();
             // 更新CPU使用历史记录
-            addUsageData(usageOfCpuHistory, instanceUid, currentTime, instance.getUsedShare());
+            addUsageData(usageOfCpuHistory, instanceUid, currentTime,instance.getUsedShare());
             // 更新RAM使用历史记录
-            addUsageData(usageOfRamHistory, instanceUid, currentTime, instance.getUsedRam());
+            addUsageData(usageOfRamHistory, instanceUid, currentTime,instance.getUsedRam());
             // 更新接收带宽使用历史记录
-            addUsageData(usageOfReceiveBwHistory, instanceUid, currentTime, instance.getUsedReceiveBw());
+//            addUsageData(usageOfReceiveBwHistory, instanceUid, currentTime,instance.getUsedShare());
             // 更新传输带宽使用历史记录
-            addUsageData(usageOfTransmitBwHistory, instanceUid, currentTime, instance.getUsedTransmitBw());
+//            addUsageData(usageOfTransmitBwHistory, instanceUid, currentTime,instance.getUsedShare());
         }
         previousTime = currentTime;
     }
@@ -447,13 +447,16 @@ public class Application extends SimEntity {
         // 一条链路的完成时间戳
         double pathTimestamp = CloudNativeSim.clock()+totalTime;
         // 如果还没设置响应时间
-        if (request.getResponseTime() == -1) {
-            request.setResponseTime(pathTimestamp);
+        if (request.getResponseTimeStamp() == -1) {
+            request.setResponseTimeStamp(pathTimestamp);
+            double criticalDelay = pathTimestamp - request.getStartTime();
+            request.setDelay(criticalDelay);
             request.setStatus(Status.Finished);
+            Exporter.totalResponses++;
         }
         // 这里用了关键路径取最大值的思路去更新
-        else if (request.getResponseTime() < pathTimestamp) {
-            request.setResponseTime(pathTimestamp);
+        else if (request.getResponseTimeStamp() < pathTimestamp) {
+            request.setResponseTimeStamp(pathTimestamp);
             double criticalDelay = pathTimestamp - request.getStartTime();
             request.setDelay(criticalDelay);
         }

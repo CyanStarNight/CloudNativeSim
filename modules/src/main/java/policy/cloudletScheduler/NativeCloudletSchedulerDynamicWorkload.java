@@ -1,5 +1,6 @@
 package policy.cloudletScheduler;
 
+import core.CloudNativeSim;
 import core.Status;
 import entity.Instance;
 import entity.NativeCloudlet;
@@ -50,6 +51,7 @@ public class NativeCloudletSchedulerDynamicWorkload extends NativeCloudletSchedu
                 iterator.remove();
                 getExecQueue().add(cloudlet);
                 cloudlet.setStatus(Status.Processing);
+                cloudlet.setStartExecTime(CloudNativeSim.clock());
                 processor.getProcessingCloudlets().add(cloudlet);
                 processor.totalCloudlets++;
                 updateProcessorUsedShare(processor);
@@ -81,6 +83,7 @@ public class NativeCloudletSchedulerDynamicWorkload extends NativeCloudletSchedu
             iterator.remove();
             getFinishedList().add(cl);
             processor.getProcessingCloudlets().remove(cl);
+            processor.getCompletionCloudlets().add(cl);
             cl.setStatus(Status.Success);
         }
     }

@@ -17,7 +17,7 @@ public class API {
     public double weight = 1.0;
     protected List<Service> chain = new ArrayList<>();
     public double failedNum;
-    public double sloThreshold = 8.0;
+    public double sloThreshold = 7.0;
     // qps history
     public List<Double> qpsHistory = new ArrayList<>();
 

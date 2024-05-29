@@ -26,7 +26,7 @@ public class Request {
     // 延迟
     private double delay;
     // 请求的响应时间节点, 默认-1代表没完成
-    private double responseTime = -1;
+    private double responseTimeStamp = -1;
     // 服务链路
     private List<Service> serviceChain;
     // 请求计数

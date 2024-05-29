@@ -8,7 +8,6 @@ import core.Status;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.cloudbus.cloudsim.UtilizationModel;
 
 
 @Getter @Setter @ToString
@@ -31,6 +30,8 @@ public class NativeCloudlet {
     private double share;
     // cloudlet的状态分为Processing, Waiting和Finished
     public Status status;
+
+    private double startExecTime;
     // cloudlet的处理时间和
     private double execTime;
     // 等待时间

@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static core.Reporter.writeResourceUsageToCSV;
+import static core.Reporter.writeStatisticsToCsv;
 import static org.cloudbus.cloudsim.Log.printLine;
 
 /**
@@ -39,17 +40,16 @@ public class SockShopTest {
     private static List<NativeVm> vmList;
     private static int mips = 250; // MIPS
     private static String arch = "x86"; // system architecture, 标志着指令平均长度4B
-    static String podsFile = "modules/test/config/instances.yaml";
-    static String servicesFile = "modules/test/config/services.json";
+    static String podsFile = "examples/src/sockshop/instances.yaml";
+    static String servicesFile = "examples/src/sockshop/services.json";
     static String outputPath = "modules/test/resource/";
-    // generator configuration for requests and cloudlets
     // generator configuration for requests and cloudlets
     static int finalClients = 500;
     static int spawnRate = 200;
     static int[] waitTimeSpan = new int[]{3, 10};
     static int timeLimit = 600;
     static int initializedClients = 100;
-    static int numLimit = 1000;
+    static int numLimit = 10000;
     // 设定任务平均大小,下面两种表述是等价的:
     static int meanLength = 25; // 单位是百万条指令(M),任务规模 = 4*length
     static int stdDevLength = 5;
@@ -113,6 +113,7 @@ public class SockShopTest {
             Reporter.outputPath = outputPath;
 //            apis.forEach(Reporter::printApiStatistics);
             Reporter.printApiStatistics(apis);
+            writeStatisticsToCsv(apis,outputPath);
             Reporter.printResourceUsage();
 //            Reporter.writeResourceUsageToCSV(outputPath);
 

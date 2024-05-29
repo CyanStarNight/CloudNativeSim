@@ -41,6 +41,7 @@ public class Instance implements Cloneable{
     private long size;
     // num of cloudlets
     public List<NativeCloudlet> processingCloudlets = new ArrayList<>();
+    public List<NativeCloudlet> completionCloudlets = new ArrayList<>();
     public int totalCloudlets;
 
     // ram needs

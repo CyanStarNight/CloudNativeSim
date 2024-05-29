@@ -109,8 +109,8 @@ public class Reporter {
         at.addRule();
 //        at.addRow("Total Time", CloudNativeSim.clock());
         at.addRow("Total Requests", totalRequests);
-//        at.addRow("Failed Requests", failedRequests);
-//        at.addRow("Failure Rate", dft.format(failRate) + "%");
+        at.addRow("Failed Requests", failedRequests);
+        at.addRow("Failure Rate", dft.format(failedRequests) + "%");
         at.addRow("QPS", dft.format(avgQps));
         at.addRow("Average Delay", dft.format(totalDelay / totalRequests) + " seconds");
         at.addRow("SLO Violation Rate", dft.format((double) sloViolations / totalRequests * 100) + "%");
@@ -212,6 +212,7 @@ public class Reporter {
 
 
         for (String instanceUid : usageOfCpuHistory.keySet()) {
+
             // 获取CPU和RAM的平均使用率
             double cpuAverage = getAverageUsage(usageOfCpuHistory.get(instanceUid));
             double ramAverage = getAverageUsage(usageOfRamHistory.get(instanceUid));
