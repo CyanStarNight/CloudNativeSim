@@ -85,13 +85,4 @@ public class NativeCloudletSchedulerDynamicWorkload extends NativeCloudletSchedu
         }
     }
 
-    @Override
-    public void pauseCloudlets() {
-        // TODO: Implement pause logic
-    }
-
-    @Override
-    public void resumeCloudlets() {
-        // TODO: Implement resume logic
-    }
 }

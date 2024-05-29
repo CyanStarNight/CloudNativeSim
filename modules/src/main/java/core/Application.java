@@ -322,6 +322,7 @@ public class Application extends SimEntity {
     }
 
     private void updateUsage() {
+
         double currentTime = CloudNativeSim.clock();
         for (Instance instance : getInstanceList()) {
             String instanceUid = instance.getUid();
@@ -334,6 +335,7 @@ public class Application extends SimEntity {
             // 更新传输带宽使用历史记录
             addUsageData(usageOfTransmitBwHistory, instanceUid, currentTime, instance.getUsedTransmitBw());
         }
+        previousTime = currentTime;
     }
 
     private void processRequestGenerate(SimEvent ev) {
@@ -438,43 +440,6 @@ public class Application extends SimEntity {
             updateRequestCriticalPath(request, totalTime);
         }
     }
-
-    // 处理来源于相同请求且相同服务的cloudlets
-//    @SuppressWarnings("unchecked")
-//    private void processCloudlets(SimEvent ev) {
-//        List<NativeCloudlet> cloudlets = (List<NativeCloudlet>) ev.getData();
-//        assert !cloudlets.isEmpty();
-//        submitCloudlets(cloudlets);
-//        // 选一个代表
-//        NativeCloudlet behavior = cloudlets.get(0);
-//        // 获取变量
-//        String serviceName = behavior.getServiceName();
-//        Service service = Service.getService(serviceName);
-//        Request request = behavior.getRequest();
-//        String apiName = request.getApiName();
-//        // 执行cloudlet schedule
-//        NativeCloudletScheduler scheduler = service.getCloudletScheduler();
-//        // 分布到合适的instance
-//        scheduler.distributeCloudlets(cloudlets,service.getInstanceList());
-//        // 查询子服务
-//        List<Service> next = serviceGraph.getCalls(serviceName, apiName);
-//        // instance处理当前请求的cloudlets,更新每个cloudlet的等待时间和执行时间
-//        scheduler.processCloudlets();
-//        // 计算当前请求的cloudlets完成时间
-//        double totalTime = cloudlets.stream()
-//                .mapToDouble(cloudlet -> cloudlet.getWaitTime() + cloudlet.getExecTime())
-//                .sum();
-//        finishedCloudletNum += cloudlets.size();
-//        // 链路中下级服务非空,则创建并发送cloudlets
-//        if (!next.isEmpty()) {
-//            next.forEach(s -> schedule(totalTime, CloudNativeSimTag.CLOUDLET_PROCESS, s.createCloudlets(request,generator)));
-//        }
-//        else {
-//            // 更新请求的关键路径
-//            updateRequestCriticalPath(request, totalTime);
-//        }
-//    }
-
 
 
 

@@ -106,13 +106,4 @@ public class NativeCloudletSchedulerSolidShare extends NativeCloudletScheduler {
         }
     }
 
-    @Override
-    public void pauseCloudlets() {
-        // TODO: Implement logic to pause cloudlets
-    }
-
-    @Override
-    public void resumeCloudlets() {
-        // TODO: Implement logic to resume paused cloudlets
-    }
 }

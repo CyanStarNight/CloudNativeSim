@@ -18,7 +18,6 @@ import extend.NativeVm;
 import policy.allocation.ServiceAllocationPolicySimple;
 import policy.cloudletScheduler.NativeCloudletSchedulerDynamicWorkload;
 import policy.cloudletScheduler.NativeCloudletSchedulerSolidShare;
-import policy.cloudletScheduler.NativeCloudletSchedulerStepWise;
 import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
@@ -47,9 +46,9 @@ public class SockShopExample{
     static int[] waitTimeSpan = new int[]{3, 10};
     static int timeLimit = 600;
     static int initializedClients = 100;
-    static int numLimit = 1000;
+    static int numLimit = 10000;
     // 设定任务平均大小,下面两种表述是等价的:
-    static int meanLength = 25; // 单位是百万条指令(M),任务规模 = 4*length
+    static int meanLength = 50; // 单位是百万条指令(M),任务规模 = 4*length
     static int stdDevLength = 10;
     
 

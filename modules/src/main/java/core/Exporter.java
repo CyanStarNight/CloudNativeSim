@@ -15,8 +15,6 @@ import java.util.Map;
 @Getter
 @Setter
 public class Exporter {
-    // Previous time point for exporting data
-    public static double previousTime = 0.0;
     // Total time for handling requests
     public static double totalTime;
     public static int schedulingInterval = 10;
@@ -36,6 +34,8 @@ public class Exporter {
     public static int totalServices = 0;
     public static int totalInstances = 0;
 
+    // Previous time point for exporting data
+    public static double previousTime = 0.0;
     // instance id ->  utilization
     public static Map<String, List<UsageData>> usageOfCpuHistory = new HashMap<>();
     public static Map<String, List<UsageData>> usageOfRamHistory = new HashMap<>();

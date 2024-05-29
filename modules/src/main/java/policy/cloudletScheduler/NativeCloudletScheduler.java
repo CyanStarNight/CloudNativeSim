@@ -61,10 +61,6 @@ public abstract class NativeCloudletScheduler{
 
     public abstract void processCloudlets();
 
-    public abstract void pauseCloudlets();
-
-    public abstract void resumeCloudlets();
-
 }
 
 

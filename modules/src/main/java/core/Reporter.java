@@ -210,13 +210,13 @@ public class Reporter {
         at.addRow("Instance ID", "CPU Average", "RAM Average");  // 只显示平均值
         at.addRule();
 
+
         for (String instanceUid : usageOfCpuHistory.keySet()) {
             // 获取CPU和RAM的平均使用率
             double cpuAverage = getAverageUsage(usageOfCpuHistory.get(instanceUid));
             double ramAverage = getAverageUsage(usageOfRamHistory.get(instanceUid));
-            double rbwAverage = getAverageUsage(usageOfReceiveBwHistory.get(instanceUid));
-            double tbwAverage = getAverageUsage(usageOfTransmitBwHistory.get(instanceUid));
-
+//            double rbwAverage = getAverageUsage(usageOfReceiveBwHistory.get(instanceUid));
+//            double tbwAverage = getAverageUsage(usageOfTransmitBwHistory.get(instanceUid));
             // 添加行数据
             at.addRow(instanceUid, df.format(cpuAverage), df.format(ramAverage)
 //                    , df.format(rbwAverage), df.format(tbwAverage)
