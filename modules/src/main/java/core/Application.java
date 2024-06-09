@@ -237,24 +237,20 @@ public class Application extends SimEntity {
         send(getId(), 0.1, CloudNativeSimTag.SERVICE_ALLOCATE, serviceList);
     }
 
-    public boolean matchInstances(Service service){ //TODO: 未参与实例化的instance应该要删除
+
+    public boolean matchInstances(Service service){ //TODO: 未参与实例化的instance怎么办？这个函数放这里合适吗？
         boolean result = false;
 
         List<String> s_labels = service.getLabels();
         // 多对多的映射labels
         for (Instance instance: InstanceUidMap.values()){
-
             for (String i_label:instance.getLabels()){
-
                 if (s_labels.contains(i_label)) {
-
                     result = true;
-
                     service.setBeingInstantiated(true);
-
                     service.getInstanceList().add(instance);
-
                     service.setStatus(Status.Ready);
+                    instance.getServiceList().add(service.name);
                 }
             }
         }

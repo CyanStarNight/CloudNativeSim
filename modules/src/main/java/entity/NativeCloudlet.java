@@ -19,7 +19,7 @@ public class NativeCloudlet {
     // 绑定request
     private Request request;
     // 目前部署cloudlets的instance
-    protected String instanceUid;
+    protected Instance instance;
     // 目前部署cloudlets的service
     protected String serviceName;
     // cloudlet的长度，单位是B
@@ -61,9 +61,6 @@ public class NativeCloudlet {
         setWaitTime(getWaitTime() + waitTime);
     }
 
-    public Instance getInstance(){
-        return Instance.getInstance(getInstanceUid());
-    }
     public Service getService(){
         return Service.getService(getServiceName());
     }
@@ -71,4 +68,8 @@ public class NativeCloudlet {
         return getRequest().getApiName();
     }
 
+    public void bindToInstance(Instance instance){
+        setInstance(instance);
+        instance.totalCloudlets ++;
+    }
 }

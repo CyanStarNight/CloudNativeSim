@@ -1,12 +1,11 @@
 package policy.cloudletScheduler;
 
+import core.CloudNativeSim;
 import core.Status;
 import entity.Instance;
 import entity.NativeCloudlet;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Cloudlet scheduler implementation using Solid Share allocation policy.
@@ -19,90 +18,101 @@ public class NativeCloudletSchedulerSolidShare extends NativeCloudletScheduler {
         super();
     }
 
-    /**
-     * Distribute cloudlets to instances based on the Solid Share policy.
-     * @param nativeCloudlets List of native cloudlets to be distributed.
-     * @param instanceList List of available instances.
-     */
-    public void distributeCloudlets(List<NativeCloudlet> nativeCloudlets, List<Instance> instanceList) {
+    private double getShareRequests(NativeCloudlet cloudlet, Instance processor){
+        cloudlet.setShare(solidShare);
+        return solidShare;
+    }
+
+
+    @Override
+    public void receiveCloudlets(List<NativeCloudlet> cloudlets, List<Instance> instanceList) {
+        // 加入等待队列
+        addToWaitingQueue(cloudlets);
+        // 设置允许执行的队列
+        List<NativeCloudlet> executingEnabled = new ArrayList<>();
+        // 查询是否能加入执行队列
+        for (NativeCloudlet cloudlet : cloudlets) {
+            // 如果能分配到处理器，加入
+            if (distributeCloudlet(cloudlet,instanceList)){
+                addToProcessingQueue(cloudlet);
+                executingEnabled.add(cloudlet);
+            }
+            // 不能入队就继续等待
+            else cloudlet.addWitTime(waitStep);
+        }
+        // 更新队列和实例用量
+        getWaitingQueue().removeAll(executingEnabled);
+        instanceList.forEach(this::updateProcessorUsage);
+    }
+
+
+    public boolean distributeCloudlet(NativeCloudlet cloudlet, List<Instance> instanceList) {
+        // 检查instance list非空
         if (instanceList == null || instanceList.isEmpty()) {
             throw new IllegalArgumentException("Instance list cannot be null or empty");
         }
-        Random random = new Random();
 
-        double[] usedRam = new double[instanceList.size()];
-        int[] counts = new int[instanceList.size()];
-        for (NativeCloudlet nativeCloudlet : nativeCloudlets) {
-            int randomIndex = random.nextInt(instanceList.size());
-            Instance selectedInstance = instanceList.get(randomIndex);
+        // 选择利用率最低的instance
+        Instance selectedInstance = instanceList.stream()
+                .min(Comparator.comparingDouble(Instance::getUtilizationOfCpu))
+                .orElse(null);
 
-            nativeCloudlet.setInstanceUid(selectedInstance.getUid());
-            addToWaitingQueuq(nativeCloudlet);
-
-            usedRam[randomIndex] += nativeCloudlet.getSize();
-            counts[randomIndex] += 1;
+        // 检查是否有足够的 CPU 份额
+        if(selectedInstance.getCurrentAllocatedCpuShare() - selectedInstance.getUsedShare() > getShareRequests(cloudlet,selectedInstance)){
+            cloudlet.bindToInstance(selectedInstance);
+            return true;
         }
-        for (int i = 0; i < instanceList.size(); i++) {
-            if (counts[i] > 0) {
-                instanceList.get(i).setUsedRam((int) (usedRam[i] / counts[i]));
-            } else {
-                instanceList.get(i).setUsedRam(0);
-            }
-        }
+
+        return false;
     }
 
-    /**
-     * Add cloudlets to the processing queue based on available resources.
-     */
-    public void addToProcessingQueue() {
-        Iterator<NativeCloudlet> iterator = getWaitingQueue().iterator();
-        while (iterator.hasNext()) {
-            NativeCloudlet cloudlet = iterator.next();
-            Instance processor = cloudlet.getInstance();
 
-            cloudlet.setShare(solidShare);
 
-            if (processor.getCurrentAllocatedCpuShare() - processor.getUsedShare() > solidShare) {
-                iterator.remove();
-                getExecQueue().add(cloudlet);
-                cloudlet.setStatus(Status.Processing);
-                processor.getProcessingCloudlets().add(cloudlet);
-                processor.totalCloudlets += 1;
-                updateProcessorUsedShare(processor);
-            } else {
-                cloudlet.addWitTime(waitStep);
-            }
-        }
+    // Move cloudlets from waiting to execution queue
+    public void addToProcessingQueue(NativeCloudlet cloudlet) {
+        // 加入执行队列
+        getExecQueue().add(cloudlet);
+        // 更新字段
+        cloudlet.setStatus(Status.Processing);
+        cloudlet.setStartExecTime(CloudNativeSim.clock());
+        // 更新实例
+        Instance processor = cloudlet.getInstance();
+        processor.getProcessingCloudlets().add(cloudlet);
     }
 
-    /**
-     * Update the used share of the processor based on processing cloudlets.
-     * @param processor Instance to update.
-     */
-    private void updateProcessorUsedShare(Instance processor) {
+
+    // Update processor's used share based on processing cloudlets
+    private void updateProcessorUsage(Instance processor) {
+
+        // 更新cpu share
         double totalUsedShare = processor.getProcessingCloudlets().stream()
-                .mapToDouble(NativeCloudlet::getShare)
+                .mapToDouble(cl -> (double) cl.getLen() / processor.getCurrentAllocatedMips() * 1024)
                 .sum();
-
         processor.setUsedShare((int) Math.ceil(totalUsedShare));
+
+        // 更新ram
+        int totalUsedRam = processor.getProcessingCloudlets().stream()
+                .mapToInt(cl -> (int) cl.getSize())
+                .sum();
+        processor.setUsedRam(totalUsedRam);
     }
+
 
     @Override
     public void processCloudlets() {
-        addToProcessingQueue();
-
         Iterator<NativeCloudlet> iterator = getExecQueue().iterator();
+
         while (iterator.hasNext()) {
             NativeCloudlet cl = iterator.next();
-            assert cl.getInstance() != null; // Ensure each cloudlet is allocated to an instance
             Instance processor = cl.getInstance();
             double execTime = (double) cl.getLen() / processor.getCurrentAllocatedMips();
-
             cl.setExecTime(execTime);
+
             iterator.remove();
             getFinishedList().add(cl);
             processor.getProcessingCloudlets().remove(cl);
-            cl.status = Status.Success;
+            processor.getCompletionCloudlets().add(cl);
+            cl.setStatus(Status.Success);
         }
     }
 

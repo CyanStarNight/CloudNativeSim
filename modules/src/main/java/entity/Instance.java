@@ -35,7 +35,7 @@ public class Instance implements Cloneable{
     // one service n pods
     private List<String> labels;
     // services which mapped
-    private List<Service> serviceList;
+    private List<String> serviceList= new ArrayList<>();
     // vm which located
     private NativeVm vm;
     // size of instance
@@ -124,6 +124,7 @@ public class Instance implements Cloneable{
         setRequests_ram(200);
         setLimits_share(1024);
         setLimits_ram(1000);
+
     }
 
     public Instance(int appId, String prefix, List<String> labels) {
@@ -227,4 +228,6 @@ public class Instance implements Cloneable{
     public double getUtilizationOfCpu() {
         return (double) getUsedShare() / getCurrentAllocatedCpuShare();
     }
+
+
 }

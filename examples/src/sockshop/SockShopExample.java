@@ -49,7 +49,7 @@ public class SockShopExample{
     static int initializedClients = 100;
     static int numLimit = 10000;
     // 设定任务平均大小,下面两种表述是等价的:
-    static int meanLength = 10; // 单位是百万条指令(M),任务规模 = 4*length
+    static int meanLength = 25; // 单位是百万条指令(M),任务规模 = 4*length
     static int stdDevLength = 10;
     
 
@@ -88,8 +88,8 @@ public class SockShopExample{
             List<Service> services = graph.getAllServices();
             // set policy
             for (Service service : services){
-                service.setCloudletScheduler(new NativeCloudletSchedulerBestEffort());
-                service.setServiceScalingPolicy(new HorizontalScalingPolicy());
+                service.setCloudletScheduler(new NativeCloudletSchedulerSolidShare());
+                service.setServiceScalingPolicy(new VerticalScalingPolicy());
             }
             app.submitServiceList(services);
             // generator

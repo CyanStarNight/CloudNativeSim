@@ -56,10 +56,14 @@ public abstract class NativeCloudletScheduler{
         cloudlets.forEach(c -> c.setStatus(Status.Waiting));
     }
 
-    public abstract void distributeCloudlets(List<NativeCloudlet> nativeCloudlets, List<Instance> instanceList);
+    public abstract boolean distributeCloudlet(NativeCloudlet nativeCloudlet, List<Instance> instanceList);
 
 
-    public abstract void addToProcessingQueue();
+    public abstract void addToProcessingQueue(NativeCloudlet cloudlet);
+
+    public void addToProcessingQueue(List<NativeCloudlet> cloudlets){
+        cloudlets.forEach(this::addToProcessingQueue);
+    }
 
     public abstract void processCloudlets();
 
