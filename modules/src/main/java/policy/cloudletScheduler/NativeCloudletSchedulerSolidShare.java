@@ -37,7 +37,7 @@ public class NativeCloudletSchedulerSolidShare extends NativeCloudletScheduler {
             Instance selectedInstance = instanceList.get(randomIndex);
 
             nativeCloudlet.setInstanceUid(selectedInstance.getUid());
-            receiveCloudlets(nativeCloudlet);
+            addToWaitingQueuq(nativeCloudlet);
 
             usedRam[randomIndex] += nativeCloudlet.getSize();
             counts[randomIndex] += 1;

@@ -20,8 +20,6 @@ public abstract class NativeCloudletScheduler{
     protected double previousTime;
     // instance uid -> cloudlets
     protected Map<String, Integer> usedShareNumMap = new HashMap<>();
-    /** The list of instance. */
-    List<Instance> instanceList;
 
     private int schedulingInterval = 10;
 
@@ -45,17 +43,21 @@ public abstract class NativeCloudletScheduler{
         setPreviousTime(0.0);
     }
 
-    public abstract void distributeCloudlets(List<NativeCloudlet> nativeCloudlets, List<Instance> instanceList);
 
-    public void receiveCloudlets(NativeCloudlet nativeCloudlet){
+    public abstract void receiveCloudlets(List<NativeCloudlet> cloudlets,List<Instance> instanceList);
+
+    public void addToWaitingQueue(NativeCloudlet nativeCloudlet){
         waitingQueue.add(nativeCloudlet);
         nativeCloudlet.setStatus(Status.Waiting);
     }
 
-    public void receiveCloudlets(List<NativeCloudlet> cloudlets){
+    public void addToWaitingQueue(List<NativeCloudlet> cloudlets){
         waitingQueue.addAll(cloudlets);
         cloudlets.forEach(c -> c.setStatus(Status.Waiting));
     }
+
+    public abstract void distributeCloudlets(List<NativeCloudlet> nativeCloudlets, List<Instance> instanceList);
+
 
     public abstract void addToProcessingQueue();
 

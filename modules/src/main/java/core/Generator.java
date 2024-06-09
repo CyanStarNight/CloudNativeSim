@@ -22,7 +22,7 @@ public class Generator {
     // 请求生成的时间限制,默认无限制
     public int timeLimit = Integer.MAX_VALUE;
     // 请求生成数量的限制,默认无限制
-    public long numLimit = Long.MAX_VALUE;
+    public int numLimit = Integer.MAX_VALUE;
     // API列表,每个API对象创建时会自动加入. 每个API有自己的权重
     public List<API> APIs = new ArrayList<>();
     // Cloudlet的全局参数定义，下面两种表述是等价的(4B的倍数关系)
@@ -133,7 +133,6 @@ public class Generator {
                 // 创建新的请求
                 Request newRequest = new Request(selectedAPI, clock);
                 generateList.add(newRequest);
-                selectedAPI.getRequests().add(newRequest);
 
                 // 进入随机等待,等待时间在waitTime区间内
                 int waitTime = random.nextInt(waitTimeSpan[1] - waitTimeSpan[0]) + waitTimeSpan[0];
@@ -148,6 +147,8 @@ public class Generator {
         previousTime = clock;
         return generateList;
     }
+
+
 
     public API getRandomAPI() {
         // 生成一个随机数 randomWeight，范围是 [0, totalWeight)

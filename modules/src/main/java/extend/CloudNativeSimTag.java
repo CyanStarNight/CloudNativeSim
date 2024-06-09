@@ -31,7 +31,7 @@ public class CloudNativeSimTag {
             CLOUDLET_MOVE = BASE + 25 ,
             CLOUDLET_RETURN = BASE + 26,
             UPDATE_USAGE =27,
-            STATE_CHECK = BASE +30;
+            LOAD_BALANCE = BASE +30;
 
     private CloudNativeSimTag() {
         throw new UnsupportedOperationException("NativeSim Tags cannot be instantiated");

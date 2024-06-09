@@ -14,7 +14,6 @@ import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
-import policy.cloudletScheduler.NativeCloudletSchedulerDynamicWorkload;
 import policy.cloudletScheduler.NativeCloudletSchedulerSolidShare;
 import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
@@ -27,8 +26,6 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
-import static core.Reporter.writeResourceUsageToCSV;
-import static core.Reporter.writeStatisticsToCsv;
 import static org.cloudbus.cloudsim.Log.printLine;
 
 /**
@@ -113,7 +110,7 @@ public class SockShopTest {
             Reporter.outputPath = outputPath;
 //            apis.forEach(Reporter::printApiStatistics);
             Reporter.printApiStatistics(apis);
-            writeStatisticsToCsv(apis,outputPath);
+//            writeStatisticsToCsv(apis,outputPath);
             Reporter.printResourceUsage();
 //            Reporter.writeResourceUsageToCSV(outputPath);
 

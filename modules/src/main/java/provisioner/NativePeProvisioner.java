@@ -34,6 +34,7 @@ public abstract class NativePeProvisioner {
 
 	public abstract boolean allocatePeForInstance(Instance instance, int share);
 
+
 	/**
 	 * Releases PEs allocated to instance.
 	 */

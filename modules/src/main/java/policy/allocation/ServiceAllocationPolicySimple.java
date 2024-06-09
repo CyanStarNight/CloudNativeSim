@@ -23,30 +23,16 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
 
     private Map<String, NativeVm> instanceVmTable; // instance id -> vm
 
-    private Map<NativeVm, List<Integer>> freePes; // vm id -> free Pes (num)
-
 
     public ServiceAllocationPolicySimple() {
-
         super();
-
         setServiceInstanceTable(new HashMap<>());
-
         setInstanceVmTable(new HashMap<>());
-
-        setFreePes(new HashMap<>());
-
     }
+
     @Override
     public void init(List<? extends NativeVm> vmList){
-
         setVmList(vmList);
-
-        getVmList().forEach(vm -> {
-            List<Integer> freePes = new ArrayList<>(Collections.nCopies(vm.getNativePeList().size(), 1024));
-            getFreePes().put(vm, freePes);
-        });
-
 
     }
 
@@ -109,32 +95,14 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
 
         boolean result = false;
 
-        int requiredPes = instance.getRequests_share();
-
-        List<Integer> vmFreePes = getFreePes().get(vm);
-
-        int peId = -1;
+        int requiredShare = instance.getRequests_share();
 
         // 如果instance还未分配
         if (!getInstanceVmTable().containsKey(instance.getUid())){
             // 根据pe优先遍历
-            for (int i = 0; i < vmFreePes.size(); i++) {
-
-                double freePes = vmFreePes.get(i);
-
-                if (requiredPes <= freePes){
-
-                    result = vm.instanceCreate(instance,i);  // 指定pe分配资源
-
-                    peId = i;
-                }
-            }
+            result = vm.instanceCreate(instance);
 
             if (result) {
-
-                vmFreePes.set(peId, vmFreePes.get(peId) - requiredPes);
-
-                getFreePes().replace(vm,vmFreePes);
 
                 getInstanceVmTable().put(instance.getUid(), vm);
 
@@ -143,8 +111,6 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
                 vm.getInstanceList().add(instance);
 
                 createdInstanceList.add(instance);
-
-                Reporter.printEvent(instance.getType()+" #"+instance.getId()+" has been allocated in Vm #"+vm.getId());
 
             }
         }
@@ -162,6 +128,7 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
 
                 if (allocateVmForInstance(instance, vm)) {
                     result = true;
+                    Reporter.printEvent(instance.getType()+" #"+instance.getId()+" has been allocated in Vm #"+vm.getId());
                     break;
                 }
             }
@@ -171,18 +138,23 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
 
 
 
-    private List<Integer> getVmFreePes(NativeVm vm) {
-        return vm != null ? getFreePes().get(vm) : Collections.emptyList();
-    }
-
 
     @Override
     public void deallocateVmForInstance(Instance instance) {
 
         NativeVm vm = getInstanceVmTable().remove(instance.getUid());
 
-        getFreePes().remove(vm);
+        // release pe share
+        int usedShare = instance.getUsedShare();
 
+        instance.setUsedShare(0);
+
+        NativePe pe = instance.getCurrentAllocatedPe();
+
+        int peId = vm.getNativePeList().indexOf(pe);
+
+        assert peId != -1;
+        // remove mapping
         vm.instanceDestroy(instance);
     }
 

@@ -16,10 +16,11 @@ import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import extend.NativeBroker;
 import extend.NativeVm;
 import policy.allocation.ServiceAllocationPolicySimple;
-import policy.cloudletScheduler.NativeCloudletSchedulerDynamicWorkload;
+import policy.cloudletScheduler.NativeCloudletSchedulerBestEffort;
 import policy.cloudletScheduler.NativeCloudletSchedulerSolidShare;
 import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
+import policy.scaling.VerticalScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
 import provisioner.NativeRamProvisionerSimple;
 import provisioner.VmBwProvisionerSimple;
@@ -48,7 +49,7 @@ public class SockShopExample{
     static int initializedClients = 100;
     static int numLimit = 10000;
     // 设定任务平均大小,下面两种表述是等价的:
-    static int meanLength = 25; // 单位是百万条指令(M),任务规模 = 4*length
+    static int meanLength = 10; // 单位是百万条指令(M),任务规模 = 4*length
     static int stdDevLength = 10;
     
 
@@ -72,10 +73,7 @@ public class SockShopExample{
             vmList = createVms(3,brokerId);
             broker.submitVmList(vmList);
             // create application & define policies
-            Application app = new Application("sockshop", brokerId,
-                    new ServiceAllocationPolicySimple(),
-                    new InstanceMigrationPolicySimple(),
-                    new HorizontalScalingPolicy());
+            Application app = new Application("sockshop", brokerId, new ServiceAllocationPolicySimple());
             int schedulingInterval = 10;
             app.submitSchedulingInterval(schedulingInterval);
             // register
@@ -88,6 +86,11 @@ public class SockShopExample{
             ServiceGraph graph = register.registerServiceGraph();
             app.submitServiceGraph(graph);
             List<Service> services = graph.getAllServices();
+            // set policy
+            for (Service service : services){
+                service.setCloudletScheduler(new NativeCloudletSchedulerBestEffort());
+                service.setServiceScalingPolicy(new HorizontalScalingPolicy());
+            }
             app.submitServiceList(services);
             // generator
             Generator generator = new Generator(apis,finalClients, spawnRate, waitTimeSpan, timeLimit,meanLength,stdDevLength);
@@ -96,9 +99,6 @@ public class SockShopExample{
             app.submitGenerator(generator);
             // instance
             app.submitInstanceList(register.registerAllInstances());
-            // cloudlet scheduler
-            services.forEach(service -> service.setCloudletScheduler(
-                    new NativeCloudletSchedulerSolidShare()));
 
             CloudNativeSim.startSimulation();
 
@@ -107,6 +107,8 @@ public class SockShopExample{
 
             // report
             Reporter.outputPath = outputPath;
+//            Reporter.printChains(graph, apis);
+            Reporter.printGlobalDependencies(graph);
 //            apis.forEach(Reporter::printApiStatistics);
             Reporter.printApiStatistics(apis);
             Reporter.printResourceUsage();
@@ -127,7 +129,7 @@ public class SockShopExample{
         long size = 10000; //image size (MB)
         int ram = 4096; //vm memory (MB)
         long bw = 10000;
-        int pesNumber = 1; //number of cpus
+        int pesNumber = 2; //number of cpus
         String vmm = "Xen"; //VMM name
 
         //create two VMs: the first one belongs to user1

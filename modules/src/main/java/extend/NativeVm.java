@@ -14,7 +14,10 @@ import provisioner.NativeRamProvisioner;
 import entity.Instance;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+
 @Getter
 @Setter
 public class NativeVm extends Vm {
@@ -23,9 +26,10 @@ public class NativeVm extends Vm {
     private int id;
     private int userId;
 
-    private List<? extends Pe> peList;
+    private List<? extends NativePe> peList;
 
     private Long freeStorage;
+
 
     private List<Instance> instanceList;
 
@@ -53,7 +57,7 @@ public class NativeVm extends Vm {
         super(id, userId, mips, numberOfPes, ram, bw, size, vmm, new CloudletSchedulerTimeShared());
 
         setInstanceList(new ArrayList<>());
-//        setInstanceScheduler(instanceScheduler);
+
         setNativePeProvisioner(nativePeProvisioner);
         setNativeRamProvisioner(nativeRamProvisioner);
         setVmBwProvisioner(vmBwProvisioner);
@@ -62,7 +66,7 @@ public class NativeVm extends Vm {
         setNativePeList(new ArrayList<>());
     }
 
-    public boolean instanceCreate(Instance instance, int peId){
+    public boolean instanceCreate(Instance instance){
 
         if (getSize() < instance.getSize()) {
             Log.printLine("\n[InstanceScheduler.instanceCreate] Allocation of "+ instance.getType()+" #" + instance.getId() + " to Vm #" + getId()
@@ -78,13 +82,14 @@ public class NativeVm extends Vm {
             return false;
         }
 
-        if (!getVmBwProvisioner().allocateBwForInstance(instance, instance.getReceive_bw(), instance.getTransmit_bw())) {
-            Log.printLine("\n[InstanceScheduler.instanceCreate] Allocation of "+ instance.getType()+" #" + instance.getId() + " to Vm #" + getId()
-                    + " failed by BW");
-            getNativeRamProvisioner().deallocateRamForInstance(instance);
-            instance.setStatus(Status.Denied);
-            return false;
-        }
+        //TODO: bw分配
+//        if (!getVmBwProvisioner().allocateBwForInstance(instance, instance.getReceive_bw(), instance.getTransmit_bw())) {
+//            Log.printLine("\n[InstanceScheduler.instanceCreate] Allocation of "+ instance.getType()+" #" + instance.getId() + " to Vm #" + getId()
+//                    + " failed by BW");
+//            getNativeRamProvisioner().deallocateRamForInstance(instance);
+//            instance.setStatus(Status.Denied);
+//            return false;
+//        }
 
 
         if (!getNativePeProvisioner().allocatePeForInstance(instance, instance.getRequests_share())) {
@@ -138,6 +143,18 @@ public class NativeVm extends Vm {
         getNativeRamProvisioner().deallocateRamForAllInstances();
         getVmBwProvisioner().deallocateBwForAllInstances();
         getNativePeProvisioner().deallocatePesForAllInstances();
+    }
+
+    public List<Integer> getFreeShares(){
+        return getNativePeList().stream()
+                .map(NativePe::getAvailableShare)
+                .collect(Collectors.toList());
+
+    }
+
+    public int getMaxFreeShare(){
+        return getFreeShares().stream().max(Comparator.naturalOrder())
+                .orElse(0);
     }
 
 

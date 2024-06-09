@@ -148,7 +148,7 @@ public class Register {
             // 副本
             replicas.add(instance); // 引用传递
             instance.setNum_replicas(num_replicas);
-            instance.setReplicas(replicas); //引用传递
+//            instance.setReplicaSet(replicas); //引用传递
         }
 
         return replicas;
@@ -162,6 +162,7 @@ public class Register {
             String type = Tools.getValue(m, "type");
             allInstances.addAll(registerInstances(m,type));
         }
+
         return allInstances;
     }
 

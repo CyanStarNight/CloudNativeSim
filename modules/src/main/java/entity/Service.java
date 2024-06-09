@@ -11,6 +11,8 @@ import lombok.*;
 import core.Status;
 import org.cloudbus.cloudsim.UtilizationModelFull;
 import policy.cloudletScheduler.NativeCloudletScheduler;
+import policy.scaling.ServiceScalingPolicy;
+import policy.scaling.VerticalScalingPolicy;
 
 
 /**
@@ -18,7 +20,7 @@ import policy.cloudletScheduler.NativeCloudletScheduler;
  */
 @Getter
 @Setter
-public class Service implements Cloneable{
+public class Service{
 
     private int userId;
     // 服务名，用于映射和标识
@@ -38,6 +40,8 @@ public class Service implements Cloneable{
     protected ServiceGraph serviceGraph;
     // cloudlets scheduler
     private NativeCloudletScheduler cloudletScheduler;
+    // scaling policy
+    private ServiceScalingPolicy serviceScalingPolicy;
     // name map
     public static Map<String, Service> serviceNameMap = new HashMap<>();
     public static Service getService(String name){
@@ -46,6 +50,8 @@ public class Service implements Cloneable{
     public static List<Service> getAllServices(){
         return (List<Service>)serviceNameMap.values();
     }
+
+
 
     public void setName(String name){
         serviceNameMap.remove(this.name);
@@ -135,4 +141,10 @@ public class Service implements Cloneable{
     public String toString() {
         return "Service #" + getName();
     }
+
+    public void deleteInstance(Instance instance) {
+        instanceList.remove(instance);
+    }
+
+
 }

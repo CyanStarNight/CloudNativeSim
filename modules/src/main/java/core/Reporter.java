@@ -109,8 +109,8 @@ public class Reporter {
         at.addRule();
 //        at.addRow("Total Time", CloudNativeSim.clock());
         at.addRow("Total Requests", totalRequests);
-        at.addRow("Failed Requests", failedRequests);
-        at.addRow("Failure Rate", dft.format(failedRequests) + "%");
+//        at.addRow("Failed Requests", failedRequests);
+        at.addRow("Failure Rate", dft.format(failedRate) + "%");
         at.addRow("QPS", dft.format(avgQps));
         at.addRow("Average Delay", dft.format(totalDelay / totalRequests) + " seconds");
         at.addRow("SLO Violation Rate", dft.format((double) sloViolations / totalRequests * 100) + "%");
@@ -247,7 +247,14 @@ public class Reporter {
         String fileName = outputPath + resourceType + "_Usage_History.csv";
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            // 构建并写入标题行
             writer.write("Instance ID,Max,Min,Average");
+            if (!usageHistory.isEmpty()) {
+                List<UsageData> firstList = usageHistory.values().iterator().next();
+                for (int i = 1; i <= firstList.size(); i++) {
+                    writer.write("," + (i * schedulingInterval));
+                }
+            }
 
             // 写入每个实例的数据
             for (Map.Entry<String, List<UsageData>> entry : usageHistory.entrySet()) {
@@ -269,6 +276,7 @@ public class Reporter {
             throw e;  // 把异常再次抛出以确保调用者知晓发生了错误
         }
     }
+
 
     public static void writeResourceUsageToCSV(String outputPath) throws IOException {
         writeUsage(usageOfCpuHistory, "CPU", outputPath);

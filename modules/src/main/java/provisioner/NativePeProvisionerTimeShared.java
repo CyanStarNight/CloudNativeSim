@@ -32,7 +32,9 @@ public class NativePeProvisionerTimeShared extends NativePeProvisioner {
 	public void updateInstancePe(Instance instance, NativePe pe ,int share){
 
 		instance.setCurrentAllocatedPe(pe);
-		instance.setCurrentAllocatedMips(pe.getMips());
+//		System.out.println(pe);
+		if (pe == null) instance.setCurrentAllocatedMips(0);
+		else instance.setCurrentAllocatedMips(pe.getMips());
 		instance.setCurrentAllocatedCpuShare(share);
 
 	}
@@ -44,6 +46,7 @@ public class NativePeProvisionerTimeShared extends NativePeProvisioner {
 		int allocatedShare;
 		String instanceUid = instance.getUid();
 
+		// 如果已经分配
 		if(getPeTable().containsKey(instanceUid)){
 
 			allocatedPe = getPeTable().get(instanceUid).getLeft();
@@ -78,8 +81,6 @@ public class NativePeProvisionerTimeShared extends NativePeProvisioner {
 
 		return result;
 	}
-
-
 
 
 	@Override

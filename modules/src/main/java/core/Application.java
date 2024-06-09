@@ -13,7 +13,6 @@ import org.cloudbus.cloudsim.core.SimEvent;
 import policy.allocation.ServiceAllocationPolicy;
 import policy.cloudletScheduler.NativeCloudletScheduler;
 import policy.migration.InstanceMigrationPolicy;
-import policy.scaling.ServiceScalingPolicy;
 import entity.Request;
 import entity.API;
 import entity.Instance;
@@ -25,6 +24,8 @@ import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import policy.migration.InstanceMigrationPolicySimple;
+import policy.scaling.ServiceScalingPolicy;
 
 import static core.Exporter.*;
 import static core.Reporter.printEvent;
@@ -80,7 +81,6 @@ public class Application extends SimEntity {
      * The instances list.
      */
     protected List<Instance> instanceList = new ArrayList<>();
-    protected List<Instance> createdInstanceList = new ArrayList<>();
     /**
      * The created vm list.
      */
@@ -98,23 +98,17 @@ public class Application extends SimEntity {
      * The migration policy.
      */
     private InstanceMigrationPolicy instanceMigrationPolicy;
-    /**
-     * The scaling policy.
-     */
-    private ServiceScalingPolicy serviceScalingPolicy;
+
 
     private static Logger logger = LoggerFactory.getLogger(Application.class);
 
 
     public Application(String appName, int brokerId,
-                       ServiceAllocationPolicy serviceAllocationPolicy,
-                       InstanceMigrationPolicy instanceMigrationPolicy,
-                       ServiceScalingPolicy serviceScalingPolicy) {
+                       ServiceAllocationPolicy serviceAllocationPolicy) {
         super(appName);
         setBrokerId(brokerId);
         setServiceAllocationPolicy(serviceAllocationPolicy);
-        setInstanceMigrationPolicy(instanceMigrationPolicy);
-        setServiceScalingPolicy(serviceScalingPolicy);
+        setInstanceMigrationPolicy(new InstanceMigrationPolicySimple());
     }
 
 
@@ -128,8 +122,8 @@ public class Application extends SimEntity {
                     processAppCharacteristics(ev);
                     break;
 
-                case CloudNativeSimTag.STATE_CHECK:
-                    processStateCheck();
+                case CloudNativeSimTag.LOAD_BALANCE:
+                    processLoadBalance(ev);
                     break;
 
                 case CloudNativeSimTag.GET_NODES:
@@ -146,9 +140,9 @@ public class Application extends SimEntity {
                     processServiceAllocate(ev);
                     break;
 
-                case CloudNativeSimTag.SERVICE_SCALING:
-                    processServiceScaling(ev);
-                    break;
+//                case CloudNativeSimTag.SERVICE_SCALING:
+//                    processServiceScaling(ev);
+//                    break;
 
                 case CloudNativeSimTag.SERVICE_UPDATE: //TODO: update需要细化，是改什么资源？怎么改？
                     break;
@@ -237,14 +231,8 @@ public class Application extends SimEntity {
                     return match;
                 }).toList();
         setServiceList(instantiatedServices);
-        // 注入Policy的参数
-        for (Service service : getServiceList()) {
-            service.getCloudletScheduler().setInstanceList(service.getInstanceList());
-            service.getCloudletScheduler().setSchedulingInterval(schedulingInterval);
-        }
         // 画像完成后打印输出
         printEvent("The resource characteristics of the application has been completed.");
-        Reporter.printChains(getServiceGraph(), getApis());
         // 启动服务部署，落实资源画像
         send(getId(), 0.1, CloudNativeSimTag.SERVICE_ALLOCATE, serviceList);
     }
@@ -276,34 +264,6 @@ public class Application extends SimEntity {
         return result;
     }
 
-    private static volatile boolean servicesDeployed = false;
-
-    @SuppressWarnings("unchecked")
-    private void processServiceAllocate(SimEvent ev) {
-        // 初始化部署协议和待部署的服务列表
-        serviceAllocationPolicy.init(getVmList());
-        List<Service> servicesToAllocate = (List<Service>) ev.getData();
-        // 遍历并部署服务
-        for (Service service : servicesToAllocate) {
-            assert service.getStatus() == Status.Ready; // 实例化
-            serviceAllocationPolicy.allocateService(service); // 部署
-        }
-
-        // 提交已部署的实例
-        setCreatedInstanceList(serviceAllocationPolicy.getCreatedInstanceList());
-        // 部署完成后，启动周期检查，触发服务迁移和扩展
-        schedule(getId(), 5.0, CloudNativeSimTag.STATE_CHECK);
-        servicesDeployed = true;
-        send(0.1, CloudNativeSimTag.START_CLIENTS);
-    }
-
-
-    /**
-     * The requests arrival interval.
-     * 请求每隔一段时间一次性到达,设置为1,即每秒到达.
-     */
-    private int requestInterval = 1;
-
     private void startClients() {
         double startTime = generator.previousTime = CloudNativeSim.clock();
         double session = generator.timeLimit;
@@ -316,65 +276,116 @@ public class Application extends SimEntity {
             // 检查利用率, 确定是否需要scaling
             if (tick % schedulingInterval == 0){
                 schedule(tick, CloudNativeSimTag.UPDATE_USAGE);
-                schedule(tick, CloudNativeSimTag.SERVICE_SCALING);
+                schedule(tick, CloudNativeSimTag.LOAD_BALANCE);
             }
         }
     }
+
+    // 选择负载均衡的方式
+    private void processLoadBalance(SimEvent ev) {
+        // log
+//        printEvent("start scaling...");
+        List<Instance> newInstanceList = new ArrayList<Instance>();
+        // 判断实例是否需要scaling，所以遍历实例
+        for(Service service:serviceList){
+
+            ServiceScalingPolicy scalingPolicy = service.getServiceScalingPolicy();
+            //TODO: 如果实例跟服务一对多的关系怎么办？要避免重复伸缩
+            if(scalingPolicy.needScaling(service)) {
+                // scaling
+                scalingPolicy.scaling(service);
+                // 更新实例
+                List<Instance> replications = scalingPolicy.getReplications();
+                newInstanceList.addAll(replications);
+            }
+        }
+        setInstanceList(newInstanceList);
+        //TODO: 实例迁移
+    }
+
 
     private void updateUsage() {
 
         double currentTime = CloudNativeSim.clock();
-        for (Instance instance : getInstanceList()) {
-            String instanceUid = instance.getUid();
-            // 更新CPU使用历史记录
-            addUsageData(usageOfCpuHistory, instanceUid, currentTime,instance.getUsedShare());
-            // 更新RAM使用历史记录
-            addUsageData(usageOfRamHistory, instanceUid, currentTime,instance.getUsedRam());
-            // 更新接收带宽使用历史记录
+        for (Service service: getServiceList()){
+            for (Instance instance:service.getInstanceList()){
+                String instanceUid = instance.getUid();
+                // 更新CPU使用历史记录
+                addUsageData(usageOfCpuHistory, instanceUid, currentTime,instance.getUsedShare());
+                // 更新RAM使用历史记录
+                addUsageData(usageOfRamHistory, instanceUid, currentTime,instance.getUsedRam());
+                // 更新接收带宽使用历史记录
 //            addUsageData(usageOfReceiveBwHistory, instanceUid, currentTime,instance.getUsedShare());
-            // 更新传输带宽使用历史记录
+                // 更新传输带宽使用历史记录
 //            addUsageData(usageOfTransmitBwHistory, instanceUid, currentTime,instance.getUsedShare());
+            }
         }
         previousTime = currentTime;
     }
 
+
+    @SuppressWarnings("unchecked")
+    private void processServiceAllocate(SimEvent ev) {
+        // 初始化部署协议和待部署的服务列表
+        serviceAllocationPolicy.init(getVmList());
+        List<Service> servicesToAllocate = (List<Service>) ev.getData();
+        // 遍历并部署服务
+        for (Service service : servicesToAllocate) {
+            assert service.getStatus() == Status.Ready; // 实例化
+            serviceAllocationPolicy.allocateService(service); // 部署
+            List<Instance> createdInstances = service.getInstanceList();
+            // 注入Policy的参数
+
+            service.getCloudletScheduler().setSchedulingInterval(schedulingInterval);
+
+            service.getServiceScalingPolicy().setServiceAllocationPolicy(serviceAllocationPolicy);
+        }
+
+        // 提交已部署的实例
+        setInstanceList(serviceAllocationPolicy.getCreatedInstanceList());
+        send(0.1, CloudNativeSimTag.START_CLIENTS);
+
+    }
+
+
+    /**
+     * The requests arrival interval.
+     * 请求每隔一段时间一次性到达,设置为1,即每秒到达.
+     */
+    private int requestInterval = 1;
+
     private void processRequestGenerate(SimEvent ev) {
-        // 如果已经超过请求数量限制,不再生成
+
         int totalRequests = getRequestList().size();
-        if (totalRequests >= generator.numLimit) return;
-        // generate requests
-        List<Request> requestArrival = generator.generateRequests(CloudNativeSim.clock());
-        int arrivalRequests = requestArrival.size();
-        // 如果生成后超过数量限制, 删除请求
-        totalRequests += arrivalRequests;  // 更新总请求数量
-
-        // 检查是否超出了请求限制
-        if (totalRequests > generator.numLimit) {
-            long excess = totalRequests - generator.numLimit;  // 计算超过的数量
+        // 计算超量值
+        int excess = totalRequests - generator.numLimit;
+        // 仅当未超量时生成请求
+        if (excess < 0){
+            // 生成
+            List<Request> requestArrival = generator.generateRequests(CloudNativeSim.clock());
+            int arrivalRequests = requestArrival.size();
+            // 如果生成后超过数量限制, 删除请求
+            excess += arrivalRequests;
+            // 检查是否超出了请求限制
             if (excess > 0) {
-                // 从当前到达的请求中移除超出的部分
-                int startRemoveIndex = (int) Math.max(0, requestArrival.size() - excess);  // 确保不会有负索引
-                requestArrival.subList(startRemoveIndex, requestArrival.size()).clear();  // 直接在原列表上进行删除
-                totalRequests -= excess;  // 更新总请求数量
+                // 确保不会有负索引
+                int startRemoveIndex = Math.max(0, requestArrival.size() - excess);
+                // 直接在原列表上进行删除
+                requestArrival.subList(startRemoveIndex, requestArrival.size()).clear();
             }
+            // 绑定API
+            requestArrival.forEach(request -> request.getApi().getRequests().add(request));
+            // 提交
+            submitRequestList(requestArrival);
+            // 分发
+            send(0.2, CloudNativeSimTag.REQUEST_DISPATCH, requestArrival);
+            // 更新全局QPS
+            Exporter.updateGlobalQPSHistory(CloudNativeSim.clock(), requestArrival.size(), requestInterval);
+            // 更新每个API的QPS
+            Exporter.updateApiQpsHistory(CloudNativeSim.clock(), requestArrival, requestInterval);
+            // 打印输出
+            printByInterval(String.format("%d requests have arrived. (%d clients)", requestArrival.size(), generator.currentClients));
         }
-
-        submitRequestList(requestArrival);
-        // 请求开始分发到成功创建的实例上
-        send(0.2, CloudNativeSimTag.REQUEST_DISPATCH, requestArrival);
-        // 更新QPS
-        Exporter.updateQPSHistory(CloudNativeSim.clock(), requestArrival.size(), requestInterval);
-        Map<String, Integer> arrivals = new HashMap<>();
-        for (Request request : requestArrival) {
-            API api = request.getApi();
-            arrivals.merge(api.getName(), 1, Integer::sum);
-        }
-        for (String apiName : arrivals.keySet()) {
-            API api = API.apiMap.get(apiName);
-            api.updateQPSHistory(CloudNativeSim.clock(), arrivals.get(apiName), requestInterval);
-        }
-        // 打印输出
-        printByInterval(String.format("%d requests have arrived. (%d clients)", requestArrival.size(), generator.currentClients));
     }
 
 
@@ -417,8 +428,9 @@ public class Application extends SimEntity {
         // 执行cloudlet schedule
         NativeCloudletScheduler scheduler = service.getCloudletScheduler();
 
-        // 分布到合适的instance
-        scheduler.distributeCloudlets(cloudlets, service.getInstanceList());
+        // 接收
+        scheduler.receiveCloudlets(cloudlets, service.getInstanceList());
+        //TODO: 接收能不能和处理异步执行
 
         // 查询子服务
         List<Service> next = serviceGraph.getCalls(serviceName, apiName);
@@ -471,12 +483,12 @@ public class Application extends SimEntity {
         instanceMigrationPolicy.migrateInstance(instanceToMigrating);
     }
 
-    private void processServiceScaling(SimEvent ev) {
-
-        Service serviceToScaling = (Service) ev.getData();
-
-        serviceScalingPolicy.scalingService(serviceToScaling);
-    }
+//    private void processServiceScaling(SimEvent ev) {
+//
+//        Service serviceToScaling = (Service) ev.getData();
+//
+//        serviceToScaling.getServiceScalingPolicy().scaling();
+//    }
 
 
     private void processServiceDestroy(SimEvent ev) {
@@ -486,20 +498,6 @@ public class Application extends SimEntity {
     }
 
 
-    private void processStateCheck() {
-        // 检查service需不需要扩展
-        for (Service service : serviceList) {
-            if (serviceScalingPolicy.needScaling(service)) //检查SLO
-                sendNow(getId(), CloudNativeSimTag.SERVICE_SCALING, service);
-        }
-
-        // 检查instance需不需要迁移
-        for (Instance instance : instanceList) {
-            if (InstanceMigrationPolicy.needMigrate(instance))//检查load balance
-                sendNow(getId(), CloudNativeSimTag.INSTANCE_MIGRATE, instance);
-        }
-
-    }
 
 
     protected void processOtherEvent(SimEvent ev) {
@@ -583,6 +581,5 @@ public class Application extends SimEntity {
 
     public void submitSchedulingInterval(int schedulingInterval) {
         Exporter.schedulingInterval = schedulingInterval;
-        serviceScalingPolicy.setSchedulingInterval(schedulingInterval);
     }
 }

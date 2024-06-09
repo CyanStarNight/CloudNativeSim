@@ -7,10 +7,18 @@ import entity.NativeCloudlet;
 
 import java.util.*;
 
-public class NativeCloudletSchedulerDynamicWorkload extends NativeCloudletScheduler {
+public class NativeCloudletSchedulerBestEffort extends NativeCloudletScheduler {
 
-    public NativeCloudletSchedulerDynamicWorkload() {
+    public NativeCloudletSchedulerBestEffort() {
         super();
+    }
+
+    @Override
+    public void receiveCloudlets(List<NativeCloudlet> cloudlets, List<Instance> instanceList) {
+
+        addToWaitingQueue(cloudlets);
+
+
     }
 
     // Distribute cloudlets across instances
@@ -25,9 +33,10 @@ public class NativeCloudletSchedulerDynamicWorkload extends NativeCloudletSchedu
 
         for (NativeCloudlet nativeCloudlet : nativeCloudlets) {
             int randomIndex = random.nextInt(instanceList.size());
+            //TODO: 逻辑有误，不能是先分配再等待吧
             Instance selectedInstance = instanceList.get(randomIndex);
             nativeCloudlet.setInstanceUid(selectedInstance.getUid());
-            receiveCloudlets(nativeCloudlet);
+            addToWaitingQueue(nativeCloudlet);
 
             usedRam[randomIndex] += nativeCloudlet.getSize();
             counts[randomIndex]++;
@@ -37,6 +46,9 @@ public class NativeCloudletSchedulerDynamicWorkload extends NativeCloudletSchedu
             instanceList.get(i).setUsedRam(counts[i] > 0 ? (int) (usedRam[i] / counts[i]) : 0);
         }
     }
+
+
+
 
     // Move cloudlets from waiting to execution queue
     public void addToProcessingQueue() {

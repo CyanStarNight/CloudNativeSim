@@ -15,7 +15,7 @@ import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
-import policy.cloudletScheduler.NativeCloudletSchedulerDynamicWorkload;
+import policy.cloudletScheduler.NativeCloudletSchedulerBestEffort;
 import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
@@ -106,7 +106,7 @@ public class CapacityTest {
 
 
             // cloudlet scheduler
-            services.forEach(service -> service.setCloudletScheduler(new NativeCloudletSchedulerDynamicWorkload()));
+            services.forEach(service -> service.setCloudletScheduler(new NativeCloudletSchedulerBestEffort()));
 
             CloudNativeSim.startSimulation();
 

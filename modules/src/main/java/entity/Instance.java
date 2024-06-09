@@ -16,14 +16,15 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class Instance implements Cloneable{
-    // uid = prefix + type + id
+    // uid = prefix + id + type
     private String uid;
     // id
     private int id;
     // prefix
     private String prefix;
     // replicas
-    private List<Instance> replicas;
+    public ReplicaSet replicaSet;
+
     private int num_replicas;
     // app id
     private int appId;
@@ -109,9 +110,13 @@ public class Instance implements Cloneable{
 
     public Instance(int appId,  String prefix) {
         this.appId = appId;
-        this.id = InstanceUidMap.size();
         setPrefix(prefix);
+
+        initReplicaSet(prefix);
+        this.id = replicaSet.getReplicaCount();;
+        replicaSet.add(this);
         setUid();
+
         setInMigration(false);
         setCurrentAllocatedCpuShare(0);
         //为没有字段的instance设置默认值
@@ -123,9 +128,13 @@ public class Instance implements Cloneable{
 
     public Instance(int appId, String prefix, List<String> labels) {
         this.appId = appId;
-        this.id = InstanceUidMap.size();
         setPrefix(prefix);
+
+        initReplicaSet(prefix);
+        this.id = replicaSet.getReplicaCount();;
+        replicaSet.add(this);
         setUid();
+
         setInMigration(false);
         setCurrentAllocatedCpuShare(0);
 
@@ -137,11 +146,21 @@ public class Instance implements Cloneable{
         this.labels = labels;
     }
 
+    public void initReplicaSet(String prefix){
+
+        if (ReplicaSet.replicaSetMap.containsKey(prefix))
+            replicaSet = ReplicaSet.replicaSetMap.get(prefix);
+        else{
+            replicaSet = new ReplicaSet(prefix);
+            ReplicaSet.replicaSetMap.put(prefix, replicaSet);
+        }
+    }
+
     public void setUid() {
         // 删除之前的uid记录
         InstanceUidMap.remove(uid);
         // 添加新的
-        uid = getPrefix() +"-"+getType()+"-"+ getId();
+        uid = getPrefix()+"-"+ getId()+"-"+getType();
         InstanceUidMap.put(uid,this);
     }
 
@@ -189,8 +208,10 @@ public class Instance implements Cloneable{
     @Override
     public Instance clone() {
         try {
+            // 浅拷贝
             Instance clone = (Instance) super.clone();
-            clone.id = InstanceUidMap.size();
+            replicaSet.add(clone);
+            clone.id = replicaSet.indexReplica(clone);
             clone.setUid();
             return clone;
         } catch (CloneNotSupportedException e) {
@@ -198,8 +219,12 @@ public class Instance implements Cloneable{
         }
     }
 
+
     public void incrementTotalCloudlets() {
         setTotalCloudlets(totalCloudlets+1);
     }
 
+    public double getUtilizationOfCpu() {
+        return (double) getUsedShare() / getCurrentAllocatedCpuShare();
+    }
 }

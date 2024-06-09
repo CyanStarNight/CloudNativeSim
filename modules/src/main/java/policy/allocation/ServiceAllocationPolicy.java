@@ -24,6 +24,8 @@ public abstract class ServiceAllocationPolicy {
 
     protected List<Instance> createdInstanceList = new ArrayList<Instance>();
 
+//    private Map<String , Double> currentCPUNeed;
+
     public void init(List<? extends NativeVm> vmList){
         setVmList(vmList);
     }
@@ -34,6 +36,8 @@ public abstract class ServiceAllocationPolicy {
 
     /** Instance Allocation Policy*/
     public abstract boolean allocateVmForInstance(Instance instance);
+
+    public abstract boolean allocateVmForInstance(Instance instance,NativeVm vm);
 
     public abstract void deallocateVmForInstance(Instance instance);
 

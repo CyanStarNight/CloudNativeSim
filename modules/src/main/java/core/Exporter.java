@@ -1,9 +1,6 @@
 package core;
 
-import entity.API;
-import entity.Instance;
-import entity.NativeCloudlet;
-import entity.ServiceGraph;
+import entity.*;
 import extend.UsageData;
 import lombok.Getter;
 import lombok.Setter;
@@ -64,9 +61,21 @@ public class Exporter {
         failedRate = (double) failedRequests /totalRequests;
     }
 
-    public static void updateQPSHistory(double clock, int requestCount, int requestInterval) {
+    public static void updateGlobalQPSHistory(double clock, int requestCount, int requestInterval) {
         double qps = (double) requestCount / requestInterval;
         qpsHistory.add(qps);
+    }
+
+    public static void updateApiQpsHistory(double clock, List<Request> requestArrival, int requestInterval){
+        Map<String, Integer> arrivals = new HashMap<>();
+        for (Request request : requestArrival) {
+            API api = request.getApi();
+            arrivals.merge(api.getName(), 1, Integer::sum);
+        }
+        for (String apiName : arrivals.keySet()) {
+            API api = API.apiMap.get(apiName);
+            api.updateQPSHistory(CloudNativeSim.clock(), arrivals.get(apiName), requestInterval);
+        }
     }
 
 
