@@ -8,24 +8,53 @@ import entity.Instance;
 import entity.ReplicaSet;
 import entity.Service;
 import extend.NativeVm;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static core.Reporter.printEvent;
+
+@Getter
+@Setter
 public class HorizontalScalingPolicy extends ServiceScalingPolicy{
 
-    double cpuThreshold = 0.8;
+    double cpuThreshold = 0.95;
+
+    private List<ReplicaSet> scalingList = new ArrayList<>();
+    private List<ReplicaSet> failedList = new ArrayList<>();
+    private List<ReplicaSet> finishedList = new ArrayList<>();
+
 
     public HorizontalScalingPolicy() {
         super();
     }
 
+    public List<ReplicaSet> getReplicaSets(List<Instance> instanceList) {
+        List<ReplicaSet> replicaSets = new ArrayList<>();
+        for (Instance instance : instanceList) {
+            if(!replicaSets.contains(instance.getReplicaSet())){
+                replicaSets.add(instance.getReplicaSet());
+            }
+        }
+        return replicaSets;
+    }
+
+    public double getMinUtilization(ReplicaSet replicaSet) {
+        return replicaSet.getReplicas().stream().
+                mapToDouble(Instance::getUtilizationOfCpu).min().
+                orElse(0.0);
+    }
+
     @Override
     public boolean needScaling(Service service) {
         boolean flag = false;
-        for (Instance instance : service.getInstanceList()) {
-            if (instance.getUtilizationOfCpu() > cpuThreshold){
+        for (ReplicaSet replicaSet : getReplicaSets(service.getInstanceList())) {
+            if (getMinUtilization(replicaSet) > cpuThreshold){
                 // 放入scaling
-                getScalingList().add(instance);
+                getScalingList().add(replicaSet);
                 flag =  true;
             }
         }
@@ -35,26 +64,22 @@ public class HorizontalScalingPolicy extends ServiceScalingPolicy{
     @Override
     public void scaling(Service service) {//TODO: 缩容处理似乎有问题
 
-        for (Instance instance : getScalingList()) {
-            // 计算伸缩后的资源
-            int cpuUsed = instance.getUsedShare();
-            // 避免扩展
-            if (cpuUsed == 0) continue;
-            // 水平扩展
-            Instance replica =instance.clone(); // 自动加入replica中
-            // 尝试分配
-            assert replica.getRequests_share() == instance.getRequests_share();
+        for (ReplicaSet replicaSet : getScalingList()) {
 
-            if (getServiceAllocationPolicy().allocateVmForInstance(replica)){
-                getReplications().add(replica);
-                service.getInstanceList().add(replica);
-                System.out.println(replica.getCurrentAllocatedMips());
+            // 水平扩展
+            Instance newReplica = replicaSet.replicate(); // 自动加入replica中
+            // 判断能否扩展
+            if (getServiceAllocationPolicy().allocateVmForInstance(newReplica)){
+                getReplications().add(newReplica);
+                service.getInstanceList().add(newReplica);
+                printEvent(newReplica.getPrefix() + " has been horizontally scaled.");
             }
+            // 否则删除副本
             else {
-                getFailedList().add(replica);
+                getFailedList().add(replicaSet);
+                Instance.deleteInstance(newReplica);
             }
-            getFinishedList().add(replica);
-//            if (flag) printEvent(instance.getPrefix() + " has been horizontally scaled.);
+            getFinishedList().add(replicaSet);
         }
         getScalingList().removeAll(getFinishedList());
         getFinishedList().clear();

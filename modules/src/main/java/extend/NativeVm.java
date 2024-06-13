@@ -69,14 +69,14 @@ public class NativeVm extends Vm {
     public boolean instanceCreate(Instance instance){
 
         if (getSize() < instance.getSize()) {
-            Log.printLine("\n[InstanceScheduler.instanceCreate] Allocation of "+ instance.getType()+" #" + instance.getId() + " to Vm #" + getId()
+            Log.printLine("\nAllocation of "+ instance.getType()+" #" + instance.getRid() + " to Vm #" + getId()
                     + " failed by storage");
             instance.setStatus(Status.Denied);
             return false;
         }
 
         if (!getNativeRamProvisioner().allocateRamForInstance(instance, instance.getRequests_ram())) {
-            Log.printLine("\n[InstanceScheduler.instanceCreate] Allocation of "+ instance.getType()+" #" + instance.getId() + " to Vm #" + getId()
+            Log.printLine("\nAllocation of "+ instance.getType()+" #" + instance.getRid() + " to Vm #" + getId()
                     + " failed by RAM");
             instance.setStatus(Status.Denied);
             return false;
@@ -84,7 +84,7 @@ public class NativeVm extends Vm {
 
         //TODO: bw分配
 //        if (!getVmBwProvisioner().allocateBwForInstance(instance, instance.getReceive_bw(), instance.getTransmit_bw())) {
-//            Log.printLine("\n[InstanceScheduler.instanceCreate] Allocation of "+ instance.getType()+" #" + instance.getId() + " to Vm #" + getId()
+//            Log.printLine("\n Allocation of "+ instance.getType()+" #" + instance.getId() + " to Vm #" + getId()
 //                    + " failed by BW");
 //            getNativeRamProvisioner().deallocateRamForInstance(instance);
 //            instance.setStatus(Status.Denied);
@@ -93,7 +93,7 @@ public class NativeVm extends Vm {
 
 
         if (!getNativePeProvisioner().allocatePeForInstance(instance, instance.getRequests_share())) {
-            Log.printLine("\n[InstanceScheduler.instanceCreate] Allocation of "+ instance.getType()+" #" + instance.getId() + " to Vm #" + getId()
+            Log.printLine("\nAllocation of "+ instance.getType()+" #" + instance.getRid() + " to Vm #" + getId()
                     + " failed by PE");
             getNativeRamProvisioner().deallocateRamForInstance(instance);
             getVmBwProvisioner().deallocateBwForInstance(instance);

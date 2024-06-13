@@ -62,4 +62,8 @@ public class Request {
     public String getApiName(){
         return api.name;
     }
+
+    public double getSLO(){
+        return api.sloThreshold;
+    }
 }

@@ -10,17 +10,21 @@ import java.util.*;
 public class Generator {
     public double previousTime;
     // final user number
-    public int finalClients = 1000;
+    public int finalClients = -1;
     // current user number
-    public int currentClients = 0;
+    public int currentClients = -1;
     // clients waiting to generate requests
     public List<Integer> clientsWaitingStatus = new ArrayList<>();
     // 用户增长速率
     public int spawnRate;
     // 请求间隔
     public int[] waitTimeSpan = new int[]{5, 15};
+    // 指定rps生成请求
+    public int finalRps = -1;
+    // 指定生成方式
+    public String generatorType = "Default";
     // 请求生成的时间限制,默认无限制
-    public int timeLimit = Integer.MAX_VALUE;
+    public double timeLimit = Integer.MAX_VALUE;
     // 请求生成数量的限制,默认无限制
     public int numLimit = Integer.MAX_VALUE;
     // API列表,每个API对象创建时会自动加入. 每个API有自己的权重
@@ -53,7 +57,7 @@ public class Generator {
     }
 
     /* 全参数*/
-    public Generator(List<API> APIs, int finalClients, int spawnRate, int[] waitTimeSpan, int timeLimit,  int meanLength, int stdDevLength) {
+    public Generator(List<API> APIs, int finalClients, int spawnRate, int[] waitTimeSpan, int timeLimit, int meanLength, int stdDevLength) {
         this.finalClients = finalClients;
         this.spawnRate = spawnRate;
         this.waitTimeSpan = waitTimeSpan;
@@ -67,10 +71,9 @@ public class Generator {
         initializeCumulativeWeights();
     }
 
-    public Generator(List<API> APIs, int finalClients, int spawnRate, int[] waitTimeSpan, int timeLimit, float meanSize, float stdDevSize) {
-        this.finalClients = finalClients;
-        this.spawnRate = spawnRate;
-        this.waitTimeSpan = waitTimeSpan;
+    public Generator(List<API> APIs, int finalRps, int timeLimit, float meanSize, float stdDevSize) {
+        this.finalRps = finalRps;
+        this.generatorType = "ByRps";
         this.timeLimit = timeLimit;
         this.APIs = APIs;
         this.meanSize = meanSize;
@@ -104,6 +107,17 @@ public class Generator {
     }
 
     public List<Request> generateRequests(double clock) {
+        // 判断选择哪个请求生成方式
+        switch (generatorType){
+            case "ByRps":
+                return generateRequestsWithRps(clock);
+            default:
+                return generateRequestsWithClients(clock);
+        }
+    }
+
+    public List<Request> generateRequestsWithClients(double clock) {
+        assert finalClients > 0;
         List<Request> generateList = new ArrayList<>();
         // 整数时间间隔
         int gap = (int) (clock - previousTime);
@@ -148,6 +162,25 @@ public class Generator {
         return generateList;
     }
 
+    public List<Request> generateRequestsWithRps(double clock) {
+        assert finalRps > 0;
+        List<Request> generateList = new ArrayList<>();
+        // 整数时间间隔
+        double gap = clock - previousTime;
+        // generate requests
+        for (int i = 0; i < gap * finalRps; i++) {
+            // 根据API权重随机选择一个API
+            API selectedAPI = getRandomAPI();
+            assert selectedAPI != null;
+            // 创建新的请求
+            Request newRequest = new Request(selectedAPI, clock);
+            generateList.add(newRequest);
+        }
+
+        // 更新previous time
+        previousTime = clock;
+        return generateList;
+    }
 
 
     public API getRandomAPI() {
@@ -182,4 +215,6 @@ public class Generator {
         System.out.println("public int meanLength = " + meanLength + ";");
         System.out.println("public int stdDevLength = " + stdDevLength + ";");
     }
+
+
 }

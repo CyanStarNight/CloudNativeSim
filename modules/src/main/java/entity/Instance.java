@@ -4,6 +4,7 @@
 
 package entity;
 
+import extend.UsageData;
 import lombok.Getter;
 import lombok.Setter;
 import extend.NativePe;
@@ -11,25 +12,20 @@ import extend.NativeVm;
 import core.Status;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
 public class Instance implements Cloneable{
-    // uid = prefix + id + type
     private String uid;
-    // id
-    private int id;
+    // replica index
+    private int rid;
     // prefix
     private String prefix;
-    // replicas
-    public ReplicaSet replicaSet;
-
-    private int num_replicas;
-    // app id
-    private int appId;
     // type of instance
     public final String type = "Instance";
+    // app id
+    private int appId;
+
     // status of instance
     public Status status = Status.Ready;
     // one service n pods
@@ -90,60 +86,52 @@ public class Instance implements Cloneable{
     // migration status
     private boolean inMigration;
 
-    // previous  used to update utilizationHistory
-    private int previousTime;
-    // uid -> instance
-    public static Map<String, Instance> InstanceUidMap = new HashMap<>();
 
-    public static Instance getInstance(String uid){
-        return InstanceUidMap.get(uid);
+    // uid -> instance
+    public static Map<String, Instance> instanceUidMap = new HashMap<>();
+    // replicas
+    public ReplicaSet replicaSet;
+
+
+    public void order(int appId) {
+        // app id
+        this.appId = appId;
+        // uid
+        uid = UUID.randomUUID().toString();
+        instanceUidMap.put(uid,this);
+        // rid
+        this.rid = replicaSet.getReplicaCount();;
+        replicaSet.add(this);
     }
-    public static List<Instance> getAllInstances(){
-        return (List<Instance>) InstanceUidMap.values();
-    }
-    public static List<Instance> matchInstancesWithLabels(Service service){
-        List<String> labels = service.getLabels();
-        return InstanceUidMap.values().stream().
-                filter(instance -> instance.getLabels().stream().
-                        anyMatch(labels::contains)).collect(Collectors.toList());
-    }
+
 
     public Instance(int appId,  String prefix) {
-        this.appId = appId;
-        setPrefix(prefix);
-
+        this.prefix = prefix;
+        // 0.初始化replicaSet
         initReplicaSet(prefix);
-        this.id = replicaSet.getReplicaCount();;
-        replicaSet.add(this);
-        setUid();
-
-        setInMigration(false);
-        setCurrentAllocatedCpuShare(0);
-        //为没有字段的instance设置默认值
+        // 1.编号，设置各个id
+        order(appId);
+        // 2.设置默认值
         setRequests_share(100);
         setRequests_ram(200);
         setLimits_share(1024);
         setLimits_ram(1000);
+        setInMigration(false);
 
     }
 
     public Instance(int appId, String prefix, List<String> labels) {
-        this.appId = appId;
-        setPrefix(prefix);
-
+        this.prefix = prefix;
+        // 0.初始化replicaSet
         initReplicaSet(prefix);
-        this.id = replicaSet.getReplicaCount();;
-        replicaSet.add(this);
-        setUid();
-
-        setInMigration(false);
-        setCurrentAllocatedCpuShare(0);
-
-        //为没有字段的instance设置默认值
+        // 1.编号，设置各个id
+        order(appId);
+        // 2.设置默认值
         setRequests_share(100);
         setRequests_ram(200);
         setLimits_share(1024);
         setLimits_ram(1000);
+        setInMigration(false);
         this.labels = labels;
     }
 
@@ -157,31 +145,23 @@ public class Instance implements Cloneable{
         }
     }
 
-    public void setUid() {
-        // 删除之前的uid记录
-        InstanceUidMap.remove(uid);
-        // 添加新的
-        uid = getPrefix()+"-"+ getId()+"-"+getType();
-        InstanceUidMap.put(uid,this);
-    }
-
-
-    public String getName() {
-        return getUid();
-    }
 
     // 添加或增加 RAM 使用量的方法
-    public void addUsedRam(int ram) {
-        this.usedRam += ram;
+    public void addUsedRam(double ram) {
+        this.usedRam += (int) Math.ceil(ram);
+    }
+
+    public void subUsedRam(double ram){
+        this.usedRam -= (int) Math.ceil(ram);
     }
 
     // 添加或增加 share 使用量的方法
-    public void addUsedShare(int share) {
-        this.usedShare += share;
+    public void addUsedShare(double share) {
+        setUsedShare(usedShare += (int) Math.ceil(share));
     }
 
-    public void subUsedShare(int share) {
-        this.usedShare -= share;
+    public void subUsedShare(double share) {
+        setUsedShare(usedShare -= (int) Math.ceil(share));
     }
 
 
@@ -200,9 +180,21 @@ public class Instance implements Cloneable{
         this.usedTransmitBw += bw;
     }
 
+    public void clearUsage(){
+        this.usedRam = 0;
+        this.usedShare = 0;
+        this.usedMips = 0;
+        this.usedReceiveBw = 0;
+        this.usedTransmitBw = 0;
+    }
+
+    public String getName() {
+        return prefix+'-'+rid;
+    }
+
     public String toString() {
         return "type:"+getType()+", "
-                +"name: "+ getPrefix()
+                +"name: "+ getName()
                 +", uid: "+getUid();
     }
 
@@ -211,9 +203,8 @@ public class Instance implements Cloneable{
         try {
             // 浅拷贝
             Instance clone = (Instance) super.clone();
-            replicaSet.add(clone);
-            clone.id = replicaSet.indexReplica(clone);
-            clone.setUid();
+            clone.order(appId);
+            clone.clearUsage();
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
@@ -229,5 +220,29 @@ public class Instance implements Cloneable{
         return (double) getUsedShare() / getCurrentAllocatedCpuShare();
     }
 
+    public double getFreeShare(){
+        return getCurrentAllocatedCpuShare() - getUsedShare();
+    }
 
+    public static Instance getInstance(String uid){
+        return instanceUidMap.get(uid);
+    }
+
+    public static List<Instance> getAllInstances(){
+        return (List<Instance>) instanceUidMap.values();
+    }
+
+    public void releaseCloudlet(NativeCloudlet cl) {
+        subUsedShare(cl.getShare());
+        subUsedRam(cl.getSize());
+        //TODO: 如何释放带宽？
+        getProcessingCloudlets().remove(cl);
+        getCompletionCloudlets().add(cl);
+    }
+
+    public static void deleteInstance(Instance instance) {
+        instanceUidMap.remove(instance.getUid());
+        instance.getReplicaSet().remove(instance);
+        instance.serviceList.forEach(s -> Service.getService(s).removeInstance(instance));
+    }
 }

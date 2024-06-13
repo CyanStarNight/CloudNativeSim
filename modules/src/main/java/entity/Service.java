@@ -9,10 +9,8 @@ import java.util.*;
 import core.Generator;
 import lombok.*;
 import core.Status;
-import org.cloudbus.cloudsim.UtilizationModelFull;
 import policy.cloudletScheduler.NativeCloudletScheduler;
 import policy.scaling.ServiceScalingPolicy;
-import policy.scaling.VerticalScalingPolicy;
 
 
 /**
@@ -77,10 +75,7 @@ public class Service{
         return getInstanceList().size();
     }
 
-    public static List<Instance> matchInstancesWithLabels(String serviceName){
-        Service service = serviceNameMap.get(serviceName);
-        return Instance.matchInstancesWithLabels(service);
-    }
+
 
     public ChainNode getChainNode(){
         return ChainNode.serviceNodeMap.get(getName());
@@ -114,7 +109,7 @@ public class Service{
     public List<NativeCloudlet> createCloudlets(Request request, Generator generator) {
         List<NativeCloudlet> nativeCloudlets = new ArrayList<>();
         // 获取source服务在这条chain上的端点数量(出度+本身)
-        int endpoints = getEndpoints(request) + 1;
+        int endpoints = getEndpoints(request) + 2;
         // 创建cloudlets
         for (int i =0 ;i < endpoints; i++){
             NativeCloudlet nativeCloudlet = new NativeCloudlet(request, getName(), generator.generateCloudletLength());
@@ -142,8 +137,13 @@ public class Service{
         return "Service #" + getName();
     }
 
-    public void deleteInstance(Instance instance) {
+    public void removeInstance(Instance instance) {
         instanceList.remove(instance);
+    }
+
+    public void setCloudletScheduler(NativeCloudletScheduler cloudletScheduler) {
+        this.cloudletScheduler = cloudletScheduler;
+        cloudletScheduler.setService(this);
     }
 
 

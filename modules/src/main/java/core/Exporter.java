@@ -13,11 +13,14 @@ import java.util.Map;
 @Getter
 @Setter
 public class Exporter {
-    // Total time for handling requests
+    // Total time for running
     public static double totalTime;
+    public static double arrivalSession;
     public static int schedulingInterval = 10;
     // Graph representing the service structure
-    public static ServiceGraph serviceGraph;
+    public static ServiceGraph finalServiceGraph;
+    public static List<Service> finalServiceList;
+    public static List<Instance> finalInstanceList;
     // Count numbers
     public static int totalRequests = 0;
     public static int totalResponses = 0;
@@ -25,8 +28,8 @@ public class Exporter {
     public static int failedRequests = 0;
     public static double failedRate = 0;
     public static int sloViolations = 0;
-    public static double avgQps;
-    public static List<Double> qpsHistory = new ArrayList<>();
+    public static double avgRps;
+    public static List<Double> rpsHistory = new ArrayList<>();
 
     public static int totalVms = 0;
     public static int totalCloudlets = 0;
@@ -35,12 +38,26 @@ public class Exporter {
 
     // Previous time point for exporting data
     public static double previousTime = 0.0;
-    // instance id ->  utilization
+    // instance id -> (currentTime,usage)
     public static Map<String, List<UsageData>> usageOfCpuHistory = new HashMap<>();
     public static Map<String, List<UsageData>> usageOfRamHistory = new HashMap<>();
     public static Map<String, List<UsageData>> usageOfReceiveBwHistory = new HashMap<>();
     public static Map<String, List<UsageData>> usageOfTransmitBwHistory = new HashMap<>();
 
+    public static void updateUsageHistory(Instance instance, double currentTime, double session) {
+
+        String instanceUid = instance.getUid();
+        // 更新或者初始化CPU使用历史记录
+        updateUsageData(usageOfCpuHistory, instanceUid, currentTime,session,instance.getUsedShare());
+        // 更新或者初始化RAM使用历史记录
+        updateUsageData(usageOfRamHistory, instanceUid, currentTime,session,instance.getUsedRam());
+        // 更新接收带宽使用历史记录
+//            addUsageData(usageOfReceiveBwHistory, instanceUid, currentTime,instance.getUsedShare());
+        // 更新传输带宽使用历史记录
+//            addUsageData(usageOfTransmitBwHistory, instanceUid, currentTime,instance.getUsedShare());
+
+        previousTime = currentTime;
+    }
 
     public static void getApiStatistics(List<API> apis) {
         totalDelay = 0.0;
@@ -52,18 +69,17 @@ public class Exporter {
             totalDelay += api.getAverageDelay()*num;
             sloViolations += api.getSloViolations();
         }
-        avgQps = qpsHistory.stream()
-                .mapToDouble(Double::doubleValue)
-                .average()
-                .orElse(0.0);
+
+        avgRps = totalRequests / arrivalSession;
 
         failedRequests = totalRequests - totalResponses;
+
         failedRate = (double) failedRequests /totalRequests;
     }
 
-    public static void updateGlobalQPSHistory(double clock, int requestCount, int requestInterval) {
-        double qps = (double) requestCount / requestInterval;
-        qpsHistory.add(qps);
+    public static void updateGlobalRPSHistory(double clock, int requestCount, int requestInterval) {
+        double rps = (double) requestCount / requestInterval;
+        rpsHistory.add(rps);
     }
 
     public static void updateApiQpsHistory(double clock, List<Request> requestArrival, int requestInterval){
@@ -79,13 +95,13 @@ public class Exporter {
     }
 
 
-    public static void addUsageData(Map<String, List<UsageData>> historyMap, String instanceId, double timestamp, double usage) {
+    public static void updateUsageData(Map<String, List<UsageData>> historyMap, String instanceId, double timestamp,double session, double usage) {
         List<UsageData> usageDataList = historyMap.get(instanceId);
         if (usageDataList == null) {
             usageDataList = new ArrayList<>();
             historyMap.put(instanceId, usageDataList);
         }
-        usageDataList.add(new UsageData(timestamp, usage));
+        usageDataList.add(new UsageData(timestamp,session, usage));
     }
 
     public static void exportUsageHistory(String instanceId){

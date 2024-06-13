@@ -17,9 +17,9 @@ public class API {
     public double weight = 1.0;
     protected List<Service> chain = new ArrayList<>();
     public double failedNum;
-    public double sloThreshold = 7.0;
+    public double sloThreshold = 15.0;
     // qps history
-    public List<Double> qpsHistory = new ArrayList<>();
+    public List<Double> rpsHistory = new ArrayList<>();
 
     public API(String name) {
         validateName(name);
@@ -49,11 +49,11 @@ public class API {
 
     public void updateQPSHistory(double clock, int requestCount, int requestInterval) {
         double qps = (double) requestCount / requestInterval;
-        qpsHistory.add(qps);
+        rpsHistory.add(qps);
     }
 
-    public double getAvgQps() {
-        return qpsHistory.stream()
+    public double getAvgRps() {
+        return rpsHistory.stream()
                 .mapToDouble(Double::doubleValue)
                 .average()
                 .orElse(0.0);

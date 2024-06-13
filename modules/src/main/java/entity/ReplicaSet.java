@@ -26,6 +26,7 @@ public class ReplicaSet {
         this.prefix = prefix;
     }
 
+
     public int indexReplica(Instance instance){
         return replicas.indexOf(instance);
     }
@@ -42,4 +43,10 @@ public class ReplicaSet {
         return replicas.size();
     }
 
+    public Instance replicate() {
+        assert !getReplicas().isEmpty();
+        Instance behavior = getReplicas().get(0);
+
+        return behavior.clone();
+    }
 }

@@ -128,7 +128,7 @@ public class ServiceAllocationPolicySimple extends ServiceAllocationPolicy {
 
                 if (allocateVmForInstance(instance, vm)) {
                     result = true;
-                    Reporter.printEvent(instance.getType()+" #"+instance.getId()+" has been allocated in Vm #"+vm.getId());
+                    Reporter.printEvent(instance.getType()+" #"+instance.getName()+" has been allocated in Vm #"+vm.getId());
                     break;
                 }
             }

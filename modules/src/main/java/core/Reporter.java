@@ -29,6 +29,12 @@ public class Reporter {
 
     public static String outputPath;
 
+    public static String ifPrintNone(double num){
+        DecimalFormat df = new DecimalFormat("0.00");
+        if (num < 0 ) return "None";
+        else return df.format(num);
+    }
+
     public static void printHeader(String header) {
         String header_prefix = "============================";
         System.out.println("\n" + header_prefix + header + header_prefix + "\n");
@@ -88,7 +94,7 @@ public class Reporter {
         at.addRow("Total Requests ", numRequests);
 //        at.addRow("Failed Requests", failedRequests);
 //        at.addRow("Failure Rate", dft.format(failRate) + "%");
-        at.addRow("QPS ", dft.format(api.getAvgQps()));
+        at.addRow("RPS ", dft.format(api.getAvgRps()));
         at.addRow("Average Delay ", dft.format(api.getAverageDelay()) + " seconds");
         at.addRow("SLO Violations Rate   ", dft.format((double) api.getSloViolations() / numRequests * 100) + "%");
         at.addRule();
@@ -111,7 +117,7 @@ public class Reporter {
         at.addRow("Total Requests", totalRequests);
 //        at.addRow("Failed Requests", failedRequests);
         at.addRow("Failure Rate", dft.format(failedRate) + "%");
-        at.addRow("QPS", dft.format(avgQps));
+        at.addRow("RPS", dft.format(avgRps));
         at.addRow("Average Delay", dft.format(totalDelay / totalRequests) + " seconds");
         at.addRow("SLO Violation Rate", dft.format((double) sloViolations / totalRequests * 100) + "%");
         at.addRule();
@@ -138,7 +144,7 @@ public class Reporter {
                         api.getRequests().size(),
                         dft.format(api.getAverageDelay()),
                         dft.format((double) api.getSloViolations() / api.getRequests().size() * 100) + "%",
-                        dft.format(api.getAvgQps())));
+                        dft.format(api.getAvgRps())));
             }
 
             // Write overall statistics
@@ -146,7 +152,7 @@ public class Reporter {
             writer.write(String.format("Total Requests,%d,,,\n", totalRequests));
             writer.write(String.format("Average Delay (seconds),,%s,,\n", dft.format(totalDelay / totalRequests)));
             writer.write(String.format("Overall SLO Violation Rate,,,%s,\n", dft.format((double) sloViolations / totalRequests * 100) + "%"));
-            writer.write(String.format("Average QPS,,,,%s\n", dft.format(avgQps)));
+            writer.write(String.format("Average RPS,,,,%s\n", dft.format(avgRps)));
         }
     }
 
@@ -199,7 +205,6 @@ public class Reporter {
     }
 
     public static void printResourceUsage() {
-        DecimalFormat df = new DecimalFormat("0.00");
 
         AsciiTable at = new AsciiTable();
         at.getContext().setGridTheme(TA_GridThemes.FULL);
@@ -207,20 +212,21 @@ public class Reporter {
 
         // 打印标题
         at.addRule();
-        at.addRow("Instance ID", "CPU Average", "RAM Average");  // 只显示平均值
+        at.addRow(" Instance Name", "CPU Usage Average", "RAM Usage Average");  // 只显示平均值
         at.addRule();
 
 
-        for (String instanceUid : usageOfCpuHistory.keySet()) {
+        for (Instance instance : finalInstanceList) {
 
+            String instanceUid = instance.getUid();
             // 获取CPU和RAM的平均使用率
             double cpuAverage = getAverageUsage(usageOfCpuHistory.get(instanceUid));
             double ramAverage = getAverageUsage(usageOfRamHistory.get(instanceUid));
 //            double rbwAverage = getAverageUsage(usageOfReceiveBwHistory.get(instanceUid));
 //            double tbwAverage = getAverageUsage(usageOfTransmitBwHistory.get(instanceUid));
             // 添加行数据
-            at.addRow(instanceUid, df.format(cpuAverage), df.format(ramAverage)
-//                    , df.format(rbwAverage), df.format(tbwAverage)
+            at.addRow(instance.getName(), ifPrintNone(cpuAverage), ifPrintNone(ramAverage)
+//                    , ifPrintNone(rbwAverage), ifPrintNone(tbwAverage)
             );
             at.addRule();
         }
@@ -228,8 +234,27 @@ public class Reporter {
         System.out.println(at.render());
     }
 
+
+
+    // 计算指定instance的平均利用率：因为用量历史是随着stage更新的，计算平均值需要乘以时间再除以总时长
     private static double getAverageUsage(List<UsageData> usageDataList) {
-        return usageDataList.stream().mapToDouble(UsageData::getUsage).average().orElse(0.0);
+        // 代表这个实例从未被使用过
+        if(usageDataList == null || usageDataList.isEmpty()) return -1;
+
+        double sum = 0;
+        double totalSession = 0;
+        for (UsageData data : usageDataList) {
+            sum += data.getSession() * data.getUsage();
+            totalSession += data.getSession();
+        }
+
+        System.out.println(totalSession);
+
+        UsageData last = usageDataList.get(usageDataList.size() - 1);
+        UsageData first = usageDataList.get(0);
+        double processSession = last.getTimestamp() + last.getSession() - first.getTimestamp();
+        return sum / processSession;
+//        return sum / usageDataList.size();
     }
 
 

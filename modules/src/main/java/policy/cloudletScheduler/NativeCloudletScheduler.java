@@ -6,6 +6,7 @@ package policy.cloudletScheduler;
 
 import core.Status;
 import entity.Instance;
+import entity.Service;
 import lombok.Getter;
 import lombok.Setter;
 import entity.NativeCloudlet;
@@ -18,6 +19,8 @@ public abstract class NativeCloudletScheduler{
 
     /** The previous time. */
     protected double previousTime;
+
+    private Service service;
     // instance uid -> cloudlets
     protected Map<String, Integer> usedShareNumMap = new HashMap<>();
 
@@ -29,11 +32,8 @@ public abstract class NativeCloudletScheduler{
     /** The cloudlet exec list. */
     protected Queue<NativeCloudlet> execQueue = new LinkedList<>();
 
-    // 这里是默认值,可以在子类中覆盖
-    double waitStep = 0.5;
-
     /** The cloudlet paused list. */
-    protected Queue<NativeCloudlet> pausedQueue = new LinkedList<>();
+    protected List<NativeCloudlet> failedQueue = new LinkedList<>();
 
     /** The cloudlet finished list. */
     protected List<NativeCloudlet> finishedList = new ArrayList<>();
@@ -44,7 +44,7 @@ public abstract class NativeCloudletScheduler{
     }
 
 
-    public abstract void receiveCloudlets(List<NativeCloudlet> cloudlets,List<Instance> instanceList);
+    public abstract void receiveCloudlets(List<NativeCloudlet> cloudlets);
 
     public void addToWaitingQueue(NativeCloudlet nativeCloudlet){
         waitingQueue.add(nativeCloudlet);
@@ -56,12 +56,13 @@ public abstract class NativeCloudletScheduler{
         cloudlets.forEach(c -> c.setStatus(Status.Waiting));
     }
 
+    public abstract void schedule();
     public abstract boolean distributeCloudlet(NativeCloudlet nativeCloudlet, List<Instance> instanceList);
 
 
     public abstract void addToProcessingQueue(NativeCloudlet cloudlet);
 
-    public void addToProcessingQueue(List<NativeCloudlet> cloudlets){
+    private void addToProcessingQueue(List<NativeCloudlet> cloudlets){
         cloudlets.forEach(this::addToProcessingQueue);
     }
 

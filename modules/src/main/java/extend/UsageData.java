@@ -10,10 +10,12 @@ import lombok.Setter;
 @Getter @Setter
 public class UsageData {
     private double timestamp;
+    private double session;
     private double usage;
 
-    public UsageData(double timestamp, double usage) {
+    public UsageData(double timestamp, double session, double usage) {
         this.timestamp = timestamp;
+        this.session = session;
         this.usage = usage;
     }
 

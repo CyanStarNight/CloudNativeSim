@@ -17,9 +17,9 @@ import extend.NativeBroker;
 import extend.NativeVm;
 import policy.allocation.ServiceAllocationPolicySimple;
 import policy.cloudletScheduler.NativeCloudletSchedulerBestEffort;
-import policy.cloudletScheduler.NativeCloudletSchedulerSolidShare;
-import policy.migration.InstanceMigrationPolicySimple;
+import policy.cloudletScheduler.NativeCloudletSchedulerSimple;
 import policy.scaling.HorizontalScalingPolicy;
+import policy.scaling.NoneScalingPolicy;
 import policy.scaling.VerticalScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
 import provisioner.NativeRamProvisionerSimple;
@@ -49,7 +49,7 @@ public class SockShopExample{
     static int initializedClients = 100;
     static int numLimit = 10000;
     // 设定任务平均大小,下面两种表述是等价的:
-    static int meanLength = 25; // 单位是百万条指令(M),任务规模 = 4*length
+    static int meanLength = 10; // 单位是百万条指令(M),任务规模 = 4*length
     static int stdDevLength = 10;
     
 
@@ -88,13 +88,13 @@ public class SockShopExample{
             List<Service> services = graph.getAllServices();
             // set policy
             for (Service service : services){
-                service.setCloudletScheduler(new NativeCloudletSchedulerSolidShare());
-                service.setServiceScalingPolicy(new VerticalScalingPolicy());
+                service.setCloudletScheduler(new NativeCloudletSchedulerSimple());
+                service.setServiceScalingPolicy(new NoneScalingPolicy());
             }
             app.submitServiceList(services);
             // generator
             Generator generator = new Generator(apis,finalClients, spawnRate, waitTimeSpan, timeLimit,meanLength,stdDevLength);
-            generator.setNumLimit(numLimit);
+//            generator.setNumLimit(numLimit);
 //            generator.setCurrentClients(initializedClients);
             app.submitGenerator(generator);
             // instance
@@ -108,7 +108,7 @@ public class SockShopExample{
             // report
             Reporter.outputPath = outputPath;
 //            Reporter.printChains(graph, apis);
-            Reporter.printGlobalDependencies(graph);
+//            Reporter.printGlobalDependencies(graph);
 //            apis.forEach(Reporter::printApiStatistics);
             Reporter.printApiStatistics(apis);
             Reporter.printResourceUsage();

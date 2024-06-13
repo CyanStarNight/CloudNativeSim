@@ -8,15 +8,24 @@ import entity.Instance;
 import entity.NativeCloudlet;
 import entity.Service;
 import extend.NativeVm;
+import lombok.Getter;
+import lombok.Setter;
 import policy.allocation.ServiceAllocationPolicy;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static core.Reporter.printEvent;
 
+@Getter
+@Setter
 public class VerticalScalingPolicy extends ServiceScalingPolicy{
 
     double cpuThreshold = 0.8;
+
+    private List<Instance> scalingList = new ArrayList<>();
+    private List<Instance> failedList = new ArrayList<>();
+    private List<Instance> finishedList = new ArrayList<>();
 
     public VerticalScalingPolicy() {
         super();
@@ -56,7 +65,6 @@ public class VerticalScalingPolicy extends ServiceScalingPolicy{
                 selectedVm = instance.getVm();
             // 需要重新分配vm
             else {
-                setVmList(getServiceAllocationPolicy().getVmList());
                 for (NativeVm vm : getVmList())
                     if (vm.getMaxFreeShare() >= cpuRequests) selectedVm = vm;
             }
@@ -72,12 +80,13 @@ public class VerticalScalingPolicy extends ServiceScalingPolicy{
 
             if (flag) {
                 getFinishedList().add(instance);
+                printEvent("the share of " + instance.getName() + " has been vertically scaled to "+cpuRequests);
             }
-//            if (flag) printEvent("the share of " + instance.getName() + " has been vertically scaled to "+cpuRequests);
         }
 
         getScalingList().removeAll(getFinishedList());
         getFinishedList().clear();
 
     }
+
 }

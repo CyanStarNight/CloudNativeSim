@@ -14,9 +14,11 @@ import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
-import policy.cloudletScheduler.NativeCloudletSchedulerSolidShare;
+import policy.cloudletScheduler.NativeCloudletSchedulerBestEffort;
+import policy.cloudletScheduler.NativeCloudletSchedulerSimple;
 import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
+import policy.scaling.NoneScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
 import provisioner.NativeRamProvisionerSimple;
 import provisioner.VmBwProvisionerSimple;
@@ -26,6 +28,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
+import static core.Reporter.writeStatisticsToCsv;
 import static org.cloudbus.cloudsim.Log.printLine;
 
 /**
@@ -41,14 +44,13 @@ public class SockShopTest {
     static String servicesFile = "examples/src/sockshop/services.json";
     static String outputPath = "modules/test/resource/";
     // generator configuration for requests and cloudlets
-    static int finalClients = 500;
-    static int spawnRate = 200;
-    static int[] waitTimeSpan = new int[]{3, 10};
+//    static int finalClients = 300;
+//    static int spawnRate = 30;
+//    static int[] waitTimeSpan = new int[]{5, 10};
+    static int rps = 50;
     static int timeLimit = 600;
-    static int initializedClients = 100;
-    static int numLimit = 10000;
     // 设定任务平均大小,下面两种表述是等价的:
-    static int meanLength = 25; // 单位是百万条指令(M),任务规模 = 4*length
+    static int meanLength = 10; // 单位是百万条指令(M),任务规模 = 4*length
     static int stdDevLength = 5;
 
 
@@ -73,10 +75,7 @@ public class SockShopTest {
             vmList = createVms(3,brokerId);
             broker.submitVmList(vmList);
             // create application & define policies
-            Application app = new Application("sockshop", brokerId,
-                    new ServiceAllocationPolicySimple(),
-                    new InstanceMigrationPolicySimple(),
-                    new HorizontalScalingPolicy());
+            Application app = new Application("sockshop", brokerId, new ServiceAllocationPolicySimple());
             int schedulingInterval = 10;
             app.submitSchedulingInterval(schedulingInterval);
             // register
@@ -89,18 +88,17 @@ public class SockShopTest {
             ServiceGraph graph = register.registerServiceGraph();
             app.submitServiceGraph(graph);
             List<Service> services = graph.getAllServices();
+            // set policy
+            for (Service service : services){
+                service.setCloudletScheduler(new NativeCloudletSchedulerSimple());
+                service.setServiceScalingPolicy(new NoneScalingPolicy());
+            }
             app.submitServiceList(services);
-            // generator
-            Generator generator = new Generator(apis,finalClients, spawnRate, waitTimeSpan, timeLimit,meanLength,stdDevLength);
-            generator.setNumLimit(numLimit);
-//            generator.setCurrentClients(initializedClients);
+            // generator by rps
+            Generator generator = new Generator(apis,rps, timeLimit, meanLength,stdDevLength);
             app.submitGenerator(generator);
             // instance
             app.submitInstanceList(register.registerAllInstances());
-            // cloudlet scheduler
-            services.forEach(service -> service.setCloudletScheduler(
-                    new NativeCloudletSchedulerSolidShare()));
-
             CloudNativeSim.startSimulation();
 
             // x: End the simulation

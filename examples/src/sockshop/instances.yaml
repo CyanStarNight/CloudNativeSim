@@ -3,12 +3,12 @@ instances:
     type: pod
     labels:
       - carts
-    replicas: 1
+    replicas: 2
     size: 500
     rec_bw: 100
     trans_bw: 100
     requests:
-      share: 1024
+      share: 100
       ram: 200
     limits:
       share: 300
@@ -95,7 +95,7 @@ instances:
     rec_bw: 100
     trans_bw: 500
     requests:
-      share: 99
+      share: 100
       ram: 100
     limits:
       share: 200

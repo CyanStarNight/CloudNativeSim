@@ -16,7 +16,6 @@ import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
 import policy.cloudletScheduler.NativeCloudletSchedulerBestEffort;
-import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
 import provisioner.NativeRamProvisionerSimple;
@@ -74,10 +73,7 @@ public class CapacityTest {
             vmList = createVms(3,brokerId);
             broker.submitVmList(vmList);
             // create application & define policies
-            Application app = new Application("capacity", brokerId,
-                    new ServiceAllocationPolicySimple(),
-                    new InstanceMigrationPolicySimple(),
-                    new HorizontalScalingPolicy());
+            Application app = new Application("sockshop", brokerId, new ServiceAllocationPolicySimple());
             // register
             Register register = new Register(userId,"Pod",servicesFile,podsFile);
             broker.submitRegister(register);
@@ -90,7 +86,11 @@ public class CapacityTest {
             ServiceGraph graph = register.registerServiceGraphTest(serviceCount);
             app.submitServiceGraph(graph);
             List<Service> services = graph.getAllServices();
-
+            // set policy
+            for (Service service : services){
+                service.setCloudletScheduler(new NativeCloudletSchedulerBestEffort());
+                service.setServiceScalingPolicy(new HorizontalScalingPolicy());
+            }
             app.submitServiceList(services);
 
 

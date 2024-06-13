@@ -147,8 +147,6 @@ public class Register {
             instance.setTransmit_bw(Double.parseDouble(Tools.getValue(map,"trans_bw").toString()));
             // 副本
             replicas.add(instance); // 引用传递
-            instance.setNum_replicas(num_replicas);
-//            instance.setReplicaSet(replicas); //引用传递
         }
 
         return replicas;
