@@ -248,8 +248,6 @@ public class Reporter {
             totalSession += data.getSession();
         }
 
-        System.out.println(totalSession);
-
         UsageData last = usageDataList.get(usageDataList.size() - 1);
         UsageData first = usageDataList.get(0);
         double processSession = last.getTimestamp() + last.getSession() - first.getTimestamp();

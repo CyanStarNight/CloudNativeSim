@@ -413,11 +413,11 @@ public class Application extends SimEntity {
         List<Service> next = serviceGraph.getCalls(serviceName, apiName);
 
         // instance处理当前stage
-        while (!scheduler.getWaitingQueue().isEmpty()) {
+        while (!scheduler.getWaitingQueue().isEmpty() || !scheduler.getExecQueue().isEmpty()) {
             scheduler.schedule();
             scheduler.processCloudlets();//更新每个cloudlet的等待时间和执行时间
         }
-        // 计算当前请求的cloudlets完成时间
+        // cloudlet挨个被执行，stage的时延等于它们的总和
         double totalTime = stage.stream()
                 .mapToDouble(cloudlet -> cloudlet.getWaitTime() + cloudlet.getExecTime())
                 .sum();

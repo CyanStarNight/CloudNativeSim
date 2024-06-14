@@ -71,15 +71,15 @@ public class Generator {
         initializeCumulativeWeights();
     }
 
-    public Generator(List<API> APIs, int finalRps, int timeLimit, float meanSize, float stdDevSize) {
+    public Generator(List<API> APIs, int finalRps, int timeLimit, int meanLength, int stdDevLength) {
         this.finalRps = finalRps;
         this.generatorType = "ByRps";
         this.timeLimit = timeLimit;
         this.APIs = APIs;
-        this.meanSize = meanSize;
-        this.stdDevSize = stdDevSize;
-        this.meanLength = (int) meanSize/4;
-        this.stdDevLength = (int) stdDevSize/4;
+        this.meanLength = meanLength;
+        this.stdDevLength = stdDevLength;
+        this.meanSize = meanLength*4;
+        this.stdDevSize = stdDevLength*4;
         random = new Random();
         initializeCumulativeWeights();
     }
