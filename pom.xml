@@ -66,7 +66,7 @@
             <artifactId>cloudsim</artifactId>
             <version>3.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/cloudsim-3.0.3.jar</systemPath>
+            <systemPath>${project.basedir}/lib/cloudsim-3.0.3.jar</systemPath>
         </dependency>
 
         <dependency>
