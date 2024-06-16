@@ -16,7 +16,7 @@ public class NativeCloudletSchedulerSimple extends NativeCloudletScheduler {
 
     final double solidShare = 30;  // Adjust this value as needed
 
-    double waitStep = 0.01;// 这里是默认等待时间,10ms
+    double waitStep = 0.008;// 这里是默认等待时间
 
     public NativeCloudletSchedulerSimple() {
         super();

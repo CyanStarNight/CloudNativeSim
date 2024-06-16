@@ -439,8 +439,8 @@ public class Application extends SimEntity {
             double session = cloudlet.getWaitTime() + cloudlet.getExecTime();
             List<Service> parents = service.getParentServicesInChain(chain);
 
-            //TODO: 为什么nodeDelay.get(s)有的时候会出现null?
             double currentMaxDelay = parents.stream()
+                    //TODO: 为什么nodeDelay.get(s)有的时候会出现null?
                     .mapToDouble(s -> request.getNodeDelay().getOrDefault(s,0.0))
                     .max().orElse(0.);
             request.addDelay(service, session+currentMaxDelay);

@@ -149,11 +149,10 @@ public class Reporter {
             }
 
             // Write overall statistics
-            writer.write("Total,,,,\n");
-            writer.write(String.format("Total Requests,%d,,,\n", totalRequests));
-            writer.write(String.format("Average Delay (seconds),,%s,,\n", dft.format(totalDelay / totalRequests)));
-            writer.write(String.format("Overall SLO Violation Rate,,,%s,\n", dft.format((double) sloViolations / totalRequests * 100) + "%"));
-            writer.write(String.format("Average RPS,,,,%s\n", dft.format(avgRps)));
+            writer.write(String.format("Aggregate,%s,%s,%s,%s\n", totalRequests
+                    , dft.format(totalDelay / totalRequests)
+                    , dft.format((double) sloViolations / totalRequests * 100) + "%"
+                    , dft.format(avgRps)));
         }
     }
 
