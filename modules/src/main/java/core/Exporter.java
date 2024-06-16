@@ -106,7 +106,7 @@ public class Exporter {
 
     public static void exportUsageHistory(String instanceId){
         Instance instance = Instance.getInstance(instanceId);
-        List<NativeCloudlet> completionCloudlets = instance.getCompletionCloudlets();
+        List<RpcCloudlet> completionCloudlets = instance.getCompletionCloudlets();
 
         if (completionCloudlets.isEmpty()) {
             System.out.println("No cloudlets completed for this instance.");
@@ -119,7 +119,7 @@ public class Exporter {
         double totalShare = 0;
 
         // 遍历cloudlets计算最小开始时间、最大结束时间和总共的share
-        for (NativeCloudlet cloudlet : completionCloudlets) {
+        for (RpcCloudlet cloudlet : completionCloudlets) {
             double startTime = cloudlet.getStartExecTime();
             double endTime = startTime+cloudlet.getExecTime();
             double share = cloudlet.getShare();

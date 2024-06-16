@@ -16,6 +16,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -162,6 +163,7 @@ public class Reporter {
         printChain(serviceGraph, null);
     }
 
+    // Method to print chains for given APIs
     public static void printChains(ServiceGraph serviceGraph, List<API> apiList) {
         for (API api : apiList) {
             Reporter.printChain(serviceGraph, api.getName());
@@ -169,37 +171,38 @@ public class Reporter {
         System.out.println("\n──────────────────────────────────────────────────────────────────────────────");
     }
 
-    public static void printChain(ServiceGraph serviceGraph, String API) {
+    // Method to print a specific chain for a given API
+    public static void printChain(ServiceGraph serviceGraph, String apiName) {
         printLine();
         AsciiTable at = new AsciiTable();
         at.getContext().setGridTheme(TA_GridThemes.HORIZONTAL);
 
         String header;
-        if (API == null) header = "Graph Dependencies:";
-        else header = "Chain For " + API + ":";
+        if (apiName == null) {
+            header = "Graph Dependencies:";
+        } else {
+            header = "Chain For " + apiName + ":";
+        }
 
         at.addRule();
         at.addRow(header);
-//        at.addRule();
         System.out.println(at.render());
 
-        for (ChainNode root : serviceGraph.getRoots()) {
-            // 递归
-            printDependenciesFromNode(root, "  ", API);
+        for (Service root : serviceGraph.getSources(new ArrayList<>(serviceGraph.getServiceChains().get(new API(apiName, null))))) {
+            // Recursively print dependencies starting from each root node
+            printDependenciesFromNode(serviceGraph, root, "  ", apiName);
         }
-//        System.out.println("──────────────────────────────────────────────────────────────────────────────");
     }
 
     // Helper method to print dependencies starting from a given node
-    public static void printDependenciesFromNode(ChainNode node, String indent, String API) {
+    public static void printDependenciesFromNode(ServiceGraph serviceGraph, Service node, String indent, String apiName) {
         if (node == null) return;
         // Print the current service
-        Service currentService = node.getService();
-        if (currentService.getApiList().contains(API) || API == null) {
-            System.out.println(indent + currentService);
+        if (node.getApiList().contains(apiName) || apiName == null) {
+            System.out.println(indent + node.getName());
             // Recursively print dependencies for each child (dependent service)
-            for (ChainNode child : node.getChildren()) {
-                printDependenciesFromNode(child, indent + "       |", API);
+            for (Service child : serviceGraph.getCalls(node)) {
+                printDependenciesFromNode(serviceGraph, child, indent + "       |", apiName);
             }
         }
     }

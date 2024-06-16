@@ -16,7 +16,7 @@ import policy.migration.InstanceMigrationPolicy;
 import entity.Request;
 import entity.API;
 import entity.Instance;
-import entity.NativeCloudlet;
+import entity.RpcCloudlet;
 import entity.Service;
 import entity.ServiceGraph;
 
@@ -66,7 +66,6 @@ public class Application extends SimEntity {
      * The service graph.
      */
     protected ServiceGraph serviceGraph;
-    protected Map<String, List<Service>> serviceChains = new HashMap<>();
     /**
      * The requests list.
      */
@@ -88,7 +87,7 @@ public class Application extends SimEntity {
     /**
      * The cloudlet list.
      */
-    protected List<NativeCloudlet> nativeCloudletList = new ArrayList<>();
+    protected List<RpcCloudlet> rpcCloudletList = new ArrayList<>();
     protected int finishedCloudletNum;
     /**
      * The allocation policy.
@@ -215,9 +214,9 @@ public class Application extends SimEntity {
         assert !getInstanceList().isEmpty():"Instances have not been registered.";
         assert getServiceGraph() != null:"ServiceGraph has not been registered.";
         assert !getServiceList().isEmpty():"Services have been not registered.";
-        // 构建service chains
-        submitServiceChains(serviceGraph.buildServiceChains());
-        assert getServiceChains() != null;
+        // 构建service chains和api之间的联系
+        serviceGraph.buildServiceChains(getApis());
+
         // 匹配实例并处理失败情况
         List<Service> instantiatedServices = getServiceList().stream()
                 .filter(service -> {
@@ -369,88 +368,113 @@ public class Application extends SimEntity {
     /* 请求分发到对应服务 */
     @SuppressWarnings("unchecked")
     private void processRequestsDispatch(SimEvent ev) {
-        List<Request> requestsToDispatch = (List<Request>) ev.getData();
-        for (Request request : requestsToDispatch) {
-            String apiName = request.getApiName();
+        List<Request> requests = (List<Request>) ev.getData();
+        Map<Service,List<RpcCloudlet>> cloudletMap = new HashMap<>();
+        for (Request request : requests) {
+            API api = request.getApi();
             // 查找service chain
-            List<Service> chain = serviceGraph.getServiceChains().get(apiName);
+            List<Service> chain = api.getServiceChain();
+            assert chain != null;
             request.setServiceChain(chain);
             // 选择chain的源服务
-            Service source = chain.get(0);
-            // 源服务创建cloudlets
-            List<NativeCloudlet> sourceCloudlets = source.createCloudlets(request,generator);
-            // 启动cloudlets schedule,
-            sendNow(getId(), CloudNativeSimTag.CLOUDLET_PROCESS, sourceCloudlets);
+            List<Service> sources = serviceGraph.getSources(chain);
+            for (Service source : sources) {
+                // 源服务创建cloudlets
+                RpcCloudlet sourceCloudlet = source.createCloudlet(request,generator);
+                cloudletMap.computeIfAbsent(source,k->new ArrayList<>());
+                cloudletMap.get(source).add(sourceCloudlet);
+            }
         }
+        // 分流到各个服务
+        for (Service service:cloudletMap.keySet()){
+            List<RpcCloudlet> rpcCloudlets = cloudletMap.get(service);
+            Object[] data = new Object[]{service,rpcCloudlets};
+            sendNow(getId(), CloudNativeSimTag.CLOUDLET_PROCESS, data);
+        }
+
         // printByInterval("requests have been dispatched, start cloudlets.");
     }
 
     @SuppressWarnings("unchecked")
     private void processCloudlets(SimEvent ev) {
-        // 这些cloudlets都来源于同一个请求,同一个服务,统称为相同stage
-        List<NativeCloudlet> stage = (List<NativeCloudlet>) ev.getData();
-        if (stage == null || stage.isEmpty()) {
+        Object[] data = (Object[]) ev.getData();
+        // 这些cloudlets都来源于相同的服务
+        Service service = (Service) data[0];
+        List<RpcCloudlet> cloudlets = (List<RpcCloudlet>) data[1];
+        if (cloudlets == null || cloudlets.isEmpty()) {
             throw new IllegalArgumentException("Cloudlet list cannot be null or empty");
         }
-        submitCloudlets(stage);
-
-        // 选一个代表
-        NativeCloudlet behavior = stage.get(0);
+        submitCloudlets(cloudlets);
 
         // 获取变量
-        String serviceName = behavior.getServiceName();
-        Service service = Service.getService(serviceName);
-        Request request = behavior.getRequest();
-        String apiName = request.getApiName();
-
-        // 执行cloudlet schedule
+        String serviceName = service.getName();
         NativeCloudletScheduler scheduler = service.getCloudletScheduler();
 
         // 接收
-        scheduler.receiveCloudlets(stage);
-
-        // 查询子服务
-        List<Service> next = serviceGraph.getCalls(serviceName, apiName);
+        scheduler.addToWaitingQueue(cloudlets);
 
         // instance处理当前stage
-        while (!scheduler.getWaitingQueue().isEmpty() || !scheduler.getExecQueue().isEmpty()) {
+        while (!scheduler.getWaitingQueue().isEmpty()) {
             scheduler.schedule();
             scheduler.processCloudlets();//更新每个cloudlet的等待时间和执行时间
         }
-        // cloudlet挨个被执行，stage的时延等于它们的总和
-        double totalTime = stage.stream()
-                .mapToDouble(cloudlet -> cloudlet.getWaitTime() + cloudlet.getExecTime())
-                .sum();
-        finishedCloudletNum += stage.size();
 
-        // 链路中下级服务非空,则创建并发送cloudlets
-        if (!next.isEmpty()) {
-            next.forEach(s -> schedule(totalTime, CloudNativeSimTag.CLOUDLET_PROCESS, s.createCloudlets(request, generator)));
-        } else {
-            // 更新请求的关键路径
-            updateRequestCriticalPath(request, totalTime);
+        List<RpcCloudlet> completed = cloudlets.stream()
+                .filter(rpcCloudlet -> rpcCloudlet.getStatus()==Status.Success).toList();
+        // cloudlet挨个被执行，stage的时延等于它们的总和
+        double spawnTime = completed.stream()
+                .mapToDouble(cloudlet -> cloudlet.getWaitTime() + cloudlet.getExecTime())
+                .max().orElse(0.0);
+        //TODO: 执行失败？
+        if (spawnTime == 0.0) return;
+
+        finishedCloudletNum += completed.size();
+
+        Map<Service,List<RpcCloudlet>> cloudletMap = new HashMap<>();
+        // 更新请求
+        for (RpcCloudlet cloudlet : cloudlets) {
+            Request request = cloudlet.getRequest();
+            List<Service> chain = request.getServiceChain();
+            // update delay
+            double session = cloudlet.getWaitTime() + cloudlet.getExecTime();
+            List<Service> parents = service.getParentServicesInChain(chain);
+
+            //TODO: 为什么nodeDelay.get(s)有的时候会出现null?
+            double currentMaxDelay = parents.stream()
+                    .mapToDouble(s -> request.getNodeDelay().getOrDefault(s,0.0))
+                    .max().orElse(0.);
+            request.addDelay(service, session+currentMaxDelay);
+
+            // 查询子服务
+            List<Service> next = service.getChildServicesInChain(chain);
+            // 链路中下级服务非空,衍生并分流
+            if (!next.isEmpty()) {
+                next.forEach(s -> cloudletMap.computeIfAbsent(s,k -> new ArrayList<>())
+                        .add(s.createCloudlet(request,generator)));
+            } else {
+                // 更新请求的关键路径
+                updateResponseTimeByCriticalPath(request);
+            }
         }
+        // 发送
+        for (Service s: cloudletMap.keySet())
+            schedule(spawnTime, CloudNativeSimTag.CLOUDLET_PROCESS,
+                    new Object[]{s,cloudletMap.get(s)});
+
     }
 
+    private void updateResponseTimeByCriticalPath(Request request){
+        List<Service> serviceChain = request.getServiceChain();
+        // service -> delay
+        Map<Service,Double> nodeDelay = request.getNodeDelay();
+        // 计算尾节点的最大延迟
+        List<Service> sinks = serviceGraph.getSinks(serviceChain);
+        double maxResponseTime = sinks.stream()
+                .mapToDouble(service -> nodeDelay.getOrDefault(service, 0.0))
+                .max()
+                .orElse(0.0);
 
-
-    private void updateRequestCriticalPath(Request request, double totalTime){
-        // 一条链路的完成时间戳
-        double pathTimestamp = CloudNativeSim.clock()+totalTime;
-        // 如果还没设置响应时间
-        if (request.getResponseTimeStamp() == -1) {
-            request.setResponseTimeStamp(pathTimestamp);
-            double criticalDelay = pathTimestamp - request.getStartTime();
-            request.setDelay(criticalDelay);
-            request.setStatus(Status.Finished);
-            Exporter.totalResponses++;
-        }
-        // 这里用了关键路径取最大值的思路去更新
-        else if (request.getResponseTimeStamp() < pathTimestamp) {
-            request.setResponseTimeStamp(pathTimestamp);
-            double criticalDelay = pathTimestamp - request.getStartTime();
-            request.setDelay(criticalDelay);
-        }
+        request.setResponseTime(maxResponseTime);
     }
 
     private void processServiceMigrate(SimEvent ev) {
@@ -502,9 +526,6 @@ public class Application extends SimEntity {
         Exporter.finalServiceGraph = serviceGraph;
     }
 
-    public void submitServiceChains(Map<String, List<Service>> serviceChains) {
-        setServiceChains(serviceChains);
-    }
 
     public void submitInstanceList(List<? extends Instance> list) {
         getInstanceList().addAll(list);
@@ -522,8 +543,8 @@ public class Application extends SimEntity {
         getVmList().add(vm);
     }
 
-    public void submitCloudlets(List<NativeCloudlet> nativeCloudlets) {
-        getNativeCloudletList().addAll(nativeCloudlets);
+    public void submitCloudlets(List<RpcCloudlet> rpcCloudlets) {
+        getRpcCloudletList().addAll(rpcCloudlets);
     }
 
     public void submitAPIs(List<API> apis) {

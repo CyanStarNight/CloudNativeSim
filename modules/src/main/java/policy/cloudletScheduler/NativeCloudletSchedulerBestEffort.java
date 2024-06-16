@@ -1,12 +1,7 @@
 package policy.cloudletScheduler;
 
-import core.CloudNativeSim;
-import core.Exporter;
-import core.Status;
 import entity.Instance;
-import entity.NativeCloudlet;
-import extend.NativePe;
-import extend.NativeVm;
+import entity.RpcCloudlet;
 
 import java.util.*;
 
@@ -17,7 +12,7 @@ public class NativeCloudletSchedulerBestEffort extends NativeCloudletSchedulerSi
     }
 
     // best-effort 计算
-    private double getShareRequests(NativeCloudlet cloudlet, Instance processor){
+    private double getShareRequests(RpcCloudlet cloudlet, Instance processor){
         double needShare = (double) cloudlet.getLen() / processor.getCurrentAllocatedMips() * 1024;
         cloudlet.setShare(needShare);
         return needShare;
@@ -25,7 +20,7 @@ public class NativeCloudletSchedulerBestEffort extends NativeCloudletSchedulerSi
 
 
 
-    public boolean distributeCloudlet(NativeCloudlet cloudlet, List<Instance> instanceList) {
+    public boolean distributeCloudlet(RpcCloudlet cloudlet, List<Instance> instanceList) {
         // 检查instance list非空
         if (instanceList == null || instanceList.isEmpty()) {
             throw new IllegalArgumentException("Instance list cannot be null or empty");

@@ -1,7 +1,3 @@
-/*
- * Copyright ©2024. Jingfeng Wu.
- */
-
 package entity;
 
 import lombok.*;
@@ -9,196 +5,162 @@ import lombok.*;
 import java.util.*;
 
 /**
- * @author JingFeng Wu
  * @describe the service graph with orthogonalList and maintain the critical path.
  */
 
 @Data
-public class ServiceGraph{
+public class ServiceGraph {
     private int userId;
-    // Using UUID for unique identification
     private UUID id;
-    // source service nodes
-    private List<ChainNode> roots = new ArrayList<>();
-    // api -> chain
-    private Map<String,List<Service>> serviceChains = new HashMap<>();
+    private Map<API, List<Service>> serviceChains = new HashMap<>();
+    private Map<Service, Integer> inDegree = new HashMap<>();
+    private Map<Service, Integer> outDegree = new HashMap<>();
+    // the hierarchy of services
+    private Map<Service, List<Service>> serviceHierarchy = new HashMap<>();
+    private Map<Service, List<Service>> reverseServiceHierarchy = new HashMap<>();
 
+    // Constructor initializes userId and generates a unique UUID
     public ServiceGraph(int userId) {
         this.userId = userId;
-        this.id = UUID.randomUUID(); // Ensures unique ID
+        this.id = UUID.randomUUID();
     }
 
+    // Adds a service to the graph, optionally specifying a parent service
     public void addService(Service service, Service parentService) {
-        ChainNode node = new ChainNode(service);
-        if (parentService == null) {
-            roots.add(node);
-        } else {
-            findServiceNode(parentService, roots)
-                    .ifPresent(parentNode -> parentNode.addChild(node));
+        // Initialize the service in the graphs if not already present
+        if (!serviceHierarchy.containsKey(service)) {
+            serviceHierarchy.put(service, new ArrayList<>());
+            reverseServiceHierarchy.put(service, new ArrayList<>());
+            inDegree.put(service, 0);
+            outDegree.put(service, 0);
         }
+        // If a parent service is specified, establish the parent-child relationship
+        if (parentService != null) {
+            serviceHierarchy.get(parentService).add(service);
+            reverseServiceHierarchy.get(service).add(parentService);
+            inDegree.put(service, inDegree.get(service) + 1);
+            outDegree.put(parentService, outDegree.get(parentService) + 1);
+        }
+        service.setServiceGraph(this);
     }
 
+    // Removes a service from the graph
     public void deleteService(Service service) {
-        findAndRemoveServiceNode(service, roots, null);
+        List<Service> parents = reverseServiceHierarchy.get(service);
+        List<Service> children = serviceHierarchy.get(service);
+
+        // Update parent services
+        for (Service parent : parents) {
+            serviceHierarchy.get(parent).remove(service);
+            outDegree.put(parent, outDegree.get(parent) - 1);
+        }
+
+        // Update child services
+        for (Service child : children) {
+            reverseServiceHierarchy.get(child).remove(service);
+            inDegree.put(child, inDegree.get(child) - 1);
+        }
+
+        // Remove the service from the graphs
+        serviceHierarchy.remove(service);
+        reverseServiceHierarchy.remove(service);
+        inDegree.remove(service);
+        outDegree.remove(service);
     }
 
-    private Optional<ChainNode> findServiceNode(Service service, List<ChainNode> nodes) {
-        for (ChainNode node : nodes) {
-            if (node.getService().equals(service)) {
-                return Optional.of(node);
-            }
-            Optional<ChainNode> foundNode = findServiceNode(service, node.getChildren());
-            if (foundNode.isPresent()) {
-                return foundNode;
-            }
-        }
-        return Optional.empty();
+    // Retrieves the parent services of a given service
+    public List<Service> getParentServices(Service service) {
+        return reverseServiceHierarchy.getOrDefault(service, Collections.emptyList());
     }
 
-    private void findAndRemoveServiceNode(Service service, List<ChainNode> nodes, ChainNode parentNode) {
-        Iterator<ChainNode> iterator = nodes.iterator();
-        while (iterator.hasNext()) {
-            ChainNode node = iterator.next();
-            if (node.getService().equals(service)) {
-                if (parentNode != null) parentNode.removeChild(node);
-                iterator.remove();
-            } else {
-                findAndRemoveServiceNode(service, node.getChildren(), node);
-            }
-        }
+    // Retrieves the child services of a given service
+    public List<Service> getCalls(Service service) {
+        return serviceHierarchy.getOrDefault(service, Collections.emptyList());
     }
 
-    // 更新节点度数
-    private void updateDegrees() {
-        // 重置所有节点的度数
-        resetAllDegrees();
-        // 更新所有节点的出度
-        for (ChainNode root : roots) {
-            updateOutDegrees(root);
-        }
-        // 更新所有节点的入度
-        for (ChainNode root : roots) {
-            updateInDegrees(root, new HashSet<>());
-        }
-    }
-
-    // 重置所有服务节点的度数
-    private void resetAllDegrees() {
-        Queue<ChainNode> queue = new LinkedList<>(roots);
-        while (!queue.isEmpty()) {
-            ChainNode current = queue.poll();
-            current.setInDegree(0);
-            current.setOutDegree(0);
-            queue.addAll(current.getChildren());
-        }
-    }
-
-    // 更新出度
-    private void updateOutDegrees(ChainNode node) {
-        int outDegree = node.getChildren().size();
-        node.setOutDegree(outDegree);
-        for (ChainNode child : node.getChildren()) {
-            updateOutDegrees(child);
-        }
-    }
-
-    // 更新入度，使用Set防止重复计算
-    private void updateInDegrees(ChainNode node, Set<ChainNode> visited) {
-        if (!visited.contains(node)) {
-            for (ChainNode child : node.getChildren()) {
-                child.setInDegree(child.getInDegree() + 1);
-                updateInDegrees(child, visited);
-            }
-            visited.add(node);
-        }
-    }
-
-    public List<Service> getAllServices() {
-        List<Service> services = new ArrayList<>();
-        Set<ChainNode> visited = new HashSet<>(); // Initialize visited set
-        // Apply BFS or DFS from each root node to collect services
-        for (ChainNode root : roots) {
-            sortServicesFromNodeBFS(root, services, visited); // Or use DFS variant
-        }
-        return services;
-    }
-
-
-    // Modified BFS method to include visited tracking
-    private void sortServicesFromNodeBFS(ChainNode node, List<Service> services, Set<ChainNode> visited) {
-        if (node == null || visited.contains(node)) return; // Skip null or already visited nodes
-
-        Queue<ChainNode> queue = new LinkedList<>();
-        queue.add(node);
-        visited.add(node); // Mark the start node as visited
-
-        while (!queue.isEmpty()) {
-            ChainNode current = queue.poll();
-            services.add(current.getService()); // Collect the current node's service
-
-            for (ChainNode child : current.getChildren()) {
-                if (!visited.contains(child)) {
-                    queue.add(child);
-                    visited.add(child); // Mark as visited when enqueued
-                }
+    // Retrieves the source services (services with in-degree of 0) in a given chain
+    public List<Service> getSources(List<Service> chain) {
+        List<Service> sources = new ArrayList<>();
+        for (Service service : chain) {
+            if (inDegree.get(service) == 0) {
+                sources.add(service);
             }
         }
+        return sources;
     }
 
-
-    // Modified DFS method to include visited tracking
-    private void sortServicesFromNodeDFS(ChainNode node, List<Service> services, Set<ChainNode> visited) {
-        if (node == null || visited.contains(node)) return; // Skip null or already visited nodes
-
-        visited.add(node); // Mark the current node as visited
-        services.add(node.getService()); // Collect the current node's service
-
-        for (ChainNode child : node.getChildren()) {
-            if (!visited.contains(child)) {
-                sortServicesFromNodeDFS(child, services, visited); // Recursive call
+    // Retrieves the sink services (services with out-degree of 0) in a given chain
+    public List<Service> getSinks(List<Service> chain) {
+        List<Service> sinks = new ArrayList<>();
+        for (Service service : chain) {
+            if (outDegree.get(service) == 0) {
+                sinks.add(service);
             }
         }
+        return sinks;
     }
 
-    // Method to collect all services into chains based on API
-    public Map<String,List<Service>> buildServiceChains() {
-        setServiceChains(new HashMap<>());
-        Map<String, List<Service>> tempChains = new HashMap<>();
+    // Builds service chains for the given APIs and updates the serviceChains map
+    public Map<API, List<Service>> buildServiceChains(List<API> apis) {
+        Map<API, List<Service>> tempChains = new HashMap<>();
 
-        // 将同一个API的服务放入一个新的 ArrayList 中,key 为 api。
-        for (Service s : getAllServices()) {
-            for (String api : s.getApiList()) {
-                // 如果 tempChains 中不存在 key 为 api 的条目,则创建一个新的
+        // Populate tempChains with services for each API
+        for (Service s : serviceHierarchy.keySet()) {
+            for (API api : apis) {
                 tempChains.computeIfAbsent(api, k -> new ArrayList<>()).add(s);
             }
         }
-        // Now sort each list in tempChains by in-degree and put it in serviceChains
-        for (Map.Entry<String, List<Service>> entry : tempChains.entrySet()) {
-            List<Service> sortedList = entry.getValue();
-            // Sorting based on in-degree
-            sortedList.sort(Comparator.comparingInt(Service::getInDegree));
-            tempChains.replace(entry.getKey(), sortedList);
-        }
-        setServiceChains(tempChains);
 
-        assert !getServiceChains().isEmpty():"Service Chains are empty.";
+        // Sort each list in tempChains by in-degree
+        for (Map.Entry<API, List<Service>> entry : tempChains.entrySet()) {
+            List<Service> sortedList = entry.getValue();
+            sortedList.sort(Comparator.comparingInt(inDegree::get));
+            tempChains.put(entry.getKey(), sortedList);
+        }
+
+        // Update the serviceChains map and the API objects
+        setServiceChains(tempChains);
+        for (API api : tempChains.keySet()) {
+            api.setServiceChain(tempChains.get(api));
+        }
+
+        assert !getServiceChains().isEmpty() : "Service Chains are empty.";
         return tempChains;
     }
 
 
-    public List<Service> getCalls(String serviceName, String api) {
+    // Main method for example usage
+    public static void main(String[] args) {
+        // Create a ServiceGraph
+        ServiceGraph serviceGraph = new ServiceGraph(1);
+        Service parentService = new Service(1,"ParentService");
+        Service childService = new Service(1,"ChildService");
 
-        List<Service> chain = serviceChains.get(api);
-        ChainNode chainNode = ChainNode.getTreeNode(serviceName);
-        List<ChainNode> calledTreeNodes = chainNode.getChildren();
+        // Add services to the graph
+        serviceGraph.addService(parentService, null);
+        serviceGraph.addService(childService, parentService);
 
-        List<Service> calledService = new ArrayList<>();
-        for (ChainNode node : calledTreeNodes){
-            Service s = node.getService();
-            if (chain.contains(s))
-                calledService.add(s);
+        // Get parent services
+        List<Service> parentServices = serviceGraph.getParentServices(childService);
+        for (Service parent : parentServices) {
+            System.out.println("Parent Service: " + parent.getName());
         }
 
-        return calledService;
+        // Get source services
+        List<Service> sources = serviceGraph.getSources(Arrays.asList(parentService, childService));
+        for (Service source : sources) {
+            System.out.println("Source Service: " + source.getName());
+        }
+
+        // Get sink services
+        List<Service> sinks = serviceGraph.getSinks(Arrays.asList(parentService, childService));
+        for (Service sink : sinks) {
+            System.out.println("Sink Service: " + sink.getName());
+        }
+    }
+
+    public List<Service> getAllServices() {
+        return getServiceHierarchy().keySet().stream().toList();
     }
 }
+

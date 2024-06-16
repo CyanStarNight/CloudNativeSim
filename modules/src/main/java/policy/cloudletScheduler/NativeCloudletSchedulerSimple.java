@@ -4,7 +4,7 @@ import core.CloudNativeSim;
 import core.Exporter;
 import core.Status;
 import entity.Instance;
-import entity.NativeCloudlet;
+import entity.RpcCloudlet;
 
 import java.util.*;
 
@@ -16,32 +16,24 @@ public class NativeCloudletSchedulerSimple extends NativeCloudletScheduler {
 
     final double solidShare = 30;  // Adjust this value as needed
 
-    double waitStep = 0.5;// 这里是默认等待时间
+    double waitStep = 0.01;// 这里是默认等待时间,10ms
 
     public NativeCloudletSchedulerSimple() {
         super();
     }
 
-    private double getShareRequests(NativeCloudlet cloudlet, Instance processor){
+    private double getShareRequests(RpcCloudlet cloudlet, Instance processor){
         cloudlet.setShare(solidShare);
         return solidShare;
     }
 
 
-    @Override
-    public void receiveCloudlets(List<NativeCloudlet> cloudlets) {
-        // 加入等待队列
-        addToWaitingQueue(cloudlets);
-        // 第一次调度
-        schedule();
-    }
-
     // 从等待队列调度到执行队列或者失败队列
     public void schedule(){
         // 设置结束等待的队列
-        List<NativeCloudlet> waitingStop = new ArrayList<>();
+        List<RpcCloudlet> waitingStop = new ArrayList<>();
         // 查询是否能加入执行队列
-        for (NativeCloudlet cloudlet : getWaitingQueue()) {
+        for (RpcCloudlet cloudlet : getWaitingQueue()) {
             // 如果能分配到处理器，加入
             if (distributeCloudlet(cloudlet,getService().getInstanceList())){
                 addToProcessingQueue(cloudlet);
@@ -62,7 +54,7 @@ public class NativeCloudletSchedulerSimple extends NativeCloudletScheduler {
     }
 
     // 分配合适的实例
-    public boolean distributeCloudlet(NativeCloudlet cloudlet, List<Instance> instanceList) {
+    public boolean distributeCloudlet(RpcCloudlet cloudlet, List<Instance> instanceList) {
         // 检查instance list非空
         if (instanceList == null || instanceList.isEmpty()) {
             throw new IllegalArgumentException("Instance list cannot be null or empty");
@@ -89,7 +81,7 @@ public class NativeCloudletSchedulerSimple extends NativeCloudletScheduler {
 
 
     // Move cloudlets from waiting to execution queue
-    public void addToProcessingQueue(NativeCloudlet cloudlet) {
+    public void addToProcessingQueue(RpcCloudlet cloudlet) {
         // 加入执行队列
         getExecQueue().add(cloudlet);
         // 更新字段
@@ -108,11 +100,11 @@ public class NativeCloudletSchedulerSimple extends NativeCloudletScheduler {
         // 去重集合
         Set<Instance> processors = new HashSet<>();
 
-        List<NativeCloudlet> completed = new ArrayList<>();
+        List<RpcCloudlet> completed = new ArrayList<>();
         // 记录stage的持续时间
         double stageSession = 0;
         // 执行
-        for (NativeCloudlet cl :getExecQueue()){
+        for (RpcCloudlet cl :getExecQueue()){
             Instance processor = cl.getInstance();
             double execTime = (double) cl.getLen() / processor.getCurrentAllocatedMips();
             cl.setExecTime(execTime);
@@ -130,7 +122,7 @@ public class NativeCloudletSchedulerSimple extends NativeCloudletScheduler {
         // 结束队列
         getExecQueue().removeAll(completed);
         getFinishedList().addAll(completed);
-        for (NativeCloudlet cl : completed){
+        for (RpcCloudlet cl : completed){
             // 释放资源
             cl.getInstance().releaseCloudlet(cl);
             cl.setStatus(Status.Success);

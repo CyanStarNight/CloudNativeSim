@@ -42,9 +42,9 @@ public class SockShopExample{
     static String servicesFile = "examples/src/sockshop/services.json";
     static String outputPath = "modules/test/resource/";
     // generator configuration for requests and cloudlets
-    static int finalClients = 500;
-    static int spawnRate = 200;
-    static int[] waitTimeSpan = new int[]{3, 10};
+    static int finalClients = 300;
+    static int spawnRate = 30;
+    static int[] waitTimeSpan = new int[]{5, 15};
     static int timeLimit = 600;
     static int initializedClients = 100;
     static int numLimit = 10000;

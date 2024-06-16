@@ -71,32 +71,26 @@ public class Register {
         Map<String, Object> map = Tools.readJson(servicesFile); // Assumes a method to read JSON into a Map
         ServiceGraph serviceGraph = new ServiceGraph(appId);
 
-        // Assuming each service in the JSON has a list of dependencies or children services it communicates with
-        List<ChainNode> roots = new ArrayList<>();
-
-        // First pass: Create all ServiceNodes without setting up children
-        for (Map<String, Object> m : (List<Map<String, Object>>)map.get("services")) {
+        // First pass: Create all Service instances
+        Map<String, Service> serviceMap = new HashMap<>();
+        for (Map<String, Object> m : (List<Map<String, Object>>) map.get("services")) {
             Service s = registerService(m);
-            ChainNode node = new ChainNode(s);
-            roots.add(node); // Initially adding all nodes to roots, will filter out non-roots later
-            ChainNode.serviceNodeMap.put(s.getName(), node); // For easy lookup
+            serviceMap.put(s.getName(), s);
+            serviceGraph.addService(s, null); // Add service to the graph without parents initially
         }
 
         // Second pass: Establish parent-child relationships
-        for (Map<String, Object> m : (List<Map<String, Object>>)map.get("services")) {
-            ChainNode serviceNode = ChainNode.serviceNodeMap.get(Tools.getValue(m, "name"));
-            List<String> childrenNames = Tools.getValue(m, "calls"); // Assuming "dependencies" key contains child service names
+        for (Map<String, Object> m : (List<Map<String, Object>>) map.get("services")) {
+            Service parentService = serviceMap.get(m.get("name"));
+            List<String> childrenNames = (List<String>) m.get("calls"); // Assuming "calls" key contains child service names
             if (childrenNames != null) {
                 for (String childName : childrenNames) {
-                    ChainNode child = ChainNode.serviceNodeMap.get(childName);
-                    serviceNode.getChildren().add(child);
-                    roots.remove(child); // Remove from roots since it's not a root
+                    Service childService = serviceMap.get(childName);
+                    serviceGraph.addService(childService, parentService); // Establish parent-child relationship
                 }
             }
         }
 
-        serviceGraph.setRoots(roots); // Only root nodes remain in the roots list
-//        serviceGraph.buildServiceChains(); // Build the chains
         return serviceGraph;
     }
 
@@ -180,25 +174,33 @@ public class Register {
         return container;
     }
 
-    public ServiceGraph registerServiceGraphTest(int serviceCount){
+    public ServiceGraph registerServiceGraphTest(int serviceCount) {
         Map<String, Object> map = Tools.readJson(servicesFile); // Assumes a method to read JSON into a Map
         ServiceGraph serviceGraph = new ServiceGraph(appId);
 
-        // Assuming each service in the JSON has a list of dependencies or children services it communicates with
-        List<ChainNode> roots = new ArrayList<>();
-
-        while (serviceCount>0) {
-            // First pass: Create all ServiceNodes without setting up children
-            for (Map<String, Object> m : (List<Map<String, Object>>)map.get("services")) {
+        Map<String, Service> serviceMap = new HashMap<>();
+        while (serviceCount > 0) {
+            // First pass: Create all Service instances
+            for (Map<String, Object> m : (List<Map<String, Object>>) map.get("services")) {
                 Service s = registerService(m);
-                ChainNode node = new ChainNode(s);
-                roots.add(node); // Initially adding all nodes to roots, will filter out non-roots later
-                ChainNode.serviceNodeMap.put(s.getName(), node); // For easy lookup
+                serviceMap.put(s.getName(), s);
+                serviceGraph.addService(s, null); // Add service to the graph without parents initially
             }
             serviceCount--;
         }
-        serviceGraph.setRoots(roots); // Only root nodes remain in the roots list
-//        serviceGraph.buildServiceChains(); // Build the chains
+
+        // Second pass: Establish parent-child relationships
+        for (Map<String, Object> m : (List<Map<String, Object>>) map.get("services")) {
+            Service parentService = serviceMap.get(m.get("name"));
+            List<String> childrenNames = (List<String>) m.get("calls"); // Assuming "calls" key contains child service names
+            if (childrenNames != null) {
+                for (String childName : childrenNames) {
+                    Service childService = serviceMap.get(childName);
+                    serviceGraph.addService(childService, parentService); // Establish parent-child relationship
+                }
+            }
+        }
+
         return serviceGraph;
     }
 }

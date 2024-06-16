@@ -23,6 +23,7 @@ public class Service{
     private int userId;
     // 服务名，用于映射和标识
     public String name;
+
     // 服务label，用于映射
     private List<String> labels = new ArrayList<>();
     // apis
@@ -35,7 +36,7 @@ public class Service{
     //服务的实例集合
     private List<Instance> instanceList = new ArrayList<>();
     // 会分配到哪个服务图谱
-    protected ServiceGraph serviceGraph;
+    protected ServiceGraph serviceGraph;//TODO: 目前不支持一个service多个graph
     // cloudlets scheduler
     private NativeCloudletScheduler cloudletScheduler;
     // scaling policy
@@ -75,48 +76,65 @@ public class Service{
         return getInstanceList().size();
     }
 
-
-
-    public ChainNode getChainNode(){
-        return ChainNode.serviceNodeMap.get(getName());
+    // 获取图中的子服务
+    public List<Service> getChildServices() {
+        if (serviceGraph == null) {
+            throw new IllegalStateException("ServiceGraph is not set.");
+        }
+        return serviceGraph.getCalls(this);
     }
 
-    // 获取入度和出度
-    public int getInDegree(){
-        return getChainNode().getInDegree();
+    // 获取图中的父服务
+    public List<Service> getParentServices() {
+        if (serviceGraph == null) {
+            throw new IllegalStateException("ServiceGraph is not set.");
+        }
+        return serviceGraph.getParentServices(this);
     }
-    public int getOutDegree(){
-        return getChainNode().getOutDegree();
+
+    // 获取服务链中的子服务
+    public List<Service> getChildServicesInChain(List<Service> serviceChain) {
+        List<Service> childServices = new ArrayList<>();
+        for (Service service : serviceChain) {
+            if (serviceChain.contains(service) && this.getChildServices().contains(service)) {
+                childServices.add(service);
+            }
+        }
+        return childServices;
     }
+
+    // 获取服务链中的父服务
+    public List<Service> getParentServicesInChain(List<Service> serviceChain) {
+        List<Service> parentServices = new ArrayList<>();
+        for (Service service : serviceChain) {
+            if (serviceChain.contains(service) && this.getParentServices().contains(service)) {
+                parentServices.add(service);
+            }
+        }
+        return parentServices;
+    }
+
+
+
 
     // 获取source服务在这条chain上的端点数量(出度)
     public int getEndpoints(Request request) {
         int endpoints = 0;
-        // 遍历服务链
         for (Service service : request.getServiceChain()) {
-            ChainNode node = service.getChainNode();
-            // 判定是不是子服务节点
-            if(getChainNode().getChildren().contains(node))
+            if (serviceGraph.getCalls(this).contains(service)) {
                 endpoints++;
+            }
         }
-
-        // 返回子服务节点的数量
         return endpoints;
     }
 
 
     // 创建cloudlets
-    public List<NativeCloudlet> createCloudlets(Request request, Generator generator) {
-        List<NativeCloudlet> nativeCloudlets = new ArrayList<>();
-        // 获取source服务在这条chain上的端点数量(出度+本身)
-        int endpoints = getEndpoints(request) + 2;
+    public RpcCloudlet createCloudlet(Request request, Generator generator) {
+        // 获取source服务在这条chain上的端点数量
+        int endpoints = getEndpoints(request);
         // 创建cloudlets
-        for (int i =0 ;i < endpoints; i++){
-            NativeCloudlet nativeCloudlet = new NativeCloudlet(request, getName(), generator.generateCloudletLength());
-            nativeCloudlets.add(nativeCloudlet);
-        }
-
-        return nativeCloudlets;
+        return new RpcCloudlet(request, getName(), generator.generateCloudletLength());
     }
 
 

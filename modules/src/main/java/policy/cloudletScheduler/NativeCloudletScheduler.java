@@ -9,7 +9,7 @@ import entity.Instance;
 import entity.Service;
 import lombok.Getter;
 import lombok.Setter;
-import entity.NativeCloudlet;
+import entity.RpcCloudlet;
 
 import java.util.*;
 
@@ -27,16 +27,16 @@ public abstract class NativeCloudletScheduler{
     private int schedulingInterval = 10;
 
     /** The cloudlet waiting list. */
-    protected Queue<NativeCloudlet> waitingQueue = new LinkedList<>();
+    protected Queue<RpcCloudlet> waitingQueue = new LinkedList<>();
 
     /** The cloudlet exec list. */
-    protected Queue<NativeCloudlet> execQueue = new LinkedList<>();
+    protected Queue<RpcCloudlet> execQueue = new LinkedList<>();
 
     /** The cloudlet paused list. */
-    protected List<NativeCloudlet> failedQueue = new LinkedList<>();
+    protected List<RpcCloudlet> failedQueue = new LinkedList<>();
 
     /** The cloudlet finished list. */
-    protected List<NativeCloudlet> finishedList = new ArrayList<>();
+    protected List<RpcCloudlet> finishedList = new ArrayList<>();
 
 
     public NativeCloudletScheduler() {
@@ -44,25 +44,24 @@ public abstract class NativeCloudletScheduler{
     }
 
 
-    public abstract void receiveCloudlets(List<NativeCloudlet> cloudlets);
 
-    public void addToWaitingQueue(NativeCloudlet nativeCloudlet){
-        waitingQueue.add(nativeCloudlet);
-        nativeCloudlet.setStatus(Status.Waiting);
+    public void addToWaitingQueue(RpcCloudlet rpcCloudlet){
+        waitingQueue.add(rpcCloudlet);
+        rpcCloudlet.setStatus(Status.Waiting);
     }
 
-    public void addToWaitingQueue(List<NativeCloudlet> cloudlets){
+    public void addToWaitingQueue(List<RpcCloudlet> cloudlets){
         waitingQueue.addAll(cloudlets);
         cloudlets.forEach(c -> c.setStatus(Status.Waiting));
     }
 
     public abstract void schedule();
-    public abstract boolean distributeCloudlet(NativeCloudlet nativeCloudlet, List<Instance> instanceList);
+    public abstract boolean distributeCloudlet(RpcCloudlet rpcCloudlet, List<Instance> instanceList);
 
 
-    public abstract void addToProcessingQueue(NativeCloudlet cloudlet);
+    public abstract void addToProcessingQueue(RpcCloudlet cloudlet);
 
-    private void addToProcessingQueue(List<NativeCloudlet> cloudlets){
+    private void addToProcessingQueue(List<RpcCloudlet> cloudlets){
         cloudlets.forEach(this::addToProcessingQueue);
     }
 

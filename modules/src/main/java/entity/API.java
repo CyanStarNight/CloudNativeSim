@@ -15,7 +15,7 @@ public class API {
     public String method;
     public String url;
     public double weight = 1.0;
-    protected List<Service> chain = new ArrayList<>();
+    protected List<Service> serviceChain;
     public double failedNum;
     public double sloThreshold = 15.0;
     // qps history
@@ -47,6 +47,7 @@ public class API {
         apiMap.put(name, this);
     }
 
+
     public void updateQPSHistory(double clock, int requestCount, int requestInterval) {
         double qps = (double) requestCount / requestInterval;
         rpsHistory.add(qps);
@@ -61,7 +62,7 @@ public class API {
 
     public double getAverageDelay() {
         return getRequests().stream()
-                .mapToDouble(Request::getDelay)
+                .mapToDouble(Request::getResponseTime)
                 .average()
                 .orElse(0.0);
     }
@@ -69,7 +70,7 @@ public class API {
     // Method to calculate the SLO violation rate
     public int getSloViolations() {
         return (int)getRequests().stream()
-                .filter(request -> request.getDelay() >= sloThreshold)
+                .filter(request -> request.getResponseTime() >= sloThreshold)
                 .count();
     }
 

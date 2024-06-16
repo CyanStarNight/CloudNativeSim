@@ -4,7 +4,6 @@
 
 package entity;
 
-import extend.UsageData;
 import lombok.Getter;
 import lombok.Setter;
 import extend.NativePe;
@@ -37,8 +36,8 @@ public class Instance implements Cloneable{
     // size of instance
     private long size;
     // num of cloudlets
-    public List<NativeCloudlet> processingCloudlets = new ArrayList<>();
-    public List<NativeCloudlet> completionCloudlets = new ArrayList<>();
+    public List<RpcCloudlet> processingCloudlets = new ArrayList<>();
+    public List<RpcCloudlet> completionCloudlets = new ArrayList<>();
     public int totalCloudlets;
 
     // ram needs
@@ -232,7 +231,7 @@ public class Instance implements Cloneable{
         return (List<Instance>) instanceUidMap.values();
     }
 
-    public void releaseCloudlet(NativeCloudlet cl) {
+    public void releaseCloudlet(RpcCloudlet cl) {
         subUsedShare(cl.getShare());
         subUsedRam(cl.getSize());
         //TODO: 如何释放带宽？

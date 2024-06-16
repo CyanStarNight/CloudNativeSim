@@ -11,7 +11,7 @@ import lombok.ToString;
 
 
 @Getter @Setter @ToString
-public class NativeCloudlet {
+public class RpcCloudlet {
     // ID
     public int id;
     // 计数
@@ -41,7 +41,7 @@ public class NativeCloudlet {
     protected double costPerBw;
 
 
-    public NativeCloudlet(Request request, String serviceName, int len) {
+    public RpcCloudlet(Request request, String serviceName, int len) {
         this.id = count++;
         this.request = request;
         this.serviceName = serviceName;
@@ -51,7 +51,7 @@ public class NativeCloudlet {
     }
 
     // 游走cloudlet
-    public NativeCloudlet(int len) {
+    public RpcCloudlet(int len) {
         this.len = len;
         this.status = Status.Ready;
         this.size = (float) len*4;

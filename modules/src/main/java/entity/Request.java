@@ -8,7 +8,9 @@ import core.Status;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static core.Status.Created;
 
@@ -24,11 +26,10 @@ public class Request {
     // 请求的开始时间节点
     private double startTime;
     // 延迟
-    private double delay;
-    // 请求的响应时间节点, 默认-1代表没完成
-    private double responseTimeStamp = -1;
+    private double responseTime;
     // 服务链路
     private List<Service> serviceChain;
+    private Map<Service,Double> nodeDelay = new HashMap<>();
     // 请求计数
     private static int count = 0;
 
@@ -41,8 +42,8 @@ public class Request {
     }
 
 
-    public void addDelay(double delay){
-        this.delay += delay;
+    public void addDelay(Service service, double delay){
+        this.nodeDelay.put(service,delay);
     }
 
 
@@ -56,7 +57,7 @@ public class Request {
     }
 
     public List<Service> getChain() {
-        return api.chain;
+        return api.serviceChain;
     }
 
     public String getApiName(){
