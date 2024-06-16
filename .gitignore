@@ -32,4 +32,3 @@ target/
 out/
 cloudsim-5.0.jar
 .gitignore
-qodana.yaml
