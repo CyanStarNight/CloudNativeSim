@@ -38,7 +38,7 @@ public class Exporter {
 
     // Previous time point for exporting data
     public static double previousTime = 0.0;
-    // instance id -> (currentTime,usage)
+    // instance uid -> (currentTime,usage)
     public static Map<String, List<UsageData>> usageOfCpuHistory = new HashMap<>();
     public static Map<String, List<UsageData>> usageOfRamHistory = new HashMap<>();
     public static Map<String, List<UsageData>> usageOfReceiveBwHistory = new HashMap<>();

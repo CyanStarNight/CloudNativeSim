@@ -117,9 +117,9 @@ public class Service{
 
 
 
-    // 获取source服务在这条chain上的端点数量(出度)
+    // 获取source服务在这条chain上的端点数量+1(本身执行&响应）
     public int getEndpoints(Request request) {
-        int endpoints = 0;
+        int endpoints = 1;
         for (Service service : request.getServiceChain()) {
             if (serviceGraph.getCalls(this).contains(service)) {
                 endpoints++;
@@ -134,7 +134,7 @@ public class Service{
         // 获取source服务在这条chain上的端点数量
         int endpoints = getEndpoints(request);
         // 创建cloudlets
-        return new RpcCloudlet(request, getName(), generator.generateCloudletLength());
+        return new RpcCloudlet(request, getName(), generator.generateCloudletLength()*endpoints);
     }
 
 

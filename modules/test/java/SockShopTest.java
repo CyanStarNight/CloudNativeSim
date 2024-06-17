@@ -44,10 +44,10 @@ public class SockShopTest {
     static String servicesFile = "examples/src/sockshop/services.json";
     static String outputPath = "modules/test/resource/";
     // generator configuration for requests and cloudlets
-    static int finalClients = 100;
-    static int spawnRate = 10;
+    static int finalClients = 300;
+    static int spawnRate = 30;
     static int[] waitTimeSpan = new int[]{5, 15};
-    static int rps = 51;
+    static int rps = 50;
     static int timeLimit = 600;
     // 设定任务平均大小,下面两种表述是等价的:
     static int meanLength = 10; // 单位是百万条指令(M),任务规模 = 4*length
@@ -95,8 +95,8 @@ public class SockShopTest {
             }
             app.submitServiceList(services);
             // generator by rps
-            Generator generator = new Generator(apis,rps, timeLimit, meanLength,stdDevLength);
-//            Generator generator = new Generator(apis,finalClients, spawnRate, waitTimeSpan, timeLimit,meanLength,stdDevLength);
+//            Generator generator = new Generator(apis,rps, timeLimit, meanLength,stdDevLength);
+            Generator generator = new Generator(apis,finalClients, spawnRate, waitTimeSpan, timeLimit,meanLength,stdDevLength);
             app.submitGenerator(generator);
             // instance
             app.submitInstanceList(register.registerAllInstances());
@@ -109,9 +109,9 @@ public class SockShopTest {
             Reporter.outputPath = outputPath;
 //            apis.forEach(Reporter::printApiStatistics);
             Reporter.printApiStatistics(apis);
-            writeStatisticsToCsv(apis,outputPath);
+//            writeStatisticsToCsv(apis,outputPath);
             Reporter.printResourceUsage();
-//            Reporter.writeResourceUsageToCSV(outputPath);
+            Reporter.writeResourceUsageToCSV(outputPath);
 
             Reporter.printPhase("SockShopExample finished!");
 

@@ -273,29 +273,35 @@ public class Reporter {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             // 构建并写入标题行
-            writer.write("Instance ID,Max,Min,Average");
-            if (!usageHistory.isEmpty()) {
-                List<UsageData> firstList = usageHistory.values().iterator().next();
-                for (int i = 1; i <= firstList.size(); i++) {
-                    writer.write("," + (i * schedulingInterval));
-                }
-            }
+            writer.write("Instance Name,Max,Min,Average");
 
             // 写入每个实例的数据
             for (Map.Entry<String, List<UsageData>> entry : usageHistory.entrySet()) {
-                String instanceId = entry.getKey();
+                String instanceUid = entry.getKey();
+                String instanceName = Instance.getInstance(instanceUid).getName();
                 List<UsageData> history = entry.getValue();
                 double max = history.stream().mapToDouble(UsageData::getUsage).max().orElse(0.0);
                 double min = history.stream().mapToDouble(UsageData::getUsage).min().orElse(0.0);
                 double average = history.stream().mapToDouble(UsageData::getUsage).average().orElse(0.0);
 
-                writer.write(String.format("\n%s,%s,%s,%s", instanceId, df.format(max), df.format(min), df.format(average)));
+                writer.write(String.format("\n%s,%s,%s,%s", instanceName, df.format(max), df.format(min), df.format(average)));
 
-                // 写入实际的每个时间点的数据
-                for (UsageData data : history) {
-                    writer.write("," + df.format(data.getUsage()));
-                }
             }
+
+            // 写入实际的每个时间点的数据
+//            if (!usageHistory.isEmpty()) {
+//                List<UsageData> firstList = usageHistory.values().iterator().next();
+//                for (int i = 1; i <= firstList.size(); i++) {
+//                    writer.write("," + (i * schedulingInterval));
+//                }
+//            }
+//            for (Map.Entry<String, List<UsageData>> entry : usageHistory.entrySet()) {
+
+
+//                for (UsageData data : history) {
+//                    writer.write("," + df.format(data.getUsage()));
+//                }
+//            }
         } catch (IOException e) {
             System.err.println("Error writing to CSV for " + resourceType + ": " + e.getMessage());
             throw e;  // 把异常再次抛出以确保调用者知晓发生了错误
