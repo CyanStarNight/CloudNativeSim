@@ -4,24 +4,31 @@
 
 package policy.scaling;
 
+import core.Exporter;
 import entity.Instance;
 import entity.Service;
 import extend.NativeVm;
+import extend.UsageData;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static core.Reporter.printEvent;
 
 @Getter
 @Setter
 public class VerticalScalingPolicy extends ServiceScalingPolicy{
+    // 范围，小于下界缩容，大于上界扩容
+    private double[] cpuThreshold = {0.5,0.8};
 
-    double cpuThreshold = 0.8;
+    private double targetCpuUtilization = 0.65;
 
-    private List<Instance> scalingList = new ArrayList<>();
+    private Map<String, List<UsageData>> usageOfCpuHistory = Exporter.usageOfCpuHistory;
+    // 最近10条记录
+    private int recentRange = 10;
+
+    private Set<Instance> scalingSet = new HashSet<>();
     private List<Instance> failedList = new ArrayList<>();
     private List<Instance> finishedList = new ArrayList<>();
 
@@ -33,9 +40,16 @@ public class VerticalScalingPolicy extends ServiceScalingPolicy{
     public boolean needScaling(Service service) {
         boolean flag = false;
         for (Instance instance : service.getInstanceList()) {
-            if (instance.getUtilizationOfCpu() > cpuThreshold){
+            // 读取用量历史
+            List<UsageData> recentData = usageOfCpuHistory.get(instance.getUid());
+            if (recentData == null) continue;
+            int size = recentData.size();
+            double recentUsage = recentData.subList(Math.max(0,size-recentRange), size).stream()
+                    .mapToDouble(UsageData::getUsage).average().orElse(0.0); // 近期平均值
+            double recentUtilization = recentUsage / instance.getCurrentAllocatedCpuShare();
+            if (recentUtilization > cpuThreshold[1] || recentUtilization < cpuThreshold[0]){
                 // 放入scaling
-                getScalingList().add(instance);
+                getScalingSet().add(instance);
                 flag =  true;
             }
         }
@@ -43,15 +57,15 @@ public class VerticalScalingPolicy extends ServiceScalingPolicy{
     }
 
     @Override
-    public void scaling(Service service) {//TODO: 缩容处理似乎有问题
+    public void scaling(Service service) {//TODO: 怎么总是缩容呢？
 
-        for (Instance instance : getScalingList()) {
-            // 计算伸缩后的资源
-            int cpuUsed = instance.getUsedShare();
+        for (Instance instance : getScalingSet()) {
+
+            double cpuUsed = instance.getCurrentUsedCpuShare();
             int cpuAllocated = instance.getCurrentAllocatedCpuShare();
-            int cpuRequests = (int) Math.ceil(cpuUsed / cpuThreshold);
-            // 避免扩展
-            if (cpuUsed == 0) continue;
+            assert cpuAllocated != 0: "the share of " + instance.getName() + " is empty.";
+            // 计算伸缩后的资源
+            int cpuRequests = (int) Math.ceil(cpuUsed / targetCpuUtilization);
             // 更新requests
             instance.setRequests_share(cpuRequests);
             // 查询vm列表,是否有充足资源
@@ -82,8 +96,9 @@ public class VerticalScalingPolicy extends ServiceScalingPolicy{
             }
         }
 
-        getScalingList().removeAll(getFinishedList());
+        getScalingSet().removeAll(getFinishedList());
         getFinishedList().clear();
+        getNewInstances().clear();
 
     }
 

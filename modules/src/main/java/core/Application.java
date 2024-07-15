@@ -280,21 +280,18 @@ public class Application extends SimEntity {
     private void processServiceScaling(SimEvent ev) {
         // log
 //        printEvent("start scaling...");
-        List<Instance> newInstanceList = new ArrayList<Instance>();
         // 判断实例是否需要scaling，所以遍历实例
         for(Service service:serviceList){
-
             ServiceScalingPolicy scalingPolicy = service.getServiceScalingPolicy();
             //TODO: 如果实例跟服务一对多的关系怎么办？要避免重复伸缩
             if(scalingPolicy.needScaling(service)) {
                 // scaling
                 scalingPolicy.scaling(service);
                 // 更新实例
-                List<Instance> replications = scalingPolicy.getReplications();
-                newInstanceList.addAll(replications);
+                List<Instance> newInstances = scalingPolicy.getNewInstances();
+                getInstanceList().addAll(newInstances);
             }
         }
-        setInstanceList(newInstanceList);
     }
 
 
@@ -407,7 +404,6 @@ public class Application extends SimEntity {
         submitCloudlets(cloudlets);
 
         // 获取变量
-        String serviceName = service.getName();
         NativeCloudletScheduler scheduler = service.getCloudletScheduler();
 
         // 接收

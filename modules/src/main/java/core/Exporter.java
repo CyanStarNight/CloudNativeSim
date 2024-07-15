@@ -48,9 +48,9 @@ public class Exporter {
 
         String instanceUid = instance.getUid();
         // 更新或者初始化CPU使用历史记录
-        updateUsageData(usageOfCpuHistory, instanceUid, currentTime,session,instance.getUsedShare());
+        updateUsageData(usageOfCpuHistory, instanceUid, currentTime ,session, instance.getUsedShare());
         // 更新或者初始化RAM使用历史记录
-        updateUsageData(usageOfRamHistory, instanceUid, currentTime,session,instance.getUsedRam());
+        updateUsageData(usageOfRamHistory, instanceUid, currentTime ,session, instance.getUsedRam());
         // 更新接收带宽使用历史记录
 //            addUsageData(usageOfReceiveBwHistory, instanceUid, currentTime,instance.getUsedShare());
         // 更新传输带宽使用历史记录

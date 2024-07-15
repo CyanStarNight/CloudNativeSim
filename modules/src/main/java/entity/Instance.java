@@ -4,6 +4,8 @@
 
 package entity;
 
+import core.Exporter;
+import extend.UsageData;
 import lombok.Getter;
 import lombok.Setter;
 import extend.NativePe;
@@ -72,7 +74,7 @@ public class Instance implements Cloneable{
     private int currentAllocatedCpuShare;
 
     // ram used
-    private int usedRam;
+    private int usedRam; //TODO: used和currentUsed需要区分开
     // share used
     private int usedShare;
     // mips used
@@ -244,4 +246,30 @@ public class Instance implements Cloneable{
         instance.getReplicaSet().remove(instance);
         instance.serviceList.forEach(s -> Service.getService(s).removeInstance(instance));
     }
+
+    public double getCurrentUsedCpuShare() {
+        List<UsageData> usageDataList = Exporter.usageOfCpuHistory.get(getUid());
+        // 检查列表是否为空
+        if (usageDataList == null || usageDataList.isEmpty()) {
+            return 0;  // 如果列表为空，返回0表示没有数据
+        }
+
+        // 计算要返回的数据数量，最多20条
+        int numberOfItemsToReturn = 20;
+        int startIndex = Math.max(0, usageDataList.size() - numberOfItemsToReturn);
+
+        // 获取最后20条数据（如果存在）
+        List<UsageData> lastTwentyItems = usageDataList.subList(startIndex, usageDataList.size());
+
+        // 假设我们需要计算并返回这20条数据中的CPU使用率总和
+        double totalCpuShare = 0;
+        double totalSession = 0;
+        for (UsageData data : lastTwentyItems) {
+            totalCpuShare += data.getUsage() * data.getSession();
+            totalSession += data.getSession();
+        }
+
+        return totalCpuShare/totalSession;
+    }
+
 }

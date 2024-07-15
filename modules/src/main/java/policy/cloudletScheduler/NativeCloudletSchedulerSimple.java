@@ -35,7 +35,7 @@ public class NativeCloudletSchedulerSimple extends NativeCloudletScheduler {
         // 查询是否能加入执行队列
         for (RpcCloudlet cloudlet : getWaitingQueue()) {
             // 如果能分配到处理器，加入
-            if (distributeCloudlet(cloudlet,getService().getInstanceList())){
+            if (distributeCloudlet(cloudlet, getService().getInstanceList())){
                 addToProcessingQueue(cloudlet);
                 waitingStop.add(cloudlet);
             }
@@ -56,9 +56,11 @@ public class NativeCloudletSchedulerSimple extends NativeCloudletScheduler {
     // 分配合适的实例
     public boolean distributeCloudlet(RpcCloudlet cloudlet, List<Instance> instanceList) {
         // 检查instance list非空
-        if (instanceList == null || instanceList.isEmpty()) {
-            throw new IllegalArgumentException("Instance list cannot be null or empty");
-        }
+        if (instanceList == null)
+            throw new IllegalArgumentException("Instance list cannot be null.");
+
+        if (instanceList.isEmpty())
+            throw new IllegalArgumentException("Instance list cannot be empty.");
         //  选择份额最大的instance
 //        Instance selectedInstance = instanceList.stream()
 //                .max(Comparator.comparingDouble(Instance::getFreeShare))
@@ -128,5 +130,6 @@ public class NativeCloudletSchedulerSimple extends NativeCloudletScheduler {
             cl.setStatus(Status.Success);
         }
     }
+
 
 }

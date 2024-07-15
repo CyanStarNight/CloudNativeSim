@@ -69,14 +69,14 @@ public class NativeVm extends Vm {
     public boolean instanceCreate(Instance instance){
 
         if (getSize() < instance.getSize()) {
-            Log.printLine("\nAllocation of "+ instance.getType()+" #" + instance.getRid() + " to Vm #" + getId()
+            Log.printLine("\nAllocation of "+ instance.getType()+" #" + instance.getName() + " to Vm #" + getId()
                     + " failed by storage");
             instance.setStatus(Status.Denied);
             return false;
         }
 
         if (!getNativeRamProvisioner().allocateRamForInstance(instance, instance.getRequests_ram())) {
-            Log.printLine("\nAllocation of "+ instance.getType()+" #" + instance.getRid() + " to Vm #" + getId()
+            Log.printLine("\nAllocation of "+ instance.getType()+" #" + instance.getName() + " to Vm #" + getId()
                     + " failed by RAM");
             instance.setStatus(Status.Denied);
             return false;

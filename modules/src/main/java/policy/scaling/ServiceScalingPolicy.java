@@ -5,7 +5,6 @@
 package policy.scaling;
 
 import entity.Instance;
-import entity.ReplicaSet;
 import entity.Service;
 import extend.NativeVm;
 import lombok.Getter;
@@ -14,7 +13,6 @@ import policy.allocation.ServiceAllocationPolicy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -24,18 +22,16 @@ public abstract class ServiceScalingPolicy {
 
     private List<NativeVm> vmList;
 
-    // scaling失败
-
-    private List<Instance> replications;
+    private List<Instance> newInstances;
 
 
     public ServiceScalingPolicy() {
-        replications = new ArrayList<>();
+        newInstances = new ArrayList<>();
     }
 
     public ServiceScalingPolicy(Service service,ServiceAllocationPolicy serviceAllocationPolicy) {
         this.vmList = serviceAllocationPolicy.getVmList();
-        replications = new ArrayList<>();
+        newInstances = new ArrayList<>();
     }
 
     public abstract boolean needScaling(Service service);

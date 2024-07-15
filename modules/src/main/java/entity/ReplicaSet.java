@@ -49,4 +49,23 @@ public class ReplicaSet {
 
         return behavior.clone();
     }
+
+    public double getMinUtilizationOfCpu() {
+        return getReplicas().stream().
+                mapToDouble(Instance::getUtilizationOfCpu).min().
+                orElse(0.0);
+    }
+
+    public double getMaxUtilizationOfCpu() {
+        return getReplicas().stream().
+                mapToDouble(Instance::getUtilizationOfCpu).max().
+                orElse(0.0);
+    }
+
+    public double getAvgUtilizationOfCpu() {
+        return getReplicas().stream().
+                mapToDouble(Instance::getUtilizationOfCpu).average().
+                orElse(0.0);
+    }
+
 }

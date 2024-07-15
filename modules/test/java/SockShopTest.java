@@ -16,9 +16,9 @@ import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
 import policy.cloudletScheduler.NativeCloudletSchedulerBestEffort;
 import policy.cloudletScheduler.NativeCloudletSchedulerSimple;
-import policy.migration.InstanceMigrationPolicySimple;
 import policy.scaling.HorizontalScalingPolicy;
 import policy.scaling.NoneScalingPolicy;
+import policy.scaling.VerticalScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
 import provisioner.NativeRamProvisionerSimple;
 import provisioner.VmBwProvisionerSimple;
@@ -28,7 +28,6 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
-import static core.Reporter.writeStatisticsToCsv;
 import static org.cloudbus.cloudsim.Log.printLine;
 
 /**
@@ -42,7 +41,6 @@ public class SockShopTest {
     private static String arch = "x86"; // system architecture, 标志着指令平均长度4B
     static String podsFile = "examples/src/sockshop/instances.yaml";
     static String servicesFile = "examples/src/sockshop/services.json";
-    static String outputPath = "modules/test/resource/";
     // generator configuration for requests and cloudlets
     static int finalClients = 300;
     static int spawnRate = 30;
@@ -91,7 +89,7 @@ public class SockShopTest {
             // set policy
             for (Service service : services){
                 service.setCloudletScheduler(new NativeCloudletSchedulerSimple());
-                service.setServiceScalingPolicy(new NoneScalingPolicy());
+                service.setServiceScalingPolicy(new HorizontalScalingPolicy());
             }
             app.submitServiceList(services);
             // generator by rps
@@ -106,12 +104,10 @@ public class SockShopTest {
             CloudNativeSim.stopSimulation();
 
             // report
-            Reporter.outputPath = outputPath;
 //            apis.forEach(Reporter::printApiStatistics);
             Reporter.printApiStatistics(apis);
 //            writeStatisticsToCsv(apis,outputPath);
-            Reporter.printResourceUsage();
-            Reporter.writeResourceUsageToCSV(outputPath);
+            Reporter.printResourceUsage(true,"modules/test/resource/");
 
             Reporter.printPhase("SockShopExample finished!");
 

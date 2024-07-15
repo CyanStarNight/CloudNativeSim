@@ -10,9 +10,14 @@ import entity.*;
 import extend.UsageData;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.cloudbus.cloudsim.Cloudlet;
 
 import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -206,42 +211,51 @@ public class Reporter {
         }
     }
 
-    public static void printResourceUsage() {
+    private static final int SAMPLING_INTERVAL = 10;  // 10秒的采样间隔，以毫秒为单位
+    private static final DecimalFormat df = new DecimalFormat("0.00");
 
-        AsciiTable at = new AsciiTable();
-        at.getContext().setGridTheme(TA_GridThemes.FULL);
-//        at.getRenderer().setCWC(new CWC_LongestLine());
-
-        // 打印标题
-        at.addRule();
-        at.addRow(" Instance Name", "CPU Usage Average", "RAM Usage Average");  // 只显示平均值
-        at.addRule();
-
-
-        for (Instance instance : finalInstanceList) {
-
-            String instanceUid = instance.getUid();
-            // 获取CPU和RAM的平均使用率
-            double cpuAverage = getAverageUsage(usageOfCpuHistory.get(instanceUid));
-            double ramAverage = getAverageUsage(usageOfRamHistory.get(instanceUid));
-//            double rbwAverage = getAverageUsage(usageOfReceiveBwHistory.get(instanceUid));
-//            double tbwAverage = getAverageUsage(usageOfTransmitBwHistory.get(instanceUid));
-            // 添加行数据
-            at.addRow(instance.getName(), ifPrintNone(cpuAverage), ifPrintNone(ramAverage)
-//                    , ifPrintNone(rbwAverage), ifPrintNone(tbwAverage)
-            );
-            at.addRule();
-        }
-
-        System.out.println(at.render());
+    public static void printResourceUsage() throws IOException {
+        printResourceUsage(false, null);
     }
 
 
+    public static void printResourceUsage(boolean exportToCsv, String outputPath) throws IOException {
 
-    // 计算指定instance的平均利用率：因为用量历史是随着stage更新的，计算平均值需要乘以时间再除以总时长
+        AsciiTable at = new AsciiTable();
+        at.getContext().setGridTheme(TA_GridThemes.FULL);
+
+        // 打印标题
+        at.addRule();
+        at.addRow("Instance Name", "CPU Usage Average", "RAM Usage Average");
+        at.addRule();
+
+        BufferedWriter writer = null;
+        if (exportToCsv && outputPath != null) {
+            writer = new BufferedWriter(new FileWriter(outputPath + "Resource_Report.csv"));
+            writer.write("Instance Name,CPU Usage Average,RAM Usage Average\n");
+        }
+
+        for (Instance instance : finalInstanceList) {
+            String instanceUid = instance.getUid();
+            double cpuAverage = getAverageUsage(usageOfCpuHistory.get(instanceUid));
+            double ramAverage = getAverageUsage(usageOfRamHistory.get(instanceUid));
+            at.addRow(instance.getName(), ifPrintNone(cpuAverage), ifPrintNone(ramAverage));
+            at.addRule();
+
+            if (exportToCsv && writer != null) {
+                writer.write(String.format("%s,%s,%s\n", instance.getName(), ifPrintNone(cpuAverage), ifPrintNone(ramAverage)));
+            }
+        }
+
+        System.out.println(at.render());
+
+        if (writer != null) {
+            writer.close();
+        }
+    }
+
     private static double getAverageUsage(List<UsageData> usageDataList) {
-        // 代表这个实例从未被使用过
-        if(usageDataList == null || usageDataList.isEmpty()) return -1;
+        if (usageDataList == null || usageDataList.isEmpty()) return -1;
 
         double sum = 0;
         double totalSession = 0;
@@ -254,65 +268,61 @@ public class Reporter {
         UsageData first = usageDataList.get(0);
         double processSession = last.getTimestamp() + last.getSession() - first.getTimestamp();
         return sum / processSession;
-//        return sum / usageDataList.size();
     }
 
 
-    private static void addResourceUsageRow(AsciiTable at, String instanceId, String resourceType, List<UsageData> usageDataList, DecimalFormat df) {
-        double max = usageDataList.stream().mapToDouble(UsageData::getUsage).max().orElse(0.0);
-        double min = usageDataList.stream().mapToDouble(UsageData::getUsage).min().orElse(0.0);
-        double average = usageDataList.stream().mapToDouble(UsageData::getUsage).average().orElse(0.0);
 
-        at.addRow(instanceId, resourceType, df.format(max), df.format(min), df.format(average));
-    }
+    public static void writeUsageDetailToCSV(Map<String, List<UsageData>> usageHistory, String resourceType, String outputPath) throws IOException {
+        for (Map.Entry<String, List<UsageData>> entry : usageHistory.entrySet()) {
+            String instanceUid = entry.getKey();
+            String instanceName = Instance.getInstance(instanceUid).getName();
+            String fileName = outputPath + instanceName + "_" + resourceType + "_Usage_History.csv";
 
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+                writer.write("Timestamp,Average");
 
-    private static void writeUsage(Map<String, List<UsageData>> usageHistory, String resourceType, String outputPath) throws IOException {
-        DecimalFormat df = new DecimalFormat("0.00");
-        String fileName = outputPath + resourceType + "_Usage_History.csv";
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
-            // 构建并写入标题行
-            writer.write("Instance Name,Max,Min,Average");
-
-            // 写入每个实例的数据
-            for (Map.Entry<String, List<UsageData>> entry : usageHistory.entrySet()) {
-                String instanceUid = entry.getKey();
-                String instanceName = Instance.getInstance(instanceUid).getName();
                 List<UsageData> history = entry.getValue();
-                double max = history.stream().mapToDouble(UsageData::getUsage).max().orElse(0.0);
-                double min = history.stream().mapToDouble(UsageData::getUsage).min().orElse(0.0);
-                double average = history.stream().mapToDouble(UsageData::getUsage).average().orElse(0.0);
+                if (history == null || history.isEmpty()) {
+                    writer.write(String.format("\n%s,%s", "N/A", df.format(-1.0)));
+                    continue;
+                }
 
-                writer.write(String.format("\n%s,%s,%s,%s", instanceName, df.format(max), df.format(min), df.format(average)));
+                double lastSampleTime = history.get(0).getTimestamp();
+                double sumUsage = 0;
+                double totalSession = 10;
+                for (UsageData data : history) {
+                    double currentTime = data.getTimestamp();
+                    double currentSession = data.getSession();
+                    double currentUsage = data.getUsage();
 
+                    if (currentTime + currentSession - lastSampleTime >= SAMPLING_INTERVAL) {
+                        double averageUsage = sumUsage / totalSession;
+                        writer.write(String.format("\n%s,%s", lastSampleTime, df.format(averageUsage)));
+
+                        lastSampleTime = currentTime;
+                        sumUsage = 0;
+                        totalSession = 0;
+                    }
+
+                    sumUsage += currentUsage * currentSession;
+                    totalSession += currentSession;
+                }
+
+                if (totalSession > 0) {
+                    double averageUsage = sumUsage / totalSession;
+                    writer.write(String.format("\n%s,%s", lastSampleTime, df.format(averageUsage)));
+                }
+            } catch (IOException e) {
+                System.err.println("Error writing to CSV for " + resourceType + ": " + e.getMessage());
+                throw e;
             }
-
-            // 写入实际的每个时间点的数据
-//            if (!usageHistory.isEmpty()) {
-//                List<UsageData> firstList = usageHistory.values().iterator().next();
-//                for (int i = 1; i <= firstList.size(); i++) {
-//                    writer.write("," + (i * schedulingInterval));
-//                }
-//            }
-//            for (Map.Entry<String, List<UsageData>> entry : usageHistory.entrySet()) {
-
-
-//                for (UsageData data : history) {
-//                    writer.write("," + df.format(data.getUsage()));
-//                }
-//            }
-        } catch (IOException e) {
-            System.err.println("Error writing to CSV for " + resourceType + ": " + e.getMessage());
-            throw e;  // 把异常再次抛出以确保调用者知晓发生了错误
         }
     }
 
 
-    public static void writeResourceUsageToCSV(String outputPath) throws IOException {
-        writeUsage(usageOfCpuHistory, "CPU", outputPath);
-        writeUsage(usageOfRamHistory, "RAM", outputPath);
-//        writeUsage(usageOfReceiveBwHistory, "ReceiveBW", outputPath);
-//        writeUsage(usageOfTransmitBwHistory, "TransmitBW", outputPath);
+    public static void exportResourceUsageToCSV(String resourceType,String outputPath) throws IOException {
+        writeUsageDetailToCSV(usageOfCpuHistory, resourceType, outputPath);
+        // 其他资源类型可以在此处调用类似方法
     }
+
 }
