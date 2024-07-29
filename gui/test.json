@@ -1,0 +1,103 @@
+{
+  "edges": [
+    {
+      "id": "e1",
+      "source": "front-end",
+      "target": "carts"
+    },
+    {
+      "id": "e2",
+      "source": "front-end",
+      "target": "orders"
+    },
+    {
+      "id": "e3",
+      "source": "front-end",
+      "target": "catalogue"
+    },
+    {
+      "id": "e4",
+      "source": "front-end",
+      "target": "user"
+    },
+    {
+      "id": "e5",
+      "source": "front-end",
+      "target": "payment"
+    },
+    {
+      "id": "e6",
+      "source": "front-end",
+      "target": "session-db"
+    },
+    {
+      "id": "e7",
+      "source": "orders",
+      "target": "orders-db"
+    },
+    {
+      "id": "e8",
+      "source": "orders",
+      "target": "queue-master"
+    },
+    {
+      "id": "e9",
+      "source": "orders",
+      "target": "carts"
+    },
+    {
+      "id": "e10",
+      "source": "orders",
+      "target": "payment"
+    },
+    {
+      "id": "e11",
+      "source": "orders",
+      "target": "shipping"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "front-end",
+      "title": "Front-End",
+      "APIs": ["GET /catalogue", "GET /login", "POST /register", "GET /cart", "POST /cart", "POST /cards", "POST /addresses", "POST /orders", "GET /tags"]
+    },
+    {
+      "id": "orders",
+      "title": "Orders",
+      "APIs": ["POST /orders"]
+    },
+    {
+      "id": "carts",
+      "title": "Carts"
+    },
+    {
+      "id": "catalogue",
+      "title": "Catalogue"
+    },
+    {
+      "id": "user",
+      "title": "User"
+    },
+    {
+      "id": "payment",
+      "title": "Payment"
+    },
+    {
+      "id": "session-db",
+      "title": "Session-DB"
+    },
+    {
+      "id": "orders-db",
+      "title": "Orders-DB"
+    },
+    {
+      "id": "queue-master",
+      "title": "Queue-Master"
+    },
+    {
+      "id": "shipping",
+      "title": "Shipping"
+    }
+  ]
+}
