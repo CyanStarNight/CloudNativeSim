@@ -16,19 +16,9 @@
       "target": "catalogue"
     },
     {
-      "id": "e4",
-      "source": "front-end",
-      "target": "user"
-    },
-    {
       "id": "e5",
       "source": "front-end",
       "target": "payment"
-    },
-    {
-      "id": "e6",
-      "source": "front-end",
-      "target": "session-db"
     },
     {
       "id": "e7",
@@ -76,16 +66,8 @@
       "title": "Catalogue"
     },
     {
-      "id": "user",
-      "title": "User"
-    },
-    {
       "id": "payment",
       "title": "Payment"
-    },
-    {
-      "id": "session-db",
-      "title": "Session-DB"
     },
     {
       "id": "orders-db",
