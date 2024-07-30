@@ -50,36 +50,44 @@
     {
       "id": "front-end",
       "title": "Front-End",
-      "APIs": ["GET /catalogue", "GET /login", "POST /register", "GET /cart", "POST /cart", "POST /cards", "POST /addresses", "POST /orders", "GET /tags"]
+      "APIs": ["GET /catalogue", "GET /login", "POST /register", "GET /cart", "POST /cart", "POST /cards", "POST /addresses", "POST /orders", "GET /tags"],
+      "color": "rgb(255, 99, 132)"
     },
     {
       "id": "orders",
       "title": "Orders",
-      "APIs": ["POST /orders"]
+      "APIs": ["POST /orders"],
+      "color": "rgb(54, 162, 235)"
     },
     {
       "id": "carts",
-      "title": "Carts"
+      "title": "Carts",
+      "color": "rgb(255, 206, 86)"
     },
     {
       "id": "catalogue",
-      "title": "Catalogue"
+      "title": "Catalogue",
+      "color": "rgb(75, 192, 192)"
     },
     {
       "id": "payment",
-      "title": "Payment"
+      "title": "Payment",
+      "color": "rgb(153, 102, 255)"
     },
     {
       "id": "orders-db",
-      "title": "Orders-DB"
+      "title": "Orders-DB",
+      "color": "rgb(255, 159, 64)"
     },
     {
       "id": "queue-master",
-      "title": "Queue-Master"
+      "title": "Queue-Master",
+      "color": "rgb(201, 203, 207)"
     },
     {
       "id": "shipping",
-      "title": "Shipping"
+      "title": "Shipping",
+      "color": "rgb(100, 149, 237)"
     }
   ]
 }
