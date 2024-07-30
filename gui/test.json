@@ -51,8 +51,8 @@
       "id": "front-end",
       "title": "Front-End",
       "APIs": ["GET /catalogue", "GET /login", "POST /register", "GET /cart", "POST /cart", "POST /cards", "POST /addresses", "POST /orders", "GET /tags"],
-      "arc__load": 0.5,
-      "arc__response_time": 0.5,
+      "arc_load": 0.5,
+      "arc_response_time": 0.5,
       "mainstat": 1,
       "config": {
         "color": {
@@ -64,8 +64,8 @@
       "id": "orders",
       "title": "Orders",
       "APIs": ["POST /orders"],
-      "arc__load": 0.6,
-      "arc__response_time": 0.4,
+      "arc_load": 0.6,
+      "arc_response_time": 0.4,
       "mainstat": 2,
       "config": {
         "color": {
@@ -76,8 +76,8 @@
     {
       "id": "carts",
       "title": "Carts",
-      "arc__load": 0.4,
-      "arc__response_time": 0.6,
+      "arc_load": 0.4,
+      "arc_response_time": 0.6,
       "mainstat": 3,
       "config": {
         "color": {
@@ -88,8 +88,8 @@
     {
       "id": "catalogue",
       "title": "Catalogue",
-      "arc__load": 0.7,
-      "arc__response_time": 0.3,
+      "arc_load": 0.7,
+      "arc_response_time": 0.3,
       "mainstat": 4,
       "config": {
         "color": {
@@ -100,8 +100,8 @@
     {
       "id": "payment",
       "title": "Payment",
-      "arc__load": 0.3,
-      "arc__response_time": 0.7,
+      "arc_load": 0.3,
+      "arc_response_time": 0.7,
       "mainstat": 5,
       "config": {
         "color": {
@@ -112,8 +112,8 @@
     {
       "id": "orders-db",
       "title": "Orders-DB",
-      "arc__load": 0.8,
-      "arc__response_time": 0.2,
+      "arc_load": 0.8,
+      "arc_response_time": 0.2,
       "mainstat": 6,
       "config": {
         "color": {
@@ -124,8 +124,8 @@
     {
       "id": "queue-master",
       "title": "Queue-Master",
-      "arc__load": 0.5,
-      "arc__response_time": 0.5,
+      "arc_load": 0.5,
+      "arc_response_time": 0.5,
       "mainstat": 7,
       "config": {
         "color": {
@@ -136,8 +136,8 @@
     {
       "id": "shipping",
       "title": "Shipping",
-      "arc__load": 0.6,
-      "arc__response_time": 0.4,
+      "arc_load": 0.6,
+      "arc_response_time": 0.4,
       "mainstat": 8,
       "config": {
         "color": {
