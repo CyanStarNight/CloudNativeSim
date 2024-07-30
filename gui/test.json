@@ -51,8 +51,9 @@
       "id": "front-end",
       "title": "Front-End",
       "APIs": ["GET /catalogue", "GET /login", "POST /register", "GET /cart", "POST /cart", "POST /cards", "POST /addresses", "POST /orders", "GET /tags"],
-      "arc__1": 1,
-      "mainstat": "Active",
+      "arc__load": 0.5,
+      "arc__response_time": 0.5,
+      "mainstat": 1,
       "config": {
         "color": {
           "fixedColor": "rgb(255, 99, 132)"
@@ -63,8 +64,9 @@
       "id": "orders",
       "title": "Orders",
       "APIs": ["POST /orders"],
-      "arc__1": 1,
-      "mainstat": "Pending",
+      "arc__load": 0.6,
+      "arc__response_time": 0.4,
+      "mainstat": 2,
       "config": {
         "color": {
           "fixedColor": "rgb(54, 162, 235)"
@@ -74,8 +76,9 @@
     {
       "id": "carts",
       "title": "Carts",
-      "arc__1": 1,
-      "mainstat": "Updated",
+      "arc__load": 0.4,
+      "arc__response_time": 0.6,
+      "mainstat": 3,
       "config": {
         "color": {
           "fixedColor": "rgb(255, 206, 86)"
@@ -85,8 +88,9 @@
     {
       "id": "catalogue",
       "title": "Catalogue",
-      "arc__1": 1,
-      "mainstat": "Available",
+      "arc__load": 0.7,
+      "arc__response_time": 0.3,
+      "mainstat": 4,
       "config": {
         "color": {
           "fixedColor": "rgb(75, 192, 192)"
@@ -96,8 +100,9 @@
     {
       "id": "payment",
       "title": "Payment",
-      "arc__1": 1,
-      "mainstat": "Processing",
+      "arc__load": 0.3,
+      "arc__response_time": 0.7,
+      "mainstat": 5,
       "config": {
         "color": {
           "fixedColor": "rgb(153, 102, 255)"
@@ -107,8 +112,9 @@
     {
       "id": "orders-db",
       "title": "Orders-DB",
-      "arc__1": 1,
-      "mainstat": "Online",
+      "arc__load": 0.8,
+      "arc__response_time": 0.2,
+      "mainstat": 6,
       "config": {
         "color": {
           "fixedColor": "rgb(255, 159, 64)"
@@ -118,8 +124,9 @@
     {
       "id": "queue-master",
       "title": "Queue-Master",
-      "arc__1": 1,
-      "mainstat": "Queued",
+      "arc__load": 0.5,
+      "arc__response_time": 0.5,
+      "mainstat": 7,
       "config": {
         "color": {
           "fixedColor": "rgb(201, 203, 207)"
@@ -129,8 +136,9 @@
     {
       "id": "shipping",
       "title": "Shipping",
-      "arc__1": 1,
-      "mainstat": "In Transit",
+      "arc__load": 0.6,
+      "arc__response_time": 0.4,
+      "mainstat": 8,
       "config": {
         "color": {
           "fixedColor": "rgb(100, 149, 237)"
