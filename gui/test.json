@@ -52,6 +52,7 @@
       "title": "Front-End",
       "APIs": ["GET /catalogue", "GET /login", "POST /register", "GET /cart", "POST /cart", "POST /cards", "POST /addresses", "POST /orders", "GET /tags"],
       "arc__1": 1,
+      "mainstat": "Active",
       "config": {
         "color": {
           "fixedColor": "rgb(255, 99, 132)"
@@ -63,6 +64,7 @@
       "title": "Orders",
       "APIs": ["POST /orders"],
       "arc__1": 1,
+      "mainstat": "Pending",
       "config": {
         "color": {
           "fixedColor": "rgb(54, 162, 235)"
@@ -73,6 +75,7 @@
       "id": "carts",
       "title": "Carts",
       "arc__1": 1,
+      "mainstat": "Updated",
       "config": {
         "color": {
           "fixedColor": "rgb(255, 206, 86)"
@@ -83,6 +86,7 @@
       "id": "catalogue",
       "title": "Catalogue",
       "arc__1": 1,
+      "mainstat": "Available",
       "config": {
         "color": {
           "fixedColor": "rgb(75, 192, 192)"
@@ -93,6 +97,7 @@
       "id": "payment",
       "title": "Payment",
       "arc__1": 1,
+      "mainstat": "Processing",
       "config": {
         "color": {
           "fixedColor": "rgb(153, 102, 255)"
@@ -103,6 +108,7 @@
       "id": "orders-db",
       "title": "Orders-DB",
       "arc__1": 1,
+      "mainstat": "Online",
       "config": {
         "color": {
           "fixedColor": "rgb(255, 159, 64)"
@@ -113,6 +119,7 @@
       "id": "queue-master",
       "title": "Queue-Master",
       "arc__1": 1,
+      "mainstat": "Queued",
       "config": {
         "color": {
           "fixedColor": "rgb(201, 203, 207)"
@@ -123,6 +130,7 @@
       "id": "shipping",
       "title": "Shipping",
       "arc__1": 1,
+      "mainstat": "In Transit",
       "config": {
         "color": {
           "fixedColor": "rgb(100, 149, 237)"
