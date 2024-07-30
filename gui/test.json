@@ -50,169 +50,83 @@
     {
       "id": "front-end",
       "title": "Front-End",
-      "tags": [
-        {
-          "service": "front-end",
-          "protocol": "HTTP",
-          "origin_service": "user",
-          "target_service": "front-end"
+      "APIs": ["GET /catalogue", "GET /login", "POST /register", "GET /cart", "POST /cart", "POST /cards", "POST /addresses", "POST /orders", "GET /tags"],
+      "arc__1": 1,
+      "config": {
+        "color": {
+          "fixedColor": "rgb(255, 99, 132)"
         }
-      ],
-      "fields": {
-        "in_timesum": 100,
-        "in_count": 200,
-        "error_in": 5,
-        "out_timesum": 50,
-        "out_count": 150,
-        "error_out": 3,
-        "threshold": 500
       }
     },
     {
       "id": "orders",
       "title": "Orders",
-      "tags": [
-        {
-          "service": "orders",
-          "protocol": "HTTP",
-          "origin_service": "front-end",
-          "target_service": "orders"
+      "APIs": ["POST /orders"],
+      "arc__1": 1,
+      "config": {
+        "color": {
+          "fixedColor": "rgb(54, 162, 235)"
         }
-      ],
-      "fields": {
-        "in_timesum": 200,
-        "in_count": 400,
-        "error_in": 10,
-        "out_timesum": 100,
-        "out_count": 300,
-        "error_out": 8,
-        "threshold": 600
       }
     },
     {
       "id": "carts",
       "title": "Carts",
-      "tags": [
-        {
-          "service": "carts",
-          "protocol": "HTTP",
-          "origin_service": "front-end",
-          "target_service": "carts"
+      "arc__1": 1,
+      "config": {
+        "color": {
+          "fixedColor": "rgb(255, 206, 86)"
         }
-      ],
-      "fields": {
-        "in_timesum": 150,
-        "in_count": 250,
-        "error_in": 7,
-        "out_timesum": 80,
-        "out_count": 180,
-        "error_out": 4,
-        "threshold": 550
       }
     },
     {
       "id": "catalogue",
       "title": "Catalogue",
-      "tags": [
-        {
-          "service": "catalogue",
-          "protocol": "HTTP",
-          "origin_service": "front-end",
-          "target_service": "catalogue"
+      "arc__1": 1,
+      "config": {
+        "color": {
+          "fixedColor": "rgb(75, 192, 192)"
         }
-      ],
-      "fields": {
-        "in_timesum": 180,
-        "in_count": 300,
-        "error_in": 6,
-        "out_timesum": 90,
-        "out_count": 200,
-        "error_out": 5,
-        "threshold": 570
       }
     },
     {
       "id": "payment",
       "title": "Payment",
-      "tags": [
-        {
-          "service": "payment",
-          "protocol": "HTTP",
-          "origin_service": "front-end",
-          "target_service": "payment"
+      "arc__1": 1,
+      "config": {
+        "color": {
+          "fixedColor": "rgb(153, 102, 255)"
         }
-      ],
-      "fields": {
-        "in_timesum": 130,
-        "in_count": 220,
-        "error_in": 4,
-        "out_timesum": 60,
-        "out_count": 170,
-        "error_out": 2,
-        "threshold": 520
       }
     },
     {
       "id": "orders-db",
       "title": "Orders-DB",
-      "tags": [
-        {
-          "service": "orders-db",
-          "protocol": "HTTP",
-          "origin_service": "orders",
-          "target_service": "orders-db"
+      "arc__1": 1,
+      "config": {
+        "color": {
+          "fixedColor": "rgb(255, 159, 64)"
         }
-      ],
-      "fields": {
-        "in_timesum": 210,
-        "in_count": 420,
-        "error_in": 9,
-        "out_timesum": 110,
-        "out_count": 310,
-        "error_out": 7,
-        "threshold": 610
       }
     },
     {
       "id": "queue-master",
       "title": "Queue-Master",
-      "tags": [
-        {
-          "service": "queue-master",
-          "protocol": "HTTP",
-          "origin_service": "orders",
-          "target_service": "queue-master"
+      "arc__1": 1,
+      "config": {
+        "color": {
+          "fixedColor": "rgb(201, 203, 207)"
         }
-      ],
-      "fields": {
-        "in_timesum": 190,
-        "in_count": 370,
-        "error_in": 8,
-        "out_timesum": 100,
-        "out_count": 290,
-        "error_out": 6,
-        "threshold": 590
       }
     },
     {
       "id": "shipping",
       "title": "Shipping",
-      "tags": [
-        {
-          "service": "shipping",
-          "protocol": "HTTP",
-          "origin_service": "orders",
-          "target_service": "shipping"
+      "arc__1": 1,
+      "config": {
+        "color": {
+          "fixedColor": "rgb(100, 149, 237)"
         }
-      ],
-      "fields": {
-        "in_timesum": 160,
-        "in_count": 280,
-        "error_in": 5,
-        "out_timesum": 70,
-        "out_count": 230,
-        "error_out": 3,
-        "threshold": 540
       }
     }
   ]
