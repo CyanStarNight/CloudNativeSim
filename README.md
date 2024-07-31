@@ -3,8 +3,8 @@
 </p>
 <p align="center">
 | <a href="https://docs.cloudnativesim"><b>Documentation</b></a> | <a href=""><b>Paper</b></a> | <a href="https://github.com/CyanStarNight/CloudNativeSim/issues"><b>Issues</b></a>  |  <a href="https://github.com/users/CyanStarNight/projects/1"><b>Schedule</b></a> |
-
 </p>
+
 ## About
 
 CloudNativeSim is a toolkit for modeling and simulation of cloud-native applications. It employs a multi-layered architecture, allowing for high extensibility and customization. Below is an overview of the CloudNativeSim architecture:
@@ -24,7 +24,6 @@ Through detailed modeling of cloud-native environments and microservices archite
 If you’re using this simulator, please ★Star this repository to show your interest!
 
 ## Getting Started
-
 1. Clone the CloudNativeSim Git repository to local folder:
     ```shell
     git clone https://github.com/CyanStarNight/CloudNativeSim.git
@@ -33,8 +32,8 @@ If you’re using this simulator, please ★Star this repository to show your in
 3. Run the example files (e.g., `SockShopExample.java`) to get started
 
 
+## Visualization
 CloudNativeSim allows users to export simulation results to files and visualize them in Grafana. Follow these steps:
-
 1. Import the panel styles from the `visualization/styles` folder into Grafana.
 2. Add fields in the main CloudNativeSim run file to enable data export to files, such as:
    ```java
