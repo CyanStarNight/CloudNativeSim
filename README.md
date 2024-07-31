@@ -1,10 +1,11 @@
 <p align="center">
   <img src="https://github.com/CyanStarNight/picx-images-hosting/raw/master/sim.8vmtjyhmw0.ico" alt="CloudNativeSim Logo" style="vertical-align: middle; width:32px; height:32px;">
-  <h1 style="display: inline; font-size: 1.5em; font-weight: bold; vertical-align: middle;">CloudNativeSim: A Toolkit for Modeling and Simulation of Cloud-Native Applications</h1>
+  <span style="display: inline-block; vertical-align: middle;">
+    <h1 style="display: inline; font-size: 1.5em; font-weight: bold; vertical-align: middle; margin: 0;">
+      CloudNativeSim: A Toolkit for Modeling and Simulation of Cloud-Native Applications
+    </h1>
+  </span>
 </p>
-
-
-
 
 
 
