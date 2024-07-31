@@ -11,6 +11,7 @@ CloudNativeSim is a toolkit for modeling and simulation of cloud-native applicat
 <p align="center">
   <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/docs/assets/Architecture.png" alt="QPS Visualization" width=60%>
 </p>
+
 Through detailed modeling of cloud-native environments and microservices architecture, CloudNativeSim provides these key features:
 + Comprehensive modeling approach
 + High extensibility and customization
@@ -39,7 +40,9 @@ CloudNativeSim allows users to export simulation results to files and visualize 
    ```java
    Reporter.writeResourceUsage("path/xxx");
    Reporter.writeStatisticsToCsv(apis, "path/xxx");
-Ensure service registration files conform to the NodeGraph API requirements to view service dependencies in Grafana.
+   ```
+3. If you need to observe service dependencies in Grafana, ensure that the service registration files comply with the [NodeGraph](https://docs.aws.amazon.com/grafana/latest/userguide/v9-panels-node-graph.html) requirements.
+
 The visualization results are shown below:
 
 <p align="center">
