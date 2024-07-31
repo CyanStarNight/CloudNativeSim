@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/gui/icon.png" alt="CloudNativeSim Logo" width=35%>
+  <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/gui/icon.png" alt="CloudNativeSim Logo" width=33%>
   <span style="display: inline-block; vertical-align: middle;">
     <h1 style="display: inline; font-size: 1.5em; font-weight: bold; vertical-align: middle; margin: 0;">
       CloudNativeSim: A Toolkit for Modeling and Simulation of Cloud-Native Applications
