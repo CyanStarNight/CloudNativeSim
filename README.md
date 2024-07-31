@@ -1,16 +1,19 @@
 <p align="center">
   <picture>
-    <img alt="CloudNativeSim" src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/gui/sim.ico" width=55%>
+    <img alt="CloudNativeSim" src="https://github.com/CyanStarNight/picx-images-hosting/raw/master/sim.8vmtjyhmw0.ico" width=55%>
   </picture>
 </p>
+
 
 <h1 align="center">
 A toolkit for modeling and simulation of cloud-native applications
 </h1>
 
 
+
 <p align="center">
 <!-- | <a href="https://docs.vllm.ai"><b>Documentation</b></a> |<a href=""><b>Paper</b></a> | -->
+
 
 # Main features
 
