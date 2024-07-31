@@ -1,6 +1,10 @@
-<h1 align="center">
-CloudNativeSim: a toolkit for modeling and simulation of cloud-native applications
-</h1>
+<p align="center">
+  <img src="https://github.com/CyanStarNight/picx-images-hosting/raw/master/sim.8vmtjyhmw0.ico" alt="CloudNativeSim Logo" style="vertical-align: middle; width:32px; height:32px;">
+  <span style="font-size: 1.5em; font-weight: bold;">CloudNativeSim: A Toolkit for Modeling and Simulation of Cloud-Native Applications</span>
+</p>
+
+
+
 
 
 
