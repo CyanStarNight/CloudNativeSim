@@ -1,30 +1,36 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/gui/icon.png" alt="CloudNativeSim Logo" width=33%>
-  <span style="display: inline-block; vertical-align: middle;">
-    <h1 style="display: inline; font-size: 1.5em; font-weight: bold; vertical-align: middle; margin: 0;">
-      CloudNativeSim: A Toolkit for Modeling and Simulation of Cloud-Native Applications
-    </h1>
-  </span>
+  <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/gui/logo.png" alt="CloudNativeSim Logo" width=30%>
 </p>
 
+## About
+
+CloudNativeSim is a toolkit for modeling and simulation of cloud-native applications, with the following key features:
++ Comprehensive modeling approach
++ High extensibility and customization
++ Simulation of dynamic request generation and dispatching
++ Innovative cloudlet scheduling mechanism
++ Latency calculation based on the critical path
++ QoS metrics feedback
++ New policy interfaces
++ Grafana Dashboard Visualization
+
+## Getting Started
+
+1. Clone the CloudNativeSim Git repository to local folder:
+    ```shell
+    git clone https://github.com/CyanStarNight/CloudNativeSim.git
+    ```
+2. Verify the development environment: Ensure that Java version 17 or higher is installed, the CloudSim 3.0 JAR package is available, and all Maven dependencies are fully imported.
+3. Run the example files (e.g., `SockShopExample.java`) to get started
 
 
-<p align="center">
-<!-- | <a href="https://docs.vllm.ai"><b>Documentation</b></a> |<a href=""><b>Paper</b></a> | -->
-
-
-# Main features
+## Visualization
 
 
 
-# How to run CloudNativeSim?
+## Contributing
 
-1. Create a Java project and initialize it as a Git repository.
-2. Add the Git repository of CloudNativeSim as the `origin` remote:
+We welcome and value any contributions and collaborations.
+Please check out [CONTRIBUTING.md](./CONTRIBUTING.md) for how to get involved.
 
-Clone the CloudNativeSim Git repository to desired folder:
-git clone https://github.com/Cloudslab/iFogSim
-Select "project from existing resources" from the "File" drop-down menu
-Verify the Java version
-Verify the external libraries in the "JARs" Folder are added to the project
-Run the example files (e.g. TranslationServiceFog_Clustering.java, CrowdSensing_Microservices_RandomMobility_Clustering.java) to get started
+## Citation
