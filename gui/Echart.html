@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html style="height: 100%;">
+
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- 引入 ECharts 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+</head>
+
+<body style="height: 100%; margin: 0;">
+    <!-- 准备一个 DOM 容器 -->
+    <div id="main" style="height: 100%;"></div>
+    <script type="text/javascript">
+
+         data_str='[{"id":0,"name":"front-end","symbolSize":100},{"id":1,"name":"orders","symbolSize":100},{"id":2,"name":"carts","symbolSize":100},{"id":3,"name":"carts-db","symbolSize":100},{"id":4,"name":"catalogue","symbolSize":100},{"id":5,"name":"catalogue-db","symbolSize":100},{"id":6,"name":"payment","symbolSize":100},{"id":7,"name":"user","symbolSize":100},{"id":8,"name":"user-db","symbolSize":100},{"id":9,"name":"orders-db","symbolSize":100},{"id":10,"name":"shipping","symbolSize":100},{"id":11,"name":"rabbitmq","symbolSize":100},{"id":12,"name":"queue-master","symbolSize":100},{"id":13,"name":"session-db","symbolSize":100}]'
+         edge_str='[{"source":0,"target_name":"carts","label":{"show":true,"formatter":"dependent"}},{"source":0,"target_name":"orders","label":{"show":true,"formatter":"dependent"}},{"source":0,"target_name":"catalogue","label":{"show":true,"formatter":"dependent"}},{"source":0,"target_name":"user","label":{"show":true,"formatter":"dependent"}},{"source":0,"target_name":"payment","label":{"show":true,"formatter":"dependent"}},{"source":0,"target_name":"session-db","label":{"show":true,"formatter":"dependent"}},{"source":1,"target_name":"orders-db","label":{"show":true,"formatter":"dependent"}},{"source":1,"target_name":"queue-master","label":{"show":true,"formatter":"dependent"}},{"source":1,"target_name":"carts","label":{"show":true,"formatter":"dependent"}},{"source":1,"target_name":"payment","label":{"show":true,"formatter":"dependent"}},{"source":1,"target_name":"shipping","label":{"show":true,"formatter":"dependent"}},{"source":2,"target_name":"carts-db","label":{"show":true,"formatter":"dependent"}},{"source":3,"target_name":"shipping","label":{"show":true,"formatter":"dependent"}},{"source":4,"target_name":"catalogue-db","label":{"show":true,"formatter":"dependent"}},{"source":7,"target_name":"user-db","label":{"show":true,"formatter":"dependent"}},{"source":7,"target_name":"session-db","label":{"show":true,"formatter":"dependent"}},{"source":10,"target_name":"rabbitmq","label":{"show":true,"formatter":"dependent"}},{"source":12,"target":11,"target_name":"rabbitmq","label":{"show":true,"formatter":"dependent"}},{"source":0,"target":2,"target_name":"carts","label":{"show":true,"formatter":"dependent"}},{"source":0,"target":1,"target_name":"orders","label":{"show":true,"formatter":"dependent"}},{"source":0,"target":4,"target_name":"catalogue","label":{"show":true,"formatter":"dependent"}},{"source":0,"target":7,"target_name":"user","label":{"show":true,"formatter":"dependent"}},{"source":0,"target":6,"target_name":"payment","label":{"show":true,"formatter":"dependent"}},{"source":0,"target":13,"target_name":"session-db","label":{"show":true,"formatter":"dependent"}},{"source":1,"target":9,"target_name":"orders-db","label":{"show":true,"formatter":"dependent"}},{"source":1,"target":12,"target_name":"queue-master","label":{"show":true,"formatter":"dependent"}},{"source":1,"target":2,"target_name":"carts","label":{"show":true,"formatter":"dependent"}},{"source":1,"target":6,"target_name":"payment","label":{"show":true,"formatter":"dependent"}},{"source":1,"target":10,"target_name":"shipping","label":{"show":true,"formatter":"dependent"}},{"source":2,"target":3,"target_name":"carts-db","label":{"show":true,"formatter":"dependent"}},{"source":3,"target":10,"target_name":"shipping","label":{"show":true,"formatter":"dependent"}},{"source":4,"target":5,"target_name":"catalogue-db","label":{"show":true,"formatter":"dependent"}},{"source":7,"target":8,"target_name":"user-db","label":{"show":true,"formatter":"dependent"}},{"source":7,"target":13,"target_name":"session-db","label":{"show":true,"formatter":"dependent"}},{"source":10,"target":11,"target_name":"rabbitmq","label":{"show":true,"formatter":"dependent"}},{"source":12,"target":11,"target_name":"rabbitmq","label":{"show":true,"formatter":"dependent"}}]'
+         data=JSON.parse(data_str)
+         edge=JSON.parse(edge_str)
+         colors=["#ff6347","#4682b4","#32cd32","#ff1493"]
+         for(let i=0;i<data.length;i++){
+              data[i].symbolSize=(data[i].name.length+1)*10
+              data[i].itemStyle={color:colors[i%colors.length]}
+         }
+         for(let i=0;i<edge.length;i++){
+           edge[i].label.formatter=""
+         }
+        // 基于准备好的 DOM，初始化 echarts 实例
+        var myChart = echarts.init(document.getElementById('main'));
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: '',
+                left: 'center'
+            },
+            tooltip: {
+                formatter: function (x) {
+                    return x.data.name;
+                }
+            },
+            series: [
+                {
+                    type: 'graph',
+                    layout: 'force',
+                    force: {
+                        repulsion: 1000,
+                        edgeLength: [200, 400]
+                    },
+                    roam: true,
+                    label: {
+                        show: true,
+                        position: 'inside',
+                        formatter: '{b}',
+                        fontSize: 12,
+                        color: '#fff'
+                    },
+                    edgeSymbol: ['none', 'arrow'],
+                    edgeSymbolSize: [0, 10],
+                    edgeLabel: {
+                        show: true,
+                        formatter: '{c}',
+                        fontSize: 12,
+                        color: '#666'
+                    },
+                    data:data,
+                    links: edge,
+                    lineStyle: {
+                        color: 'source',
+                        curveness: 0.5
+                    }
+                }
+            ]
+        };
+
+        // 使用刚指定的配置项和数据显示图表
+        myChart.setOption(option);
+    </script>
+</body>
+
+</html>

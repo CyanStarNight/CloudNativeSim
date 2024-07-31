@@ -1,0 +1,60 @@
+{
+  "nodes": [
+    {
+      "id": "front-end",
+      "title": "Front-End",
+      "arc__success": 0.87,
+      "arc__failure": 0.13,
+      "mainstat": 1000
+    },
+    {
+      "id": "orders",
+      "title": "Orders",
+      "arc__success": 0.7,
+      "arc__failure": 0.3,
+      "mainstat": 400
+    },
+    {
+      "id": "carts",
+      "title": "Carts",
+      "arc__success": 0.9,
+      "arc__failure": 0.1,
+      "mainstat": 200
+    },
+    {
+      "id": "catalogue",
+      "title": "Catalogue",
+      "arc__success": 0.9,
+      "arc__failure": 0.1,
+      "mainstat": 200
+    },
+    {
+      "id": "payment",
+      "title": "Payment",
+      "arc__success": 0.95,
+      "arc__failure": 0.05,
+      "mainstat": 200
+    },
+    {
+      "id": "orders-db",
+      "title": "Orders-DB",
+      "arc__success": 0.8,
+      "arc__failure": 0.2,
+      "mainstat": 150
+    },
+    {
+      "id": "queue-master",
+      "title": "Queue-Master",
+      "arc__success": 0.97,
+      "arc__failure": 0.03,
+      "mainstat": 150
+    },
+    {
+      "id": "shipping",
+      "title": "Shipping",
+      "arc__success": 0.94,
+      "arc__failure": 0.06,
+      "mainstat": 100
+    }
+  ]
+}
