@@ -10,7 +10,7 @@ A toolkit for modeling and simulation of cloud-native applications
 
 
 <p align="center">
-| <a href="https://docs.vllm.ai"><b>Documentation</b></a> | <a href="https://vllm.ai"><b>Blog</b></a> | <a href="https://arxiv.org/abs/2309.06180"><b>Paper</b></a> | <a href="https://discord.gg/jz7wjKhh6g"><b>Discord</b></a> |
+| <a href="https://docs.vllm.ai"><b>Documentation</b></a> | <a href=""><b>Paper</b></a> |
 
 # Main features
 
