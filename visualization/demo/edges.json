@@ -1,0 +1,49 @@
+{
+  "edges": [
+    {
+      "id": "e1",
+      "source": "front-end",
+      "target": "carts"
+    },
+    {
+      "id": "e2",
+      "source": "front-end",
+      "target": "orders"
+    },
+    {
+      "id": "e3",
+      "source": "front-end",
+      "target": "catalogue"
+    },
+    {
+      "id": "e5",
+      "source": "front-end",
+      "target": "payment"
+    },
+    {
+      "id": "e7",
+      "source": "orders",
+      "target": "orders-db"
+    },
+    {
+      "id": "e8",
+      "source": "orders",
+      "target": "queue-master"
+    },
+    {
+      "id": "e9",
+      "source": "orders",
+      "target": "carts"
+    },
+    {
+      "id": "e10",
+      "source": "orders",
+      "target": "payment"
+    },
+    {
+      "id": "e11",
+      "source": "orders",
+      "target": "shipping"
+    }
+  ]
+}

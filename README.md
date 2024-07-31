@@ -1,10 +1,13 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/gui/logo.png" alt="CloudNativeSim Logo" width=30%>
+  <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/docs/assets/logo.png" alt="CloudNativeSim Logo" width=30%>
 </p>
 
 ## About
 
-CloudNativeSim is a toolkit for modeling and simulation of cloud-native applications, with the following key features:
+CloudNativeSim is a toolkit for modeling and simulation of cloud-native applications. It employs a multi-layered architecture, allowing for high extensibility and customization. Below is an overview of the CloudNativeSim architecture:
+![architecture](https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/docs/assets/Architecture.png)
+
+Through detailed modeling of cloud-native environments and microservices architecture, CloudNativeSim provides these key features:
 + Comprehensive modeling approach
 + High extensibility and customization
 + Simulation of dynamic request generation and dispatching
@@ -13,6 +16,8 @@ CloudNativeSim is a toolkit for modeling and simulation of cloud-native applicat
 + QoS metrics feedback
 + New policy interfaces
 + Grafana Dashboard Visualization
+
+If you’re using this simulator, please ★Star this repository to show your interest!
 
 ## Getting Started
 
@@ -24,13 +29,25 @@ CloudNativeSim is a toolkit for modeling and simulation of cloud-native applicat
 3. Run the example files (e.g., `SockShopExample.java`) to get started
 
 
-## Visualization
+CloudNativeSim allows users to export simulation results to files and visualize them in Grafana. Follow these steps:
+
+1. Import the panel styles from the `visualization/styles` folder into Grafana.
+2. Add fields in the main CloudNativeSim run file to enable data export to files, such as:
+   ```java
+   Reporter.writeResourceUsage("path/xxx");
+   Reporter.writeStatisticsToCsv(apis, "path/xxx");
+Ensure service registration files conform to the NodeGraph API requirements to view service dependencies in Grafana.
+The visualization results are shown below:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/docs/assets/QPS grafana.png" alt="QPS Visualization" width=60%>
+  <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/docs/assets/service dependency.png" alt="Service Dependency Visualization" width=35%>
+</p>
 
 
+## Contributing and Acknowledgement
 
-## Contributing
-
-We welcome and value any contributions and collaborations.
-Please check out [CONTRIBUTING.md](./CONTRIBUTING.md) for how to get involved.
+We welcome your contributions to the project! Please read the [CONTRIBUTING.md](./CONTRIBUTING.md)  before you start. The guide includes information on various ways to contribute, such as requesting features, reporting issues, fixing bugs, or adding new features.
+Special thanks to @beyondHJM for assisting with the design and configuration of the Grafana panels.
 
 ## Citation

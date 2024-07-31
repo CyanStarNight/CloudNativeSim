@@ -3,7 +3,7 @@ instances:
     type: pod
     labels:
       - user
-    replicas: 1
+    replicas: 30
     size: 500
     rec_bw: 500
     trans_bw: 1000

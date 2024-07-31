@@ -1,0 +1,390 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 6,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "adt01kjkdce80f"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"UserCount(1000,10)\")",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "hide": false,
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"UserCount(1000,100)\")",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "hide": false,
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"UserCount(500,100)\")",
+          "refId": "C"
+        }
+      ],
+      "title": "UserCount",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "adt01kjkdce80f"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"QPS(1000,10,[5,15])\")",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "hide": false,
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"QPS(1000,100,[5,15])\")",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "hide": false,
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"QPS(500,100,[5,15])\")",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "hide": false,
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"QPS(1000,10,[3,5])\")",
+          "refId": "D"
+        }
+      ],
+      "title": "QPS",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "adt01kjkdce80f"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"TotalRequests(1000,10,[5,15])\")",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "hide": false,
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"TotalRequests(1000,100,[5,15])\")",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "hide": false,
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"TotalRequests(500,100,[5,15])\")",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "adt01kjkdce80f"
+          },
+          "hide": false,
+          "query": "from(bucket: \"formal\")\r\n  |> range(start: 2024-07-28T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"TotalRequests(1000,10,[3,5])\")",
+          "refId": "D"
+        }
+      ],
+      "title": "TotalRequests",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "2024-07-28T04:00:00.000Z",
+    "to": "2024-07-28T04:09:59.000Z"
+  },
+  "timeRangeUpdatedDuringEditOrView": false,
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "formal",
+  "uid": "fdtaz0r3lpmo0c",
+  "version": 15,
+  "weekStart": ""
+}

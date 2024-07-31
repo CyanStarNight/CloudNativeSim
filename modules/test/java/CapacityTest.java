@@ -16,7 +16,9 @@ import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.junit.Test;
 import policy.allocation.ServiceAllocationPolicySimple;
 import policy.cloudletScheduler.NativeCloudletSchedulerBestEffort;
+import policy.cloudletScheduler.NativeCloudletSchedulerSimple;
 import policy.scaling.HorizontalScalingPolicy;
+import policy.scaling.NoneScalingPolicy;
 import provisioner.NativePeProvisionerTimeShared;
 import provisioner.NativeRamProvisionerSimple;
 import provisioner.VmBwProvisionerSimple;
@@ -39,17 +41,21 @@ public class CapacityTest {
     static String outputPath = "modules/test/resource/";
     // generator configuration for requests and cloudlets
     static int finalClients = 10;
-    static int requestCount = 1000;
     static int spawnRate = 100;
     static int[] waitTimeSpan = new int[]{3, 10};
 
     // 设定任务平均大小,下面两种表述是等价的:
     static int meanLength = 100; // 单位是百万条指令(M)
     static int stdDevLength = 20;
-    static int timeLimit = 1000000;
+    static int timeLimit = 600;
 
     private static String csvFilePath = "modules/test/resource/capacityTests.csv";
 
+
+    static int numHosts = 1;
+    // instance num defined in the field replicas of capacityTest.yaml
+    static int requestCount = 10000;
+    static int serviceCount = 10;
 
 
     @Test
@@ -65,7 +71,7 @@ public class CapacityTest {
             CloudNativeSim.init(num_user, calendar, trace_flag);
 
             // create datacenters and brokers
-            int numHosts = 1;
+
             Datacenter datacenter = createDatacenter("Datacenter#0",numHosts);
             NativeBroker broker = createBroker(userId);
             // get SimEntity ID
@@ -82,14 +88,13 @@ public class CapacityTest {
             app.submitAPIs(apis);
             // services
 
-            int serviceCount = 50000;
             ServiceGraph graph = register.registerServiceGraphTest(serviceCount);
             app.submitServiceGraph(graph);
             List<Service> services = graph.getAllServices();
             // set policy
             for (Service service : services){
-                service.setCloudletScheduler(new NativeCloudletSchedulerBestEffort());
-                service.setServiceScalingPolicy(new HorizontalScalingPolicy());
+                service.setCloudletScheduler(new NativeCloudletSchedulerSimple());
+                service.setServiceScalingPolicy(new NoneScalingPolicy());
             }
             app.submitServiceList(services);
 
