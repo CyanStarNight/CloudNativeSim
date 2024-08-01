@@ -54,6 +54,6 @@ The visualization results are shown below:
 ## Contributing and Acknowledgement
 
 We welcome your contributions to the project! Please read the [CONTRIBUTING.md](./CONTRIBUTING.md)  before you start. The guide includes information on various ways to contribute, such as requesting features, reporting issues, fixing bugs, or adding new features.
-Special thanks to @beyondHJM for assisting with the design and configuration of the Grafana panels.
+Special thanks to [@beyondHJM](https://github.com/beyondHJM) for assisting with the design and configuration of the Grafana panels.
 
 ## Citation
