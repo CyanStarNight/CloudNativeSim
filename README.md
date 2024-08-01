@@ -9,7 +9,7 @@
 
 CloudNativeSim is a toolkit for modeling and simulation of cloud-native applications. It employs a multi-layered architecture, allowing for high extensibility and customization. Below is an overview of the CloudNativeSim architecture:
 <p align="center">
-  <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/docs/assets/Architecture.png" alt="QPS Visualization" width=60%>
+  <img src="https://raw.githubusercontent.com/CyanStarNight/CloudNativeSim/master/docs/assets/Architecture.png" alt="Architecture" width=60%>
 </p>
 
 Through detailed modeling of cloud-native environments and microservices architecture, CloudNativeSim provides these key features:
