@@ -5,13 +5,11 @@
 <div align="center">
   
 [![GPL licensed](https://img.shields.io/badge/license-GPL-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![Progress Tracker](https://img.shields.io/badge/Progess-track-green)](https://github.com/users/CyanStarNight/projects/1)
 [![commit](https://img.shields.io/github/last-commit/CyanStarNight/CloudNativeSim?color=blue)](https://github.com/CyanStarNight/CloudNativeSim/commits/master)
 [![PR](https://img.shields.io/badge/PRs-Welcome-red)](https://github.com/CyanStarNight/CloudNativeSim/pulls)
+![version](https://img.shields.io/badge/version-1.0-blue)
 [![GitHub Repo stars](https://img.shields.io/github/stars/CyanStarNight/CloudNativeSim)](https://github.com/CyanStarNight/CloudNativeSim)
-  
-<p align="center">
-| <a href="https://docs.cloudnativesim"><b>Documentation</b></a> | <a href=""><b>Paper</b></a> | <a href="https://github.com/CyanStarNight/CloudNativeSim/issues"><b>Issues</b></a>  |  <a href="https://github.com/users/CyanStarNight/projects/1"><b>Schedule</b></a> |
-</p>
 
 </div>
 
